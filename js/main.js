@@ -61,11 +61,18 @@ function init() {
     console.log("Loading complete! Starting the app.");
     const splashScreen = document.getElementById("splash-screen");
     splashScreen.classList.add("fade-out");
+
+    const vrButton = document.getElementById("VRButton");
+    if (vrButton) {
+      vrButton.classList.add("visible");
+    }
+
     setTimeout(() => {
       if (splashScreen && splashScreen.parentNode) {
         splashScreen.parentNode.removeChild(splashScreen);
       }
     }, 500);
+
     changeState(AppState.LANDING);
   };
 
