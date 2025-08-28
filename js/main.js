@@ -16,9 +16,11 @@ import {
 } from "./model-loader.js";
 import { setupInteraction } from "./interaction-manager.js";
 import { initVR, isVRMode } from "./vr-manager.js";
+import { loadingManager } from "./loading-manager.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 let audioListener, sound;
-const audioLoader = new THREE.AudioLoader();
+const audioLoader = new THREE.AudioLoader(loadingManager);
 
 const AppState = {
   LANDING: "LANDING",
@@ -54,8 +56,36 @@ function init() {
 
   initVR(refreshUI);
   setupInteraction(handleInteraction);
-  changeState(AppState.LANDING);
+
+  loadingManager.onLoad = function () {
+    console.log("Loading complete! Starting the app.");
+    const splashScreen = document.getElementById("splash-screen");
+    splashScreen.classList.add("fade-out");
+    setTimeout(() => {
+      if (splashScreen && splashScreen.parentNode) {
+        splashScreen.parentNode.removeChild(splashScreen);
+      }
+    }, 500);
+    changeState(AppState.LANDING);
+  };
+
+  preloadAssets();
+
   animate();
+}
+function preloadAssets() {
+  console.log("Preloading assets...");
+  const gltfLoader = new GLTFLoader(loadingManager);
+
+  for (const component of components) {
+    gltfLoader.load(component.modelFile, () => {});
+  }
+
+  for (const component of components) {
+    if (component.audioFile) {
+      audioLoader.load(component.audioFile, () => {});
+    }
+  }
 }
 
 function stopAudio() {

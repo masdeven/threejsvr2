@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { scene, renderer } from "./scene-setup.js";
+import { loadingManager } from "./loading-manager.js";
 
 const ktx2Loader = new KTX2Loader()
   .setTranscoderPath("https://unpkg.com/three@0.162.0/examples/jsm/libs/basis/")
@@ -11,7 +12,7 @@ const ktx2Loader = new KTX2Loader()
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("assets/draco/");
 
-const loader = new GLTFLoader();
+const loader = new GLTFLoader(loadingManager);
 loader.setDRACOLoader(dracoLoader);
 loader.setKTX2Loader(ktx2Loader);
 

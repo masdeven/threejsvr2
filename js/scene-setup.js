@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { loadingManager } from "./loading-manager.js";
 
 // Scene
 export const scene = new THREE.Scene();
@@ -41,7 +42,7 @@ dirLight.position.set(5, 10, 7.5);
 scene.add(dirLight);
 
 // Environment
-new RGBELoader()
+new RGBELoader(loadingManager)
   .setPath("assets/env/")
   .load("environment.hdr", function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
