@@ -10,6 +10,7 @@ import {
   createHelpPanel,
 } from "./ui-creator.js";
 import {
+  loader,
   loadComponentModel,
   unloadComponentModel,
   updateModelRotation,
@@ -17,7 +18,6 @@ import {
 import { setupInteraction } from "./interaction-manager.js";
 import { initVR, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 let audioListener, sound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
@@ -82,10 +82,10 @@ function init() {
 }
 function preloadAssets() {
   console.log("Preloading assets...");
-  const gltfLoader = new GLTFLoader(loadingManager);
+  // const gltfLoader = new GLTFLoader(loadingManager);
 
   for (const component of components) {
-    gltfLoader.load(component.modelFile, () => {});
+    loader.load(component.modelFile, () => {});
   }
 
   for (const component of components) {

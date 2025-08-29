@@ -12,7 +12,7 @@ const ktx2Loader = new KTX2Loader()
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("assets/draco/");
 
-const loader = new GLTFLoader(loadingManager);
+export const loader = new GLTFLoader(loadingManager);
 loader.setDRACOLoader(dracoLoader);
 loader.setKTX2Loader(ktx2Loader);
 
