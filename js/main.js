@@ -8,6 +8,11 @@ import {
   clearUI,
   updateViewerUIPosition,
   createHelpPanel,
+  createQuizScreen,
+  createQuizResultScreen,
+  createQuizReportScreen,
+  createCompletionScreen,
+  createCreditsScreen,
 } from "./ui-creator.js";
 import {
   loader,
@@ -18,18 +23,27 @@ import {
 import { setupInteraction } from "./interaction-manager.js";
 import { initVR, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
+import { quizData } from "./quiz-data.js";
 
 let audioListener, sound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
 let playerName = "";
 let activeDescriptionPanel = null;
+let currentQuestionIndex = 0;
+let quizScore = 0;
 
 const AppState = {
   LANDING: "LANDING",
   MENU: "MENU",
   VIEWER: "VIEWER",
   HELP: "HELP",
+  QUIZ: "QUIZ",
+  QUIZ_RESULT: "QUIZ_RESULT",
+  QUIZ_REPORT: "QUIZ_REPORT",
+  COMPLETION: "COMPLETION",
+  CREDITS: "CREDITS",
 };
+let wasAnswerCorrect = false;
 let currentState = null;
 let currentComponentIndex = -1;
 
@@ -47,6 +61,21 @@ function refreshUI() {
       break;
     case AppState.HELP:
       createHelpPanel();
+      break;
+    case AppState.QUIZ:
+      createQuizScreen(currentQuestionIndex);
+      break;
+    case AppState.QUIZ_RESULT:
+      createQuizResultScreen(wasAnswerCorrect, currentQuestionIndex);
+      break;
+    case AppState.QUIZ_REPORT:
+      createQuizReportScreen(quizScore);
+      break;
+    case AppState.COMPLETION:
+      createCompletionScreen(playerName);
+      break;
+    case AppState.CREDITS:
+      createCreditsScreen();
       break;
   }
 }
@@ -105,13 +134,11 @@ function setupHTMLEvents() {
     playerName = nameInput.value.trim() || "Tamu";
     document.getElementById("name-input-overlay").classList.add("hidden");
 
-    // Tampilkan tombol VR SEKARANG
     const vrButton = document.getElementById("VRButton");
     if (vrButton) {
       vrButton.classList.add("visible");
     }
 
-    // Mulai aplikasi 3D
     changeState(AppState.LANDING);
   });
 }
@@ -126,8 +153,6 @@ function showNameInputScreen() {
 }
 function preloadAssets() {
   console.log("Preloading assets...");
-  // const gltfLoader = new GLTFLoader(loadingManager);
-
   for (const component of components) {
     loader.load(component.modelFile, () => {});
   }
@@ -178,6 +203,11 @@ function changeState(newState) {
   switch (newState) {
     case AppState.LANDING:
     case AppState.MENU:
+    case AppState.QUIZ:
+    case AppState.QUIZ_RESULT:
+    case AppState.QUIZ_REPORT:
+    case AppState.COMPLETION:
+    case AppState.CREDITS:
       controls.enabled = false;
       camera.position.set(0, 1.6, 5);
       controls.target.set(0, 1.6, 0);
@@ -206,9 +236,41 @@ function handleInteraction(action) {
     case "back_to_menu":
       changeState(AppState.MENU);
       break;
+    case "back_to_landing":
+      changeState(AppState.LANDING);
+      break;
+    case "show_quiz":
+      currentQuestionIndex = 0;
+      quizScore = 0;
+      changeState(AppState.QUIZ);
+      break;
+    case "answer_correct":
+      wasAnswerCorrect = true;
+      quizScore++;
+      changeState(AppState.QUIZ_RESULT);
+      break;
+    case "answer_incorrect":
+      wasAnswerCorrect = false;
+      changeState(AppState.QUIZ_RESULT);
+      break;
+    case "next_question":
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= quizData.length) {
+        changeState(AppState.QUIZ_REPORT);
+      } else {
+        changeState(AppState.QUIZ);
+      }
+      break;
+    case "show_credits":
+      changeState(AppState.CREDITS);
+      break;
     case "next_component":
-      currentComponentIndex++;
-      reloadViewer();
+      if (currentComponentIndex >= components.length - 1) {
+        changeState(AppState.COMPLETION);
+      } else {
+        currentComponentIndex++;
+        reloadViewer();
+      }
       break;
     case "prev_component":
       currentComponentIndex--;

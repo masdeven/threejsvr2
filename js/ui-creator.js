@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { scene, camera } from "./scene-setup.js";
 import { components } from "./component-data.js";
 import { isVRMode } from "./vr-manager.js";
+import { quizData } from "./quiz-data.js";
 
 export const FONT = "bold 32px Arial";
 export const uiGroup = new THREE.Group();
@@ -148,13 +149,44 @@ export function createLandingPage(playerName) {
     uiGroup.add(welcomeLabel);
   }
 
-  const startButton = createButton("Mulai", "start", 1.5, 0.4);
-  startButton.position.set(0, 1.8, UI_DISTANCE);
+  const buttonWidth = 2.0;
+  const buttonHeight = 0.2;
+  const spacing = 0.15;
+  const startY = 1.9;
+
+  const startButton = createButton("Mulai", "start", buttonWidth, buttonHeight);
+  startButton.position.set(0, startY, UI_DISTANCE);
   uiGroup.add(startButton);
 
-  const helpButton = createButton("Bantuan", "help", 1.5, 0.4);
-  helpButton.position.set(0, 1.3, UI_DISTANCE);
+  const quizButton = createButton(
+    "Uji Pemahaman",
+    "show_quiz",
+    buttonWidth,
+    buttonHeight
+  );
+  quizButton.position.set(0, startY - (buttonHeight + spacing), UI_DISTANCE);
+  uiGroup.add(quizButton);
+
+  const helpButton = createButton("Bantuan", "help", buttonWidth, buttonHeight);
+  helpButton.position.set(
+    0,
+    startY - 2 * (buttonHeight + spacing),
+    UI_DISTANCE
+  );
   uiGroup.add(helpButton);
+
+  const creditsButton = createButton(
+    "Kredit",
+    "show_credits",
+    buttonWidth,
+    buttonHeight
+  );
+  creditsButton.position.set(
+    0,
+    startY - 3 * (buttonHeight + spacing),
+    UI_DISTANCE
+  );
+  uiGroup.add(creditsButton);
 }
 
 export function createMenuPage() {
@@ -249,17 +281,20 @@ export function createViewerPage(component) {
   viewerUIGroup.add(menuButton);
 }
 
-function createTitleLabel(text, width, height) {
+function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
   canvas.width = width * resolution;
   canvas.height = height * resolution;
-  ctx.fillStyle = TEXT_COLOR;
-  ctx.font = "bold 32px Arial";
-  ctx.textAlign = "left";
+  ctx.fillStyle = color;
+  ctx.font = "bold 48px Arial";
+  ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, 10, canvas.height / 2);
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  // ctx.textAlign = "left";
+  // ctx.textBaseline = "middle";
+  // ctx.fillText(text, 10, canvas.height / 2);
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -294,4 +329,127 @@ export function createHelpPanel() {
   const closeButtonY = 1.6 - panelHeight / 2 - 0.4 / 2 - 0.2;
   closeButton.position.set(0, closeButtonY, UI_DISTANCE);
   uiGroup.add(closeButton);
+}
+export function createCompletionScreen(playerName) {
+  if (playerName) {
+    const titleText = `Selamat, ${playerName}!`;
+    const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
+    titleLabel.position.set(0, 2.2, UI_DISTANCE);
+    uiGroup.add(titleLabel);
+  }
+
+  const messageText = "Anda telah melihat semua komponen.";
+  const messagePanel = createTextPanel(messageText, 3.5);
+  messagePanel.position.set(0, 1.5, 2.5);
+  uiGroup.add(messagePanel);
+
+  const quizButton = createButton(
+    "Lanjut ke Uji Pemahaman",
+    "show_quiz",
+    2.5,
+    0.5
+  );
+  quizButton.position.set(0, 0.9, 2.5);
+  uiGroup.add(quizButton);
+}
+export function createCreditsScreen() {
+  const creditsText =
+    "Aplikasi VR ini dibuat dengan Three.js dan WebXR untuk melihat komponen komputer secara 3D.";
+  const creditLabel = createTitleLabel("Kredit", 3, 0.5);
+  creditLabel.position.set(0, 2.2, UI_DISTANCE);
+  uiGroup.add(creditLabel);
+
+  const creditsPanel = createTextPanel(creditsText, 4);
+  const panelHeight = creditsPanel.geometry.parameters.height;
+  creditsPanel.position.set(0, 1.6, UI_DISTANCE);
+  uiGroup.add(creditsPanel);
+
+  const backButton = createButton("Tutup", "back_to_landing", 1.5, 0.4);
+  const buttonHeight = backButton.geometry.parameters.height;
+  const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+  backButton.position.set(0, buttonY, UI_DISTANCE);
+  uiGroup.add(backButton);
+}
+
+export function createQuizScreen(questionIndex) {
+  const currentQuestion = quizData[questionIndex];
+
+  const questionPanel = createTextPanel(currentQuestion.question, 4.5);
+  const panelHeight = questionPanel.geometry.parameters.height;
+  questionPanel.position.set(0, 1.8, UI_DISTANCE);
+  uiGroup.add(questionPanel);
+
+  const buttonWidth = 2.0;
+  const buttonHeight = 0.4;
+  const buttonY = 1.8 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+
+  const positions = [-1.1, 1.1];
+  const shuffledPositions = positions.sort(() => Math.random() - 0.5);
+
+  currentQuestion.answers.forEach((answer, index) => {
+    const isCorrect = index === currentQuestion.correctAnswerIndex;
+    const action = isCorrect ? "answer_correct" : "answer_incorrect";
+    const button = createButton(answer, action, buttonWidth, buttonHeight);
+
+    button.position.set(shuffledPositions[index], buttonY, UI_DISTANCE);
+    uiGroup.add(button);
+  });
+}
+export function createQuizResultScreen(isCorrect, questionIndex) {
+  const currentQuestion = quizData[questionIndex];
+  const isLastQuestion = questionIndex >= quizData.length - 1;
+
+  const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
+  const titleColor = isCorrect ? "#28a745" : "#dc3545";
+
+  const titleLabel = createTitleLabel(titleText, 3.5, 0.5, titleColor);
+  titleLabel.position.set(0, 2.4, UI_DISTANCE);
+  uiGroup.add(titleLabel);
+
+  const explanationText = `Soal:\n${
+    currentQuestion.question
+  }\n\nJawaban yang Benar:\n${
+    currentQuestion.answers[currentQuestion.correctAnswerIndex]
+  }`;
+
+  const explanationPanel = createTextPanel(explanationText, 4.5);
+  const panelHeight = explanationPanel.geometry.parameters.height;
+  explanationPanel.position.set(0, 1.6, UI_DISTANCE);
+  uiGroup.add(explanationPanel);
+
+  const backButton = createButton("Lanjutkan", "next_question", 2.5, 0.5);
+  const buttonHeight = backButton.geometry.parameters.height;
+  const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+  backButton.position.set(0, buttonY, UI_DISTANCE);
+  uiGroup.add(backButton);
+}
+
+export function createQuizReportScreen(score) {
+  const totalQuestions = quizData.length;
+  const finalScore = (score / totalQuestions) * 100;
+
+  const titleText = "Hasil Kuis Selesai";
+  const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
+  titleLabel.position.set(0, 2.4, UI_DISTANCE);
+  uiGroup.add(titleLabel);
+
+  const reportText = `Anda menjawab ${score} dari ${totalQuestions} soal dengan benar.\n\nNilai Akhir Anda:\n${finalScore.toFixed(
+    0
+  )}`;
+
+  const reportPanel = createTextPanel(reportText, 4.5);
+  const panelHeight = reportPanel.geometry.parameters.height;
+  reportPanel.position.set(0, 1.6, UI_DISTANCE);
+  uiGroup.add(reportPanel);
+
+  const backButton = createButton(
+    "Selesai & Kembali ke Awal",
+    "back_to_landing",
+    2.5,
+    0.5
+  );
+  const buttonHeight = backButton.geometry.parameters.height;
+  const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+  backButton.position.set(0, buttonY, UI_DISTANCE);
+  uiGroup.add(backButton);
 }
