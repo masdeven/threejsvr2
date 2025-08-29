@@ -21,6 +21,8 @@ import { loadingManager } from "./loading-manager.js";
 
 let audioListener, sound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
+let playerName = "";
+let activeDescriptionPanel = null;
 
 const AppState = {
   LANDING: "LANDING",
@@ -35,7 +37,7 @@ function refreshUI() {
   clearUI();
   switch (currentState) {
     case AppState.LANDING:
-      createLandingPage();
+      createLandingPage(playerName);
       break;
     case AppState.MENU:
       createMenuPage();
@@ -57,28 +59,70 @@ function init() {
   initVR(refreshUI);
   setupInteraction(handleInteraction);
 
+  setupHTMLEvents();
+
   loadingManager.onLoad = function () {
     console.log("Loading complete! Starting the app.");
     const splashScreen = document.getElementById("splash-screen");
-    splashScreen.classList.add("fade-out");
 
-    const vrButton = document.getElementById("VRButton");
-    if (vrButton) {
-      vrButton.classList.add("visible");
+    if (splashScreen) {
+      splashScreen.classList.add("fade-out");
+
+      const vrButton = document.getElementById("VRButton");
+      if (vrButton) {
+        vrButton.classList.add("visible");
+      }
+
+      setTimeout(() => {
+        if (splashScreen.parentNode) {
+          splashScreen.parentNode.removeChild(splashScreen);
+        }
+      }, 500);
     }
 
-    setTimeout(() => {
-      if (splashScreen && splashScreen.parentNode) {
-        splashScreen.parentNode.removeChild(splashScreen);
-      }
-    }, 500);
+    if (currentState === null) {
+      showWelcomeScreen();
+    }
 
-    changeState(AppState.LANDING);
+    loadingManager.onLoad = () => {};
   };
 
   preloadAssets();
 
   animate();
+}
+function setupHTMLEvents() {
+  const welcomeNextBtn = document.getElementById("welcome-next-button");
+  const nameContinueBtn = document.getElementById("continue-button");
+
+  welcomeNextBtn.addEventListener("click", () => {
+    document.getElementById("welcome-overlay").classList.add("hidden");
+    showNameInputScreen();
+  });
+
+  nameContinueBtn.addEventListener("click", () => {
+    const nameInput = document.getElementById("player-name-input");
+    playerName = nameInput.value.trim() || "Tamu";
+    document.getElementById("name-input-overlay").classList.add("hidden");
+
+    // Tampilkan tombol VR SEKARANG
+    const vrButton = document.getElementById("VRButton");
+    if (vrButton) {
+      vrButton.classList.add("visible");
+    }
+
+    // Mulai aplikasi 3D
+    changeState(AppState.LANDING);
+  });
+}
+function showWelcomeScreen() {
+  document.getElementById("welcome-overlay").classList.remove("hidden");
+}
+
+function showNameInputScreen() {
+  const nameInput = document.getElementById("player-name-input");
+  document.getElementById("name-input-overlay").classList.remove("hidden");
+  nameInput.focus();
 }
 function preloadAssets() {
   console.log("Preloading assets...");

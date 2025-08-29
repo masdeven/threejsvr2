@@ -140,10 +140,18 @@ export function clearUI() {
   });
 }
 
-export function createLandingPage() {
+export function createLandingPage(playerName) {
+  if (playerName) {
+    const welcomeText = `Selamat Datang, ${playerName}!`;
+    const welcomeLabel = createTitleLabel(welcomeText, 3.5, 0.5);
+    welcomeLabel.position.set(0, 2.2, UI_DISTANCE);
+    uiGroup.add(welcomeLabel);
+  }
+
   const startButton = createButton("Mulai", "start", 1.5, 0.4);
   startButton.position.set(0, 1.8, UI_DISTANCE);
   uiGroup.add(startButton);
+
   const helpButton = createButton("Bantuan", "help", 1.5, 0.4);
   helpButton.position.set(0, 1.3, UI_DISTANCE);
   uiGroup.add(helpButton);
