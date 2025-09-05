@@ -4,7 +4,7 @@ export const quizData = [
   {
     question: "Komponen manakah yang disebut sebagai 'otak' komputer?",
     answers: ["Processor (CPU)", "RAM"],
-    correctAnswerIndex: 0, // Index jawaban yang benar
+    correctAnswerIndex: 0,
   },
   {
     question:

@@ -58,26 +58,51 @@ function createButton(
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
+
   canvas.width = width * resolution;
   canvas.height = height * resolution;
+
+  const radius = 15;
+  ctx.beginPath();
+  ctx.moveTo(radius, 0);
+  ctx.lineTo(canvas.width - radius, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+  ctx.lineTo(canvas.width, canvas.height - radius);
+  ctx.quadraticCurveTo(
+    canvas.width,
+    canvas.height,
+    canvas.width - radius,
+    canvas.height
+  );
+  ctx.lineTo(radius, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+  ctx.lineTo(0, radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.closePath();
+
   ctx.fillStyle = bgColor;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fill();
+
+  ctx.lineWidth = 4;
   ctx.strokeStyle = "#FFFFFF";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(2.5, 2.5, canvas.width - 5, canvas.height - 5);
-  ctx.fillStyle = TEXT_COLOR;
+  ctx.stroke();
+
+  ctx.fillStyle = "#FFFFFF";
   ctx.font = FONT;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
   const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.95,
   });
   const geometry = new THREE.PlaneGeometry(width, height);
   const mesh = new THREE.Mesh(geometry, material);
+
   mesh.userData = {
     isButton: true,
     action: action,
@@ -85,6 +110,7 @@ function createButton(
     colors: { default: bgColor, hover: "#007BFF" },
     canvasContext: ctx,
   };
+
   return mesh;
 }
 
@@ -110,16 +136,47 @@ function createTextPanel(text, width) {
   canvas.width = canvasWidth;
   canvas.height = finalPanelHeight3D * resolution;
 
-  ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const radius = 20;
+  ctx.beginPath();
+  ctx.moveTo(radius, 0);
+  ctx.lineTo(canvas.width - radius, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+  ctx.lineTo(canvas.width, canvas.height - radius);
+  ctx.quadraticCurveTo(
+    canvas.width,
+    canvas.height,
+    canvas.width - radius,
+    canvas.height
+  );
+  ctx.lineTo(radius, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+  ctx.lineTo(0, radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.closePath();
 
-  ctx.fillStyle = TEXT_COLOR;
+  ctx.fillStyle = "rgba(0,0,0,0.85)";
+  ctx.fill();
+
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.stroke();
+
   ctx.font = font;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
+
+  ctx.shadowColor = "rgba(0,0,0,0.6)";
+  ctx.shadowBlur = 3;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+
+  ctx.fillStyle = TEXT_COLOR;
   wrapText(ctx, text, padding, padding, maxWidth, lineHeight, true);
 
+  ctx.shadowColor = "transparent";
+
   const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -130,6 +187,7 @@ function createTextPanel(text, width) {
 
   return mesh;
 }
+
 export function clearUI() {
   [uiGroup, viewerUIGroup].forEach((group) => {
     group.children.forEach((child) => {
@@ -145,27 +203,41 @@ export function createLandingPage(playerName) {
   if (playerName) {
     const welcomeText = `Selamat Datang, ${playerName}!`;
     const welcomeLabel = createTitleLabel(welcomeText, 3.5, 0.5);
-    welcomeLabel.position.set(0, 2.2, UI_DISTANCE);
+    welcomeLabel.position.set(0, 2.3, UI_DISTANCE);
     uiGroup.add(welcomeLabel);
   }
 
   const buttonWidth = 2.0;
   const buttonHeight = 0.2;
-  const spacing = 0.15;
+  const spacing = 0.12;
   const startY = 1.9;
 
-  const startButton = createButton("Mulai", "start", buttonWidth, buttonHeight);
-  startButton.position.set(0, startY, UI_DISTANCE);
-  uiGroup.add(startButton);
-
-  const quizButton = createButton(
-    "Uji Pemahaman",
-    "show_quiz",
+  const startButton = createButton(
+    "Ayo Mulai!",
+    "start",
     buttonWidth,
     buttonHeight
   );
-  quizButton.position.set(0, startY - (buttonHeight + spacing), UI_DISTANCE);
-  uiGroup.add(quizButton);
+  startButton.position.set(0, startY, UI_DISTANCE);
+  uiGroup.add(startButton);
+
+  // const quizButton = createButton(
+  //   "Uji Pemahaman",
+  //   "show_quiz",
+  //   buttonWidth,
+  //   buttonHeight
+  // );
+  // quizButton.position.set(0, startY - (buttonHeight + spacing), UI_DISTANCE);
+  // uiGroup.add(quizButton);
+
+  const reportButton = createButton(
+    "Laporan Belajar",
+    "show_quiz_report",
+    buttonWidth,
+    buttonHeight
+  );
+  reportButton.position.set(0, startY - (buttonHeight + spacing), UI_DISTANCE);
+  uiGroup.add(reportButton);
 
   const helpButton = createButton("Bantuan", "help", buttonWidth, buttonHeight);
   helpButton.position.set(
@@ -176,7 +248,7 @@ export function createLandingPage(playerName) {
   uiGroup.add(helpButton);
 
   const creditsButton = createButton(
-    "Kredit",
+    "Tentang Aplikasi",
     "show_credits",
     buttonWidth,
     buttonHeight
@@ -189,7 +261,7 @@ export function createLandingPage(playerName) {
   uiGroup.add(creditsButton);
 }
 
-export function createMenuPage() {
+export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const columns = 3;
   const spacingX = 1.5;
   const spacingY = 0.25;
@@ -209,7 +281,7 @@ export function createMenuPage() {
   titleCtx.textAlign = "center";
   titleCtx.textBaseline = "middle";
   titleCtx.fillText(
-    "Pilih Komponen",
+    "Pilih Materi",
     titleCanvas.width / 2,
     titleCanvas.height / 2
   );
@@ -230,16 +302,72 @@ export function createMenuPage() {
   components.forEach((comp, index) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
-    const button = createButton(comp.label, `select_${index}`, 1.3, 0.2);
+    const isUnlocked = comp.unlocked;
+    const buttonLabel = isUnlocked ? comp.label : "Terkunci";
+    const buttonColor = isUnlocked ? BG_COLOR : "#444444";
+    const button = createButton(
+      buttonLabel,
+      `select_${index}`,
+      1.3,
+      0.2,
+      buttonColor
+    );
+    if (!isUnlocked) {
+      button.userData.action = "locked";
+      button.userData.colors = null;
+    }
+
     button.position.set(startX + col * spacingX, startY - row * spacingY, 2.5);
     uiGroup.add(button);
   });
+
+  const backButton = createButton(
+    "Kembali ke Awal",
+    "back_to_landing",
+    1.8,
+    0.4
+  );
+  backButton.position.set(-1.0, 0.7, UI_DISTANCE);
+  uiGroup.add(backButton);
+
+  let quizButtonLabel, quizButtonAction, quizButtonColor;
+
+  if (!allComponentsUnlocked) {
+    quizButtonLabel = "Uji Pemahaman (Terkunci)";
+    quizButtonAction = "locked";
+    quizButtonColor = "#dc3545";
+  } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
+    quizButtonLabel = "Uji Pemahaman";
+    quizButtonAction = "show_quiz";
+    quizButtonColor = BG_COLOR;
+  } else {
+    quizButtonLabel = "Uji Pemahaman (Selesai)";
+    quizButtonAction = "show_quiz_report";
+    quizButtonColor = "#28a745";
+  }
+
+  const quizButton = createButton(
+    quizButtonLabel,
+    quizButtonAction,
+    1.8,
+    0.4,
+    quizButtonColor
+  );
+
+  if (!allComponentsUnlocked) {
+    quizButton.userData.colors = null;
+  }
+
+  quizButton.position.set(1.0, 0.7, UI_DISTANCE);
+  uiGroup.add(quizButton);
 }
 
-export function createViewerPage(component) {
-  const prevButton = createButton("<", "prev_component", 0.3, 0.3);
-  prevButton.position.set(-2.2, 0, 0);
-  viewerUIGroup.add(prevButton);
+export function createViewerPage(component, index) {
+  if (index > 0) {
+    const prevButton = createButton("<", "prev_component", 0.3, 0.3);
+    prevButton.position.set(-2.2, 0, 0);
+    viewerUIGroup.add(prevButton);
+  }
   const nextButton = createButton(">", "next_component", 0.3, 0.3);
   nextButton.position.set(2.2, 0, 0);
   viewerUIGroup.add(nextButton);
@@ -249,7 +377,7 @@ export function createViewerPage(component) {
   const panelYPosition = -0.6 - panelHeight / 2;
   descPanel.position.set(0, panelYPosition, 0);
   viewerUIGroup.add(descPanel);
-  const titleWidth = 1.5;
+  const titleWidth = 2;
   const titleHeight = 0.3;
   const titleLabel = createTitleLabel(component.label, titleWidth, titleHeight);
   const titleYPosition =
@@ -271,7 +399,7 @@ export function createViewerPage(component) {
   audioButton.position.set(buttonXPosition, audioYPosition, 0);
   viewerUIGroup.add(audioButton);
   const menuButton = createButton(
-    "Menu",
+    "Materi",
     "back_to_menu",
     buttonWidth,
     buttonHeight
@@ -287,20 +415,38 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   const resolution = getResolution();
   canvas.width = width * resolution;
   canvas.height = height * resolution;
-  ctx.fillStyle = color;
-  ctx.font = "bold 48px Arial";
+
+  const fontSize = Math.floor(height * resolution * 0.6);
+  ctx.font = `bold ${fontSize}px "Arial Rounded MT Bold", Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+
+  ctx.shadowColor = "rgba(0,0,0,0.6)";
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
+  ctx.fillStyle = color;
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-  // ctx.textAlign = "left";
-  // ctx.textBaseline = "middle";
-  // ctx.fillText(text, 10, canvas.height / 2);
+
+  ctx.shadowColor = "transparent";
+
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.lineWidth = 3;
+  const textWidth = ctx.measureText(text).width;
+  ctx.beginPath();
+  ctx.moveTo((canvas.width - textWidth) / 2, canvas.height * 0.8);
+  ctx.lineTo((canvas.width + textWidth) / 2, canvas.height * 0.8);
+  ctx.stroke();
+
   const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
   });
   const geometry = new THREE.PlaneGeometry(width, height);
+
   return new THREE.Mesh(geometry, material);
 }
 
@@ -319,8 +465,12 @@ export function updateViewerUIPosition() {
 }
 
 export function createHelpPanel() {
+  const helpLabel = createTitleLabel("Bantuan", 3, 0.5);
+  helpLabel.position.set(0, 2.2, UI_DISTANCE);
+  uiGroup.add(helpLabel);
+
   const helpText =
-    "Selamat datang! Jika pakai komputer, klik tombol dengan mouse dan geser untuk memutar model. Jika pakai VR, arahkan laser dan tekan tombol pada controller untuk memilih dan memutar model.";
+    "Pada mode browser biasa kamu dapat langsung memulai pembelajaran, sedangkan mode VR dapat diakses melalui tombol di pojok kanan atas. Kemudian, selesaikan setiap materi secara berurutan untuk membuka menu uji pemahaman.";
   const helpPanel = createTextPanel(helpText, 4);
   const panelHeight = helpPanel.geometry.parameters.height;
   helpPanel.position.set(0, 1.6, UI_DISTANCE);
@@ -338,24 +488,20 @@ export function createCompletionScreen(playerName) {
     uiGroup.add(titleLabel);
   }
 
-  const messageText = "Anda telah melihat semua komponen.";
+  const messageText =
+    "Semua materi sudah berhasil kamu pelajari, sekarang ayo uji pemahamanmu dengan mengerjakan Kuis pada menu Uji Pemahaman dan tunjukkan seberapa jauh kamu sudah menguasai materi ini!";
   const messagePanel = createTextPanel(messageText, 3.5);
   messagePanel.position.set(0, 1.5, 2.5);
   uiGroup.add(messagePanel);
 
-  const quizButton = createButton(
-    "Lanjut ke Uji Pemahaman",
-    "show_quiz",
-    2.5,
-    0.5
-  );
+  const quizButton = createButton("Lihat Materi", "back_to_menu", 2.5, 0.5);
   quizButton.position.set(0, 0.9, 2.5);
   uiGroup.add(quizButton);
 }
 export function createCreditsScreen() {
   const creditsText =
-    "Aplikasi VR ini dibuat dengan Three.js dan WebXR untuk melihat komponen komputer secara 3D.";
-  const creditLabel = createTitleLabel("Kredit", 3, 0.5);
+    "Aplikasi ini dikembangkan menggunakan Three.js dan WebXR untuk menghadirkan pengalaman VR interaktif langsung di browser. Teknologi ini menunjukkan potensi besar web dalam pengembangan visualisasi 3D yang imersif dan mudah diakses.";
+  const creditLabel = createTitleLabel("Tentang Aplikasi", 3, 0.5);
   creditLabel.position.set(0, 2.2, UI_DISTANCE);
   uiGroup.add(creditLabel);
 
@@ -406,11 +552,11 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   titleLabel.position.set(0, 2.4, UI_DISTANCE);
   uiGroup.add(titleLabel);
 
-  const explanationText = `Soal:\n${
+  const explanationText = `Soal: ${
     currentQuestion.question
-  }\n\nJawaban yang Benar:\n${
+  }, dan jawaban yang benar adalah ${
     currentQuestion.answers[currentQuestion.correctAnswerIndex]
-  }`;
+  }.`;
 
   const explanationPanel = createTextPanel(explanationText, 4.5);
   const panelHeight = explanationPanel.geometry.parameters.height;
@@ -424,32 +570,57 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   uiGroup.add(backButton);
 }
 
-export function createQuizReportScreen(score) {
-  const totalQuestions = quizData.length;
-  const finalScore = (score / totalQuestions) * 100;
+export function createQuizReportScreen(score, hasAttempted) {
+  if (!hasAttempted) {
+    const titleText = "Belum Ada Laporan";
+    const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
+    titleLabel.position.set(0, 2.1, UI_DISTANCE);
+    uiGroup.add(titleLabel);
 
-  const titleText = "Hasil Kuis Selesai";
-  const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
-  titleLabel.position.set(0, 2.4, UI_DISTANCE);
-  uiGroup.add(titleLabel);
+    const reportText =
+      "Kamu harus menyelesaikan materi dan mengerjakan Uji Pemahaman terlebih dahulu untuk melihat laporan nilai.";
+    const reportPanel = createTextPanel(reportText, 4.5);
+    const panelHeight = reportPanel.geometry.parameters.height;
+    reportPanel.position.set(0, 1.5, UI_DISTANCE);
+    uiGroup.add(reportPanel);
 
-  const reportText = `Anda menjawab ${score} dari ${totalQuestions} soal dengan benar.\n\nNilai Akhir Anda:\n${finalScore.toFixed(
-    0
-  )}`;
+    const backButton = createButton(
+      "Kembali ke Awal",
+      "back_to_landing",
+      2.5,
+      0.5
+    );
+    const buttonHeight = backButton.geometry.parameters.height;
+    const buttonY = 1.5 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+    backButton.position.set(0, buttonY, UI_DISTANCE);
+    uiGroup.add(backButton);
+  } else {
+    const totalQuestions = quizData.length;
+    const finalScore = (score / totalQuestions) * 100;
 
-  const reportPanel = createTextPanel(reportText, 4.5);
-  const panelHeight = reportPanel.geometry.parameters.height;
-  reportPanel.position.set(0, 1.6, UI_DISTANCE);
-  uiGroup.add(reportPanel);
+    const titleText = "Laporan Belajar";
+    const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
+    titleLabel.position.set(0, 2.4, UI_DISTANCE);
+    uiGroup.add(titleLabel);
 
-  const backButton = createButton(
-    "Selesai & Kembali ke Awal",
-    "back_to_landing",
-    2.5,
-    0.5
-  );
-  const buttonHeight = backButton.geometry.parameters.height;
-  const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
-  backButton.position.set(0, buttonY, UI_DISTANCE);
-  uiGroup.add(backButton);
+    const reportText = `Uji Pemahaman selesai! kamu telah menuntaskan semua materi dengan menjawab ${score} dari ${totalQuestions} soal benar dan meraih nilai akhir ${finalScore.toFixed(
+      0
+    )}/100.`;
+
+    const reportPanel = createTextPanel(reportText, 4.5);
+    const panelHeight = reportPanel.geometry.parameters.height;
+    reportPanel.position.set(0, 1.6, UI_DISTANCE);
+    uiGroup.add(reportPanel);
+
+    const backButton = createButton(
+      "Selesai & Kembali ke Awal",
+      "back_to_landing",
+      2.5,
+      0.5
+    );
+    const buttonHeight = backButton.geometry.parameters.height;
+    const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+    backButton.position.set(0, buttonY, UI_DISTANCE);
+    uiGroup.add(backButton);
+  }
 }

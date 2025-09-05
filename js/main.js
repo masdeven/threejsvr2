@@ -20,7 +20,7 @@ import {
   unloadComponentModel,
   updateModelRotation,
 } from "./model-loader.js";
-import { setupInteraction } from "./interaction-manager.js";
+import { setupInteraction, handleVRHover } from "./interaction-manager.js";
 import { initVR, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
 import { quizData } from "./quiz-data.js";
@@ -31,6 +31,10 @@ let playerName = "";
 let activeDescriptionPanel = null;
 let currentQuestionIndex = 0;
 let quizScore = 0;
+let hasAttemptedQuiz = false;
+let highestComponentUnlocked = 0;
+let isChangingComponent = false;
+const CHANGE_DEBOUNCE_TIME = 500;
 
 const AppState = {
   LANDING: "LANDING",
@@ -54,7 +58,8 @@ function refreshUI() {
       createLandingPage(playerName);
       break;
     case AppState.MENU:
-      createMenuPage();
+      const allUnlocked = highestComponentUnlocked >= components.length - 1;
+      createMenuPage(allUnlocked, hasAttemptedQuiz);
       break;
     case AppState.VIEWER:
       reloadViewer();
@@ -69,7 +74,7 @@ function refreshUI() {
       createQuizResultScreen(wasAnswerCorrect, currentQuestionIndex);
       break;
     case AppState.QUIZ_REPORT:
-      createQuizReportScreen(quizScore);
+      createQuizReportScreen(quizScore, hasAttemptedQuiz);
       break;
     case AppState.COMPLETION:
       createCompletionScreen(playerName);
@@ -186,7 +191,7 @@ function reloadViewer() {
   unloadComponentModel();
   if (currentComponentIndex < 0) currentComponentIndex = components.length - 1;
   if (currentComponentIndex >= components.length) currentComponentIndex = 0;
-  createViewerPage(components[currentComponentIndex]);
+  createViewerPage(components[currentComponentIndex], currentComponentIndex);
   loadComponentModel(components[currentComponentIndex].modelFile);
   controls.enabled = true;
   controls.target.set(0, 1, 0);
@@ -244,6 +249,9 @@ function handleInteraction(action) {
       quizScore = 0;
       changeState(AppState.QUIZ);
       break;
+    case "show_quiz_report":
+      changeState(AppState.QUIZ_REPORT);
+      break;
     case "answer_correct":
       wasAnswerCorrect = true;
       quizScore++;
@@ -256,6 +264,7 @@ function handleInteraction(action) {
     case "next_question":
       currentQuestionIndex++;
       if (currentQuestionIndex >= quizData.length) {
+        hasAttemptedQuiz = true;
         changeState(AppState.QUIZ_REPORT);
       } else {
         changeState(AppState.QUIZ);
@@ -265,16 +274,36 @@ function handleInteraction(action) {
       changeState(AppState.CREDITS);
       break;
     case "next_component":
+      if (isChangingComponent) return;
+      isChangingComponent = true;
+      const nextIndex = currentComponentIndex + 1;
+      if (nextIndex < components.length) {
+        components[nextIndex].unlocked = true;
+        if (nextIndex > highestComponentUnlocked) {
+          highestComponentUnlocked = nextIndex;
+        }
+      }
+
       if (currentComponentIndex >= components.length - 1) {
         changeState(AppState.COMPLETION);
+        isChangingComponent = false;
       } else {
         currentComponentIndex++;
         reloadViewer();
+        setTimeout(() => {
+          isChangingComponent = false;
+        }, CHANGE_DEBOUNCE_TIME);
       }
       break;
     case "prev_component":
+      if (isChangingComponent) return;
+      isChangingComponent = true;
+
       currentComponentIndex--;
       reloadViewer();
+      setTimeout(() => {
+        isChangingComponent = false;
+      }, CHANGE_DEBOUNCE_TIME);
       break;
     case "play_audio":
       if (currentComponentIndex > -1) {
@@ -300,6 +329,8 @@ function animate() {
 function render() {
   if (!isVRMode()) {
     controls.update();
+  } else {
+    handleVRHover();
   }
   if (currentState === AppState.VIEWER || currentState === AppState.HELP) {
     updateViewerUIPosition();

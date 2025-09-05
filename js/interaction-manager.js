@@ -89,12 +89,31 @@ function redrawButton(button, color) {
   const ctx = data.canvasContext;
   const canvas = ctx.canvas;
 
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const radius = 15;
   ctx.fillStyle = color;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.moveTo(radius, 0);
+  ctx.lineTo(canvas.width - radius, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+  ctx.lineTo(canvas.width, canvas.height - radius);
+  ctx.quadraticCurveTo(
+    canvas.width,
+    canvas.height,
+    canvas.width - radius,
+    canvas.height
+  );
+  ctx.lineTo(radius, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+  ctx.lineTo(0, radius);
+  ctx.quadraticCurveTo(0, 0, radius, 0);
+  ctx.closePath();
+  ctx.fill();
 
   ctx.strokeStyle = "#FFFFFF";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(2.5, 2.5, canvas.width - 5, canvas.height - 5);
+  ctx.lineWidth = 4;
+  ctx.stroke();
 
   ctx.fillStyle = "#FFFFFF";
   ctx.font = FONT;
@@ -107,7 +126,10 @@ function redrawButton(button, color) {
 
 function handleHover(intersectedObject) {
   if (lastIntersectedButton && lastIntersectedButton !== intersectedObject) {
-    if (lastIntersectedButton.userData.isButton) {
+    if (
+      lastIntersectedButton.userData.isButton &&
+      lastIntersectedButton.userData.colors
+    ) {
       redrawButton(
         lastIntersectedButton,
         lastIntersectedButton.userData.colors.default
@@ -115,18 +137,18 @@ function handleHover(intersectedObject) {
     }
   }
 
-  if (intersectedObject && intersectedObject.userData.isButton) {
-    if (intersectedObject !== lastIntersectedButton) {
+  if (intersectedObject && intersectedObject !== lastIntersectedButton) {
+    if (
+      intersectedObject.userData.isButton &&
+      intersectedObject.userData.colors
+    ) {
       redrawButton(intersectedObject, intersectedObject.userData.colors.hover);
-      lastIntersectedButton = intersectedObject;
     }
-  } else {
-    lastIntersectedButton = null;
   }
+  lastIntersectedButton = intersectedObject;
 }
 
 export function setupInteraction(callback) {
-  // ... (sisa file tidak berubah) ...
   interactionCallback = callback;
   const domElement = renderer.domElement;
   domElement.addEventListener("pointermove", (event) => {
@@ -169,4 +191,19 @@ export function setupInteraction(callback) {
       }
     });
   });
+}
+export function handleVRHover() {
+  const controllers = getVRControllers();
+  let intersectedInFrame = null;
+
+  // Cek kedua controller, ambil yang pertama kali berpotongan dengan objek
+  for (const controller of controllers) {
+    const intersectedObject = getVRIntersectedObject(controller);
+    if (intersectedObject) {
+      intersectedInFrame = intersectedObject;
+      break; // Hentikan jika sudah menemukan objek
+    }
+  }
+
+  handleHover(intersectedInFrame);
 }

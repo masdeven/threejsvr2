@@ -23,29 +23,38 @@
       </div>
     </div>
 
+    <div class="rotate-overlay">
+      <p>
+        Putar perangkat Anda ke mode <b>landscape</b> untuk pengalaman terbaik
+        🚀
+      </p>
+    </div>
+
     <div id="welcome-overlay" class="screen-overlay hidden">
-      <div class="content-box">
-        <h1>Aplikasi Viewer Komponen PC</h1>
-        <p>
-          Jelajahi berbagai komponen perangkat keras komputer dalam visualisasi
-          3D yang interaktif. Aplikasi ini ditujukan untuk keperluan edukasi.
-        </p>
-        <button id="welcome-next-button">Selanjutnya</button>
-      </div>
+      <h1>KomputerKu 3D</h1>
+      <p>
+        Jelajahi berbagai komponen perangkat keras komputer dalam visualisasi 3D
+        yang interaktif. Aplikasi ini ditujukan untuk keperluan edukasi.
+      </p>
+      <button id="welcome-next-button">Yuk Mulai Sekarang</button>
     </div>
 
     <div id="name-input-overlay" class="screen-overlay hidden">
-      <div class="content-box">
-        <h2>Siapa nama kamu?*</h2>
+      <!-- <h2>Siapa nama kamu?*</h2> -->
+      <div class="input-container">
         <input
           type="text"
           id="player-name-input"
           maxlength="15"
           autocomplete="off"
+          required
         />
-        <button id="continue-button">Lanjutkan</button>
+        <label for="player-name-input" class="label">Siapa nama kamu?*</label>
+        <div class="underline"></div>
       </div>
+      <button id="continue-button">OK</button>
     </div>
+
     <div id="container"></div>
     <script type="module" src="js/main.js"></script>
   </body>

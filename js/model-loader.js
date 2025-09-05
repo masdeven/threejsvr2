@@ -19,10 +19,15 @@ loader.setKTX2Loader(ktx2Loader);
 let currentModel = null;
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
+let activeLoad = null;
 
 export function loadComponentModel(url) {
+  if (activeLoad) {
+    activeLoad.cancel();
+  }
+
   unloadComponentModel();
-  loader.load(
+  activeLoad = loader.load(
     url,
     (gltf) => {
       currentModel = gltf.scene;
@@ -42,10 +47,14 @@ export function loadComponentModel(url) {
       currentModel.position.y -= newMinY;
 
       scene.add(currentModel);
+      activeLoad = null;
     },
     undefined,
     (error) => {
-      console.error("An error happened while loading the model:", error);
+      if (error.type !== "abort") {
+        console.error("An error happened while loading the model:", error);
+      }
+      activeLoad = null;
     }
   );
 }
@@ -53,6 +62,20 @@ export function loadComponentModel(url) {
 export function unloadComponentModel() {
   if (currentModel) {
     scene.remove(currentModel);
+    currentModel.traverse((child) => {
+      if (child.isMesh) {
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach((material) => material.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      }
+    });
     currentModel = null;
   }
 }
