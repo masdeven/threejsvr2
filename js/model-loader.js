@@ -1,25 +1,23 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { scene, renderer } from "./scene-setup.js";
 import { loadingManager } from "./loading-manager.js";
-
-const ktx2Loader = new KTX2Loader()
-  .setTranscoderPath("https://unpkg.com/three@0.162.0/examples/jsm/libs/basis/")
-  .detectSupport(renderer);
 
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("assets/draco/");
 
 export const loader = new GLTFLoader(loadingManager);
 loader.setDRACOLoader(dracoLoader);
-loader.setKTX2Loader(ktx2Loader);
+
+export function setupKTX2Loader(ktx2Loader) {
+  loader.setKTX2Loader(ktx2Loader);
+}
 
 let currentModel = null;
 let isDragging = false;
-let previousMousePosition = { x: 0, y: 0 };
 let activeLoad = null;
+const TABLE_HEIGHT = 0.8;
 
 export function loadComponentModel(url) {
   if (activeLoad) {
@@ -39,12 +37,13 @@ export function loadComponentModel(url) {
       currentModel.position.sub(center);
 
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scaleFactor = 2 / maxDim;
+      const scaleFactor = 0.8 / maxDim;
       currentModel.scale.setScalar(scaleFactor);
 
       const newBox = new THREE.Box3().setFromObject(currentModel);
       const newMinY = newBox.min.y;
-      currentModel.position.y -= newMinY;
+      // currentModel.position.y -= newMinY;
+      currentModel.position.y = TABLE_HEIGHT - newMinY;
 
       scene.add(currentModel);
       activeLoad = null;

@@ -6,24 +6,8 @@ import { renderer, scene } from "./scene-setup.js";
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 
-export function initVR(onSessionStartCallback) {
-  const vrButton = VRButton.createButton(renderer);
-  document.body.appendChild(vrButton);
-
-  vrButton.style.position = "absolute";
-  vrButton.style.top = "20px";
-  vrButton.style.bottom = "auto";
-  vrButton.style.left = "100%";
-  vrButton.style.margin = "0";
-  vrButton.style.padding = "8px 12px";
-  vrButton.style.boxSizing = "border-box";
-  vrButton.style.zIndex = "999";
-
+export function setupVR() {
   renderer.xr.enabled = true;
-
-  if (onSessionStartCallback) {
-    renderer.xr.addEventListener("sessionstart", onSessionStartCallback);
-  }
 
   controller1 = renderer.xr.getController(0);
   scene.add(controller1);
@@ -49,6 +33,32 @@ export function initVR(onSessionStartCallback) {
   line.scale.z = 5;
   controller1.add(line.clone());
   controller2.add(line.clone());
+}
+
+export async function startVRSession(onSessionEndCallback) {
+  if (!navigator.xr) {
+    alert("Perangkat atau browser Anda tidak mendukung WebXR.");
+    return;
+  }
+
+  try {
+    const session = await navigator.xr.requestSession("immersive-vr", {
+      optionalFeatures: [
+        "local-floor",
+        "bounded-floor",
+        "hand-tracking",
+        "layers",
+      ],
+    });
+    renderer.xr.setSession(session);
+
+    if (onSessionEndCallback) {
+      session.addEventListener("end", onSessionEndCallback);
+    }
+  } catch (e) {
+    console.error("Gagal memulai sesi VR:", e);
+    alert("Gagal memulai sesi VR. Pastikan headset Anda terhubung.");
+  }
 }
 
 export function isVRMode() {

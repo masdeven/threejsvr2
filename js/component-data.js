@@ -6,6 +6,13 @@ export const components = [
     description:
       "Monitor adalah perangkat output yang menampilkan gambar, teks, dan video dari komputer.",
     unlocked: true,
+    quiz: [
+      {
+        question: "Monitor berfungsi sebagai perangkat input atau output?",
+        answers: ["Input", "Output"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Keyboard",
@@ -14,6 +21,13 @@ export const components = [
     description:
       "Keyboard adalah perangkat input utama yang digunakan untuk memasukkan huruf, angka, dan perintah ke dalam komputer.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Fungsi utama keyboard adalah untuk...?",
+        answers: ["Menampilkan Gambar", "Memasukkan Teks"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Mouse",
@@ -22,6 +36,13 @@ export const components = [
     description:
       "Mouse adalah perangkat input yang digunakan untuk menggerakkan kursor dan melakukan klik pada layar komputer.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Gerakan kursor di layar dikendalikan oleh...?",
+        answers: ["Mouse", "Speaker"],
+        correctAnswerIndex: 0,
+      },
+    ],
   },
   {
     label: "Speaker",
@@ -30,6 +51,13 @@ export const components = [
     description:
       "Speaker adalah perangkat output audio yang menghasilkan suara dari komputer, seperti musik, suara sistem, dan efek multimedia.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Speaker termasuk perangkat...?",
+        answers: ["Input", "Output"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Casing",
@@ -38,6 +66,13 @@ export const components = [
     description:
       "Casing adalah wadah yang melindungi komponen internal komputer serta membantu pengaturan sirkulasi udara.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Fungsi utama casing adalah...?",
+        answers: ["Menghubungkan komponen", "Melindungi komponen"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Motherboard",
@@ -46,6 +81,13 @@ export const components = [
     description:
       "Motherboard adalah papan sirkuit utama yang menghubungkan dan mengatur komunikasi antar komponen komputer.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Motherboard berfungsi untuk...?",
+        answers: ["Menghubungkan komponen komputer", "Menyimpan data"],
+        correctAnswerIndex: 0,
+      },
+    ],
   },
   {
     label: "Processor (CPU)",
@@ -54,6 +96,13 @@ export const components = [
     description:
       "CPU (Central Processing Unit) adalah otak komputer yang bertanggung jawab menjalankan instruksi dan memproses data.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Komponen manakah yang disebut otak komputer?",
+        answers: ["GPU", "CPU"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Fan",
@@ -62,6 +111,13 @@ export const components = [
     description:
       "Fan adalah kipas pendingin yang menjaga suhu komponen komputer tetap stabil agar tidak mengalami overheat.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Fungsi utama fan adalah...?",
+        answers: ["Pendingin komponen", "Menyimpan data"],
+        correctAnswerIndex: 0,
+      },
+    ],
   },
   {
     label: "RAM",
@@ -70,6 +126,13 @@ export const components = [
     description:
       "RAM (Random Access Memory) adalah memori sementara yang digunakan untuk menyimpan data yang sedang aktif diproses.",
     unlocked: false,
+    quiz: [
+      {
+        question: "RAM digunakan untuk menyimpan data secara...?",
+        answers: ["Sementara", "Permanen"],
+        correctAnswerIndex: 0,
+      },
+    ],
   },
   {
     label: "Graphics Card (GPU)",
@@ -78,6 +141,13 @@ export const components = [
     description:
       "GPU (Graphics Processing Unit) dirancang khusus untuk mempercepat pemrosesan grafis dan visualisasi.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Komponen yang mempercepat pemrosesan grafis adalah...?",
+        answers: ["CPU", "GPU"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Power Supply (PSU)",
@@ -86,6 +156,13 @@ export const components = [
     description:
       "PSU (Power Supply Unit) mengubah arus listrik dari sumber daya menjadi arus yang sesuai untuk komponen komputer.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Fungsi utama PSU adalah...?",
+        answers: ["Mengolah data", "Menyuplai daya listrik"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
   {
     label: "Storage",
@@ -94,5 +171,12 @@ export const components = [
     description:
       "Storage adalah media penyimpanan data jangka panjang pada komputer, seperti HDD atau SSD.",
     unlocked: false,
+    quiz: [
+      {
+        question: "Manakah yang termasuk media penyimpanan jangka panjang?",
+        answers: ["RAM", "SSD/HDD"],
+        correctAnswerIndex: 1,
+      },
+    ],
   },
 ];

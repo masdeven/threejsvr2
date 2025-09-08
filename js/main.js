@@ -7,12 +7,16 @@ import {
   createViewerPage,
   clearUI,
   updateViewerUIPosition,
+  updateUIGroupPosition,
   createHelpPanel,
   createQuizScreen,
+  createMiniQuizPage,
   createQuizResultScreen,
+  createMiniQuizResultPage,
   createQuizReportScreen,
   createCompletionScreen,
   createCreditsScreen,
+  createModeSelectionPage,
 } from "./ui-creator.js";
 import {
   loader,
@@ -21,14 +25,13 @@ import {
   updateModelRotation,
 } from "./model-loader.js";
 import { setupInteraction, handleVRHover } from "./interaction-manager.js";
-import { initVR, isVRMode } from "./vr-manager.js";
+import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
 import { quizData } from "./quiz-data.js";
 
 let audioListener, sound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
 let playerName = "";
-let activeDescriptionPanel = null;
 let currentQuestionIndex = 0;
 let quizScore = 0;
 let hasAttemptedQuiz = false;
@@ -37,10 +40,13 @@ let isChangingComponent = false;
 const CHANGE_DEBOUNCE_TIME = 500;
 
 const AppState = {
+  MODE_SELECTION: "MODE_SELECTION",
   LANDING: "LANDING",
   MENU: "MENU",
   VIEWER: "VIEWER",
   HELP: "HELP",
+  MINI_QUIZ: "MINI_QUIZ",
+  MINI_QUIZ_RESULT: "MINI_QUIZ_RESULT",
   QUIZ: "QUIZ",
   QUIZ_RESULT: "QUIZ_RESULT",
   QUIZ_REPORT: "QUIZ_REPORT",
@@ -48,12 +54,16 @@ const AppState = {
   CREDITS: "CREDITS",
 };
 let wasAnswerCorrect = false;
+let wasMiniQuizCorrect = false;
 let currentState = null;
 let currentComponentIndex = -1;
 
 function refreshUI() {
   clearUI();
   switch (currentState) {
+    case AppState.MODE_SELECTION:
+      createModeSelectionPage();
+      break;
     case AppState.LANDING:
       createLandingPage(playerName);
       break;
@@ -63,6 +73,12 @@ function refreshUI() {
       break;
     case AppState.VIEWER:
       reloadViewer();
+      break;
+    case AppState.MINI_QUIZ:
+      createMiniQuizPage(components[currentComponentIndex]);
+      break;
+    case AppState.MINI_QUIZ_RESULT:
+      createMiniQuizResultPage(wasMiniQuizCorrect);
       break;
     case AppState.HELP:
       createHelpPanel();
@@ -90,7 +106,13 @@ function init() {
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
 
-  initVR(refreshUI);
+  setupVR();
+  renderer.xr.addEventListener("sessionstart", () => {
+    refreshUI();
+  });
+  renderer.xr.addEventListener("sessionend", () => {
+    changeState(AppState.MENU);
+  });
   setupInteraction(handleInteraction);
 
   setupHTMLEvents();
@@ -141,10 +163,10 @@ function setupHTMLEvents() {
 
     const vrButton = document.getElementById("VRButton");
     if (vrButton) {
-      vrButton.classList.add("visible");
+      vrButton.remove();
     }
 
-    changeState(AppState.LANDING);
+    changeState(AppState.MODE_SELECTION);
   });
 }
 function showWelcomeScreen() {
@@ -206,6 +228,7 @@ function changeState(newState) {
   refreshUI();
 
   switch (newState) {
+    case AppState.MODE_SELECTION:
     case AppState.LANDING:
     case AppState.MENU:
     case AppState.QUIZ:
@@ -213,6 +236,16 @@ function changeState(newState) {
     case AppState.QUIZ_REPORT:
     case AppState.COMPLETION:
     case AppState.CREDITS:
+      controls.enabled = false;
+      camera.position.set(0, 1.6, 5);
+      controls.target.set(0, 1.6, 0);
+      break;
+    case AppState.MINI_QUIZ:
+      controls.enabled = false;
+      camera.position.set(0, 1.6, 5);
+      controls.target.set(0, 1.6, 0);
+      break;
+    case AppState.MINI_QUIZ_RESULT:
       controls.enabled = false;
       camera.position.set(0, 1.6, 5);
       controls.target.set(0, 1.6, 0);
@@ -229,6 +262,16 @@ function changeState(newState) {
 
 function handleInteraction(action) {
   switch (action) {
+    case "start_browser":
+      changeState(AppState.LANDING);
+      break;
+    case "start_vr":
+      startVRSession(() => {
+        changeState(AppState.MENU);
+      }).then(() => {
+        changeState(AppState.LANDING);
+      });
+      break;
     case "start":
       changeState(AppState.MENU);
       break;
@@ -275,24 +318,59 @@ function handleInteraction(action) {
       break;
     case "next_component":
       if (isChangingComponent) return;
-      isChangingComponent = true;
+
       const nextIndex = currentComponentIndex + 1;
-      if (nextIndex < components.length) {
-        components[nextIndex].unlocked = true;
-        if (nextIndex > highestComponentUnlocked) {
-          highestComponentUnlocked = nextIndex;
-        }
+
+      if (nextIndex >= components.length) {
+        changeState(AppState.COMPLETION);
+        return;
       }
 
-      if (currentComponentIndex >= components.length - 1) {
-        changeState(AppState.COMPLETION);
-        isChangingComponent = false;
-      } else {
+      if (components[nextIndex].unlocked) {
+        isChangingComponent = true;
         currentComponentIndex++;
         reloadViewer();
         setTimeout(() => {
           isChangingComponent = false;
         }, CHANGE_DEBOUNCE_TIME);
+      } else {
+        if (
+          components[currentComponentIndex].quiz &&
+          components[currentComponentIndex].quiz.length > 0
+        ) {
+          changeState(AppState.MINI_QUIZ);
+        }
+      }
+      break;
+    case "mini_quiz_correct":
+      wasMiniQuizCorrect = true;
+      changeState(AppState.MINI_QUIZ_RESULT);
+      break;
+    case "mini_quiz_incorrect":
+      wasMiniQuizCorrect = false;
+      changeState(AppState.MINI_QUIZ_RESULT);
+      break;
+    case "continue_after_mini_quiz":
+      if (wasMiniQuizCorrect) {
+        const unlockedIndex = currentComponentIndex + 1;
+        if (unlockedIndex < components.length) {
+          components[unlockedIndex].unlocked = true;
+          if (unlockedIndex > highestComponentUnlocked) {
+            highestComponentUnlocked = unlockedIndex;
+          }
+        }
+        if (currentComponentIndex >= components.length - 1) {
+          changeState(AppState.COMPLETION);
+        } else {
+          isChangingComponent = true;
+          currentComponentIndex++;
+          changeState(AppState.VIEWER);
+          setTimeout(() => {
+            isChangingComponent = false;
+          }, CHANGE_DEBOUNCE_TIME);
+        }
+      } else {
+        changeState(AppState.VIEWER);
       }
       break;
     case "prev_component":
@@ -327,17 +405,23 @@ function animate() {
 }
 
 function render() {
-  if (!isVRMode()) {
-    controls.update();
-  } else {
+  if (isVRMode()) {
     handleVRHover();
-  }
-  if (currentState === AppState.VIEWER || currentState === AppState.HELP) {
+    // Dalam mode VR, perbarui posisi kedua grup UI agar mengikuti headset
+    updateUIGroupPosition();
     updateViewerUIPosition();
+  } else {
+    controls.update();
+    // Dalam mode non-VR, hanya UI viewer yang perlu mengikuti pergerakan kamera
+    if (currentState === AppState.VIEWER || currentState === AppState.HELP) {
+      updateViewerUIPosition();
+    }
   }
+
   if (currentState === AppState.VIEWER) {
     updateModelRotation();
   }
+
   renderer.render(scene, camera);
 }
 
