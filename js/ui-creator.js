@@ -461,8 +461,7 @@ export function createHelpPanel() {
   helpLabel.position.set(0, 2.2, 0);
   uiGroup.add(helpLabel);
 
-  const helpText =
-    "Pada mode browser biasa kamu dapat langsung memulai pembelajaran, sedangkan mode VR dapat diakses melalui tombol di pojok kanan atas. Kemudian, selesaikan setiap materi secara berurutan untuk membuka menu uji pemahaman.";
+  const helpText = "Deskripsi bantuan";
   const helpPanel = createTextPanel(helpText, 4);
   const panelHeight = helpPanel.geometry.parameters.height;
   helpPanel.position.set(0, 1.6, 0);
