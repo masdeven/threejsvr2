@@ -11,8 +11,10 @@ scene.add(uiGroup);
 export const viewerUIGroup = new THREE.Group();
 scene.add(viewerUIGroup);
 
-const BG_COLOR = "#222222";
+// Ganti konstanta warna di bagian atas file
+const BG_COLOR = "#2D3748"; // Abu-abu kebiruan yang modern
 const TEXT_COLOR = "#FFFFFF";
+const ACCENT_COLOR = "#3182CE"; // Biru sebagai warna aksen
 const UI_DISTANCE = 2.5;
 
 function getResolution() {
@@ -48,58 +50,80 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
   return { pixelHeight: totalLines * lineHeight, lineCount: totalLines };
 }
 
+// ui-creator.js
+
+// ui-creator.js
+
 function createButton(
   text,
   action,
   width = 1,
   height = 0.25,
-  bgColor = BG_COLOR
+  bgColor = BG_COLOR,
+  shape = "roundedRectangle"
 ) {
+  // ... (kode canvas tetap sama)
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  const resolution = getResolution();
+  const buttonResolution = getResolution() * 2;
 
-  canvas.width = width * resolution;
-  canvas.height = height * resolution;
-
-  const radius = 15;
-  ctx.beginPath();
-  ctx.moveTo(radius, 0);
-  ctx.lineTo(canvas.width - radius, 0);
-  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
-  ctx.lineTo(canvas.width, canvas.height - radius);
-  ctx.quadraticCurveTo(
-    canvas.width,
-    canvas.height,
-    canvas.width - radius,
-    canvas.height
-  );
-  ctx.lineTo(radius, canvas.height);
-  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
-  ctx.lineTo(0, radius);
-  ctx.quadraticCurveTo(0, 0, radius, 0);
-  ctx.closePath();
+  canvas.width = width * buttonResolution;
+  canvas.height = height * buttonResolution;
 
   ctx.fillStyle = bgColor;
-  ctx.fill();
 
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = "#FFFFFF";
-  ctx.stroke();
+  if (shape === "circle") {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(canvas.width, canvas.height) / 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+    ctx.fill();
+  } else {
+    const radius = 20 * (buttonResolution / getResolution());
+    ctx.beginPath();
+    ctx.moveTo(radius, 0);
+    ctx.lineTo(canvas.width - radius, 0);
+    ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+    ctx.lineTo(canvas.width, canvas.height - radius);
+    ctx.quadraticCurveTo(
+      canvas.width,
+      canvas.height,
+      canvas.width - radius,
+      canvas.height
+    );
+    ctx.lineTo(radius, canvas.height);
+    ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+    ctx.lineTo(0, radius);
+    ctx.quadraticCurveTo(0, 0, radius, 0);
+    ctx.closePath();
+    ctx.fill();
+  }
 
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = FONT;
+  ctx.fillStyle = TEXT_COLOR;
+  const baseFontSize = parseInt(FONT.split(" ")[1]);
+  const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
+  const scaledFontSize =
+    baseFontSize *
+    (buttonResolution / getResolution()) *
+    (shape === "circle" ? 1.2 : 1.0);
+  ctx.font = `${fontStyle} ${scaledFontSize}px Arial`;
+
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = 16;
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
-    opacity: 0.95,
+    alphaTest: 0.5,
+    // PERBAIKAN: Mencegah tombol "menulis" ke depth buffer.
+    depthWrite: false,
   });
+
   const geometry = new THREE.PlaneGeometry(width, height);
   const mesh = new THREE.Mesh(geometry, material);
 
@@ -107,13 +131,12 @@ function createButton(
     isButton: true,
     action: action,
     text: text,
-    colors: { default: bgColor, hover: "#007BFF" },
+    colors: { default: bgColor, hover: "#4A5568" },
     canvasContext: ctx,
   };
 
   return mesh;
 }
-
 function createTextPanel(text, width) {
   const MAX_PANEL_HEIGHT_3D = 0.5;
   const canvas = document.createElement("canvas");
@@ -199,141 +222,244 @@ export function clearUI() {
   });
 }
 
+// ui-creator.js
+
+function createUIPanel(
+  width,
+  height,
+  radius,
+  color = "#1A202C",
+  opacity = 0.8
+) {
+  // ... (kode canvas tetap sama)
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const panelResolution = getResolution();
+
+  canvas.width = width * panelResolution;
+  canvas.height = height * panelResolution;
+
+  const r = radius * panelResolution;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(canvas.width - r, 0);
+  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, r);
+  ctx.lineTo(canvas.width, canvas.height - r);
+  ctx.quadraticCurveTo(
+    canvas.width,
+    canvas.height,
+    canvas.width - r,
+    canvas.height
+  );
+  ctx.lineTo(r, canvas.height);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity: opacity,
+  });
+
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const mesh = new THREE.Mesh(geometry, material);
+
+  // PERBAIKAN: Atur renderOrder agar panel digambar lebih dulu.
+  mesh.renderOrder = -1;
+
+  return mesh;
+}
+
+// ui-creator.js
+
+// ui-creator.js
+
 export function createLandingPage(playerName) {
+  const centerPosition = new THREE.Vector3(0, 1.65, 0);
+
+  const panelWidth = 4.0;
+  const panelHeight = 1.3;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.copy(centerPosition);
+  uiGroup.add(mainPanel);
+
   if (playerName) {
     const welcomeText = `Selamat Datang, ${playerName}!`;
-    const welcomeLabel = createTitleLabel(welcomeText, 3.5, 0.5);
-    welcomeLabel.position.set(0, 2.3, 0);
+    const welcomeLabel = createTitleLabel(welcomeText, 3.8, 0.35);
+    welcomeLabel.position.set(
+      centerPosition.x,
+      centerPosition.y + 0.45,
+      centerPosition.z + 0.01
+    );
     uiGroup.add(welcomeLabel);
   }
 
-  const buttonWidth = 2.0;
-  const buttonHeight = 0.2;
-  const spacing = 0.12;
-  const startY = 1.9;
+  const primaryButtonWidth = 2.8;
+  const primaryButtonHeight = 0.32;
+  const primarySpacingY = 0.4;
+  const primaryStartY = 0.1;
 
-  const startButton = createButton(
-    "Ayo Mulai!",
-    "start",
-    buttonWidth,
-    buttonHeight
-  );
-  startButton.position.set(0, startY, 0);
-  uiGroup.add(startButton);
+  const primaryButtons = [
+    { text: "Mulai Belajar", action: "start", color: ACCENT_COLOR },
+    { text: "Laporan Belajar", action: "show_quiz_report", color: BG_COLOR },
+  ];
 
-  // const quizButton = createButton(
-  //   "Uji Pemahaman",
-  //   "show_quiz",
-  //   buttonWidth,
-  //   buttonHeight
-  // );
-  // quizButton.position.set(0, startY - (buttonHeight + spacing), UI_DISTANCE);
-  // uiGroup.add(quizButton);
+  primaryButtons.forEach((btn, index) => {
+    const button = createButton(
+      btn.text,
+      btn.action,
+      primaryButtonWidth,
+      primaryButtonHeight,
+      btn.color
+    );
 
-  const reportButton = createButton(
-    "Laporan Belajar",
-    "show_quiz_report",
-    buttonWidth,
-    buttonHeight
-  );
-  reportButton.position.set(0, startY - (buttonHeight + spacing), 0);
-  uiGroup.add(reportButton);
+    const buttonY = primaryStartY - index * primarySpacingY;
+    button.position.set(
+      centerPosition.x,
+      centerPosition.y + buttonY,
+      centerPosition.z + 0.01
+    );
+    uiGroup.add(button);
+  });
 
-  const helpButton = createButton("Bantuan", "help", buttonWidth, buttonHeight);
-  helpButton.position.set(0, startY - 2 * (buttonHeight + spacing), 0);
-  uiGroup.add(helpButton);
-
-  const creditsButton = createButton(
-    "Tentang Aplikasi",
+  const creditButtonSize = 0.22;
+  const creditButton = createButton(
+    "ⓘ",
     "show_credits",
-    buttonWidth,
-    buttonHeight
+    creditButtonSize,
+    creditButtonSize,
+    "rgba(45, 55, 72, 0.7)", // Opacity sedikit dinaikkan agar lebih solid
+    "circle"
   );
-  creditsButton.position.set(0, startY - 3 * (buttonHeight + spacing), 0);
-  uiGroup.add(creditsButton);
+
+  const panelEdgeX = panelWidth / 2;
+  const panelEdgeY = -panelHeight / 2;
+  const padding = 0.2;
+
+  creditButton.position.set(
+    centerPosition.x + panelEdgeX - padding,
+    centerPosition.y + panelEdgeY + padding,
+    centerPosition.z + 0.02 // Posisi Z sedikit lebih maju lagi
+  );
+
+  // PERBAIKAN: Atur renderOrder agar tombol ikon digambar paling akhir.
+  creditButton.renderOrder = 1;
+
+  uiGroup.add(creditButton);
 }
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
+  // PERBAIKAN: Nilai Z diubah dari 0 menjadi -1 untuk memajukan panel
+  const centerPosition = new THREE.Vector3(0, 1.65, 1);
+
+  // --- Perhitungan Dinamis untuk Ukuran Panel ---
   const columns = 3;
-  const spacingX = 1.5;
-  const spacingY = 0.25;
+  const numRows = Math.ceil(components.length / columns);
+
+  const titleHeight = 0.35;
+  const materialGridHeight = numRows * 0.25 + (numRows - 1) * 0.1;
+  const actionButtonsHeight = 0.3;
+  const verticalPadding = 0.8;
+
+  const panelHeight =
+    titleHeight + materialGridHeight + actionButtonsHeight + verticalPadding;
+  const panelWidth = 5.0;
+
+  // 1. PANEL LATAR BELAKANG
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.copy(centerPosition);
+  uiGroup.add(mainPanel);
+
+  // 2. JUDUL HALAMAN
+  const titleY = panelHeight / 2 - 0.4;
+  const titleLabel = createTitleLabel("Pilih Materi", 4.0, 0.35);
+  titleLabel.position.set(
+    centerPosition.x,
+    centerPosition.y + titleY,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(titleLabel);
+
+  // 3. GRID TOMBOL MATERI
+  const buttonWidth = 1.4;
+  const buttonHeight = 0.25;
+  const spacingX = 1.6;
+  const spacingY = 0.35;
   const startX = -spacingX;
-  const startY = 1.8;
-
-  const titleCanvas = document.createElement("canvas");
-  const titleCtx = titleCanvas.getContext("2d");
-  titleCanvas.width = 1024;
-  titleCanvas.height = 192;
-  titleCtx.font = "bold 64px Arial";
-  titleCtx.shadowColor = "rgba(0, 0, 0, 0.5)";
-  titleCtx.shadowBlur = 10;
-  titleCtx.shadowOffsetX = 5;
-  titleCtx.shadowOffsetY = 5;
-  titleCtx.fillStyle = "white";
-  titleCtx.textAlign = "center";
-  titleCtx.textBaseline = "middle";
-  titleCtx.fillText(
-    "Pilih Materi",
-    titleCanvas.width / 2,
-    titleCanvas.height / 2
-  );
-
-  const titleTexture = new THREE.CanvasTexture(titleCanvas);
-  const titleMaterial = new THREE.MeshBasicMaterial({
-    map: titleTexture,
-    transparent: true,
-  });
-  const titlePlaneHeight = 3 * (titleCanvas.height / titleCanvas.width);
-  const titleMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(3, titlePlaneHeight),
-    titleMaterial
-  );
-  titleMesh.position.set(0, 2.3, 0);
-  uiGroup.add(titleMesh);
+  const startY = titleY - 0.4;
 
   components.forEach((comp, index) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
+
     const isUnlocked = comp.unlocked;
-    const buttonLabel = isUnlocked ? comp.label : "Terkunci";
-    const buttonColor = isUnlocked ? BG_COLOR : "#444444";
+    const buttonLabel = isUnlocked ? comp.label : "🔒 Terkunci";
+    const buttonColor = isUnlocked ? BG_COLOR : "#4A5568";
+
     const button = createButton(
       buttonLabel,
-      `select_${index}`,
-      1.3,
-      0.2,
+      isUnlocked ? `select_${index}` : "locked",
+      buttonWidth,
+      buttonHeight,
       buttonColor
     );
+
     if (!isUnlocked) {
-      button.userData.action = "locked";
       button.userData.colors = null;
     }
 
-    button.position.set(startX + col * spacingX, startY - row * spacingY, 0);
+    const buttonX = startX + col * spacingX;
+    const buttonY = startY - row * spacingY;
+
+    button.position.set(
+      centerPosition.x + buttonX,
+      centerPosition.y + buttonY,
+      centerPosition.z + 0.01
+    );
     uiGroup.add(button);
   });
 
+  // 4. TOMBOL AKSI DI BAWAH
+  const actionButtonWidth = 2.2;
+  const actionButtonHeight = 0.3;
+  const actionButtonY = -panelHeight / 2 + 0.3;
+  const actionSpacingX = 2.4;
+
   const backButton = createButton(
-    "Kembali ke Awal",
+    "< Kembali",
     "back_to_landing",
-    1.8,
-    0.4
+    actionButtonWidth,
+    actionButtonHeight
   );
-  backButton.position.set(-1.0, 0.7, 0);
+  backButton.position.set(
+    centerPosition.x - actionSpacingX / 2,
+    centerPosition.y + actionButtonY,
+    centerPosition.z + 0.01
+  );
   uiGroup.add(backButton);
 
   let quizButtonLabel, quizButtonAction, quizButtonColor;
-
   if (!allComponentsUnlocked) {
     quizButtonLabel = "Uji Pemahaman (Terkunci)";
     quizButtonAction = "locked";
-    quizButtonColor = "#dc3545";
+    quizButtonColor = "#4A5568";
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Uji Pemahaman";
+    quizButtonLabel = "Uji Pemahaman >";
     quizButtonAction = "show_quiz";
-    quizButtonColor = BG_COLOR;
+    quizButtonColor = ACCENT_COLOR;
   } else {
-    quizButtonLabel = "Uji Pemahaman (Selesai)";
+    quizButtonLabel = "Lihat Laporan";
     quizButtonAction = "show_quiz_report";
     quizButtonColor = "#28a745";
   }
@@ -341,8 +467,8 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const quizButton = createButton(
     quizButtonLabel,
     quizButtonAction,
-    1.8,
-    0.4,
+    actionButtonWidth,
+    actionButtonHeight,
     quizButtonColor
   );
 
@@ -350,7 +476,11 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     quizButton.userData.colors = null;
   }
 
-  quizButton.position.set(1.0, 0.7, 0);
+  quizButton.position.set(
+    centerPosition.x + actionSpacingX / 2,
+    centerPosition.y + actionButtonY,
+    centerPosition.z + 0.01
+  );
   uiGroup.add(quizButton);
 }
 
@@ -447,23 +577,41 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  ctx.shadowColor = "rgba(0,0,0,0.6)";
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
+  ctx.shadowColor = "rgba(0,0,0,0.7)";
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 3;
+  ctx.shadowOffsetY = 3;
 
   ctx.fillStyle = color;
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
-  ctx.shadowColor = "transparent";
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+  });
+  const geometry = new THREE.PlaneGeometry(width, height);
+  return new THREE.Mesh(geometry, material);
+}
+function createSubtitleLabel(text, width, height) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const resolution = getResolution();
+  canvas.width = width * resolution;
+  canvas.height = height * resolution;
 
-  ctx.strokeStyle = "#FFFFFF";
-  ctx.lineWidth = 3;
-  const textWidth = ctx.measureText(text).width;
-  ctx.beginPath();
-  ctx.moveTo((canvas.width - textWidth) / 2, canvas.height * 0.8);
-  ctx.lineTo((canvas.width + textWidth) / 2, canvas.height * 0.8);
-  ctx.stroke();
+  const fontSize = Math.floor(height * resolution * 0.7);
+  ctx.font = `${fontSize}px Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#E2E8F0"; // Warna lebih lembut dari putih murni
+
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = 16;
@@ -472,7 +620,64 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
     transparent: true,
   });
   const geometry = new THREE.PlaneGeometry(width, height);
+  return new THREE.Mesh(geometry, material);
+}
+// ui-creator.js
 
+/**
+ * Membuat teks multi-baris tanpa latar belakang, konsisten dengan desain.
+ */
+function createBodyText(text, width, lineHeight = 40, fontSize = 32) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const resolution = getResolution();
+
+  // Atur font dan hitung dimensi teks
+  ctx.font = `${fontSize}px Arial`;
+  const textMetrics = wrapText(
+    ctx,
+    text,
+    0,
+    0,
+    width * resolution,
+    lineHeight * (resolution / 256),
+    false
+  );
+
+  canvas.width = width * resolution;
+  canvas.height = textMetrics.pixelHeight * 1.2; // Beri sedikit padding vertikal
+
+  // Gambar teks ke canvas
+  ctx.font = `${fontSize * (resolution / 256)}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "#E2E8F0"; // Warna teks lembut
+
+  // Tambahkan bayangan untuk keterbacaan
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
+  wrapText(
+    ctx,
+    text,
+    canvas.width / 2,
+    0,
+    canvas.width,
+    lineHeight * (resolution / 256),
+    true
+  );
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false, // Perbaikan untuk rendering
+  });
+
+  const geometry = new THREE.PlaneGeometry(width, canvas.height / resolution);
   return new THREE.Mesh(geometry, material);
 }
 
@@ -523,25 +728,75 @@ export function createCompletionScreen(playerName) {
   quizButton.position.set(0, 0.9, 0);
   uiGroup.add(quizButton);
 }
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
+
 export function createCreditsScreen() {
-  const creditsText =
-    "Aplikasi ini dikembangkan menggunakan Three.js dan WebXR untuk menghadirkan pengalaman VR interaktif langsung di browser. Teknologi ini menunjukkan potensi besar web dalam pengembangan visualisasi 3D yang imersif dan mudah diakses.";
-  const creditLabel = createTitleLabel("Tentang Aplikasi", 3, 0.5);
-  creditLabel.position.set(0, 2.2, 0);
-  uiGroup.add(creditLabel);
+  clearUI(); // Penting: Hapus UI yang ada di uiGroup sebelum menambahkan ke viewerUIGroup
 
-  const creditsPanel = createTextPanel(creditsText, 4);
-  const panelHeight = creditsPanel.geometry.parameters.height;
-  creditsPanel.position.set(0, 1.6, 0);
-  uiGroup.add(creditsPanel);
+  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5); // Contoh posisi (bisa diubah)
+  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0); // Titik fokus kamera untuk group ini
+  const curveIntensity = 0.05; // Intensitas lengkungan
 
-  const backButton = createButton("Tutup", "back_to_landing", 1.5, 0.4);
-  const buttonHeight = backButton.geometry.parameters.height;
-  const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
-  backButton.position.set(0, buttonY, 0);
-  uiGroup.add(backButton);
+  // 1. Panel Teks Utama (menggunakan createTextPanel seperti di viewer)
+  const creditsContent = `Aplikasi ini dikembangkan sebagai media pembelajaran interaktif komponen komputer berbasis WebXR.
+
+Pengembang: Mas Deven
+Teknologi: Three.js, WebXR API
+
+Aset 3D & Komponen:
+- Model Ruangan, Motherboard, CPU, RAM, GPU, Storage, PSU, Casing, Kipas, Monitor, Keyboard, Mouse, Speaker oleh [Sumber Aset Anda]
+
+Terima kasih atas dukungan dan partisipasi Anda dalam belajar bersama kami.
+`;
+  const descPanel = createTextPanel(creditsContent, 2.5); // Lebar panel
+  const panelHeight = descPanel.geometry.parameters.height;
+  const panelWidth = descPanel.geometry.parameters.width;
+
+  // Atur posisi Z untuk lengkungan
+  descPanel.position.set(0, 0, 0); // Relatif terhadap viewerUIGroup
+  viewerUIGroup.add(descPanel);
+
+  // 2. Judul (di atas panel utama)
+  const titleWidth = 2.0;
+  const titleHeight = 0.3;
+  const titleLabel = createTitleLabel(
+    "Tentang Aplikasi",
+    titleWidth,
+    titleHeight
+  );
+  const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
+  const titleZ = -titleY * curveIntensity; // Efek lengkungan
+  titleLabel.position.set(0, titleY, titleZ);
+  viewerUIGroup.add(titleLabel);
+
+  // 3. Tombol "Kembali" (di bawah panel utama, seperti tombol menu di viewer)
+  const actionButtonWidth = 2.0;
+  const actionButtonHeight = 0.25;
+  const buttonSpacing = 0.1;
+
+  const menuY = -panelHeight / 2 - actionButtonHeight / 2 - buttonSpacing;
+  const menuZ = -menuY * curveIntensity; // Efek lengkungan
+  const menuButton = createButton(
+    "Kembali ke Awal", // Teks tombol
+    "back_to_landing", // Aksi kembali ke landing page
+    actionButtonWidth,
+    actionButtonHeight
+  );
+  menuButton.position.set(0, menuY, menuZ);
+  viewerUIGroup.add(menuButton);
+
+  // Atur posisi dan orientasi seluruh viewerUIGroup (tempat semua elemen kredit berada)
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
 export function createQuizScreen(questionIndex) {
   const currentQuestion = quizData[questionIndex];
 
@@ -595,59 +850,73 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   uiGroup.add(backButton);
 }
 
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
+
+// ui-creator.js
+
 export function createQuizReportScreen(score, hasAttempted) {
+  const centerPosition = new THREE.Vector3(0, 1.65, 0);
+
+  // 1. PANEL LATAR BELAKANG (DIBUAT JAUH LEBIH TINGGI)
+  const panelWidth = 4.8;
+  const panelHeight = 1.8; // Tinggi panel ditambah secara signifikan
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.copy(centerPosition);
+  uiGroup.add(mainPanel);
+
+  let titleText, reportText;
   if (!hasAttempted) {
-    const titleText = "Belum Ada Laporan";
-    const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
-    titleLabel.position.set(0, 2.1, 0);
-    uiGroup.add(titleLabel);
-
-    const reportText =
-      "Kamu harus menyelesaikan materi dan mengerjakan Uji Pemahaman terlebih dahulu untuk melihat laporan nilai.";
-    const reportPanel = createTextPanel(reportText, 4.5);
-    const panelHeight = reportPanel.geometry.parameters.height;
-    reportPanel.position.set(0, 1.5, 0);
-    uiGroup.add(reportPanel);
-
-    const backButton = createButton(
-      "Kembali ke Awal",
-      "back_to_landing",
-      2.5,
-      0.5
-    );
-    const buttonHeight = backButton.geometry.parameters.height;
-    const buttonY = 1.5 - panelHeight / 2 - buttonHeight / 2 - 0.2;
-    backButton.position.set(0, buttonY, 0);
-    uiGroup.add(backButton);
+    titleText = "Laporan Belum Tersedia";
+    reportText =
+      "Anda harus menyelesaikan semua materi dan mengerjakan Uji Pemahaman terlebih dahulu untuk melihat laporan nilai.";
   } else {
     const totalQuestions = quizData.length;
     const finalScore = (score / totalQuestions) * 100;
-
-    const titleText = "Laporan Belajar";
-    const titleLabel = createTitleLabel(titleText, 3.5, 0.5);
-    titleLabel.position.set(0, 2.4, 0);
-    uiGroup.add(titleLabel);
-
-    const reportText = `Uji Pemahaman selesai! kamu telah menuntaskan semua materi dengan menjawab ${score} dari ${totalQuestions} soal benar dan meraih nilai akhir ${finalScore.toFixed(
+    titleText = "Laporan Belajar Anda";
+    reportText = `Selamat! Uji Pemahaman telah selesai.\nAnda berhasil menjawab ${score} dari ${totalQuestions} soal dengan benar dan meraih nilai akhir:\n\n${finalScore.toFixed(
       0
-    )}/100.`;
-
-    const reportPanel = createTextPanel(reportText, 4.5);
-    const panelHeight = reportPanel.geometry.parameters.height;
-    reportPanel.position.set(0, 1.6, 0);
-    uiGroup.add(reportPanel);
-
-    const backButton = createButton(
-      "Selesai & Kembali ke Awal",
-      "back_to_landing",
-      2.5,
-      0.5
-    );
-    const buttonHeight = backButton.geometry.parameters.height;
-    const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
-    backButton.position.set(0, buttonY, 0);
-    uiGroup.add(backButton);
+    )} / 100`;
   }
+
+  // --- Penyesuaian Jarak Vertikal yang Lebih Jauh ---
+
+  // 2. JUDUL (Posisi paling atas)
+  const titleLabel = createTitleLabel(titleText, 4.0, 0.35);
+  // Posisi Y dinaikkan lebih jauh
+  titleLabel.position.set(
+    centerPosition.x,
+    centerPosition.y + 0.65,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(titleLabel);
+
+  // 3. ISI LAPORAN (Posisi di tengah, dengan jarak jelas dari judul)
+  const reportBody = createBodyText(reportText, 4.2);
+  // Posisi Y sedikit diturunkan dari pusat untuk memberi ruang bagi judul
+  reportBody.position.set(
+    centerPosition.x,
+    centerPosition.y - 0.05,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(reportBody);
+
+  // 4. TOMBOL AKSI (Posisi paling bawah)
+  const buttonText = "Kembali ke Awal";
+  const buttonAction = "back_to_landing";
+  const actionButton = createButton(buttonText, buttonAction, 3.0, 0.3);
+  // Posisi Y diturunkan lebih jauh
+  actionButton.position.set(
+    centerPosition.x,
+    centerPosition.y - 0.65,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(actionButton);
 }
 export function createMiniQuizPage(component) {
   const currentQuestion = component.quiz[0];
@@ -741,4 +1010,82 @@ export function updateUIGroupPosition() {
     uiGroup.position.copy(newPosition);
     uiGroup.lookAt(camera.position);
   }
+}
+function createScrollableTextPanel(text, viewportWidth, viewportHeight) {
+  const scrollableGroup = new THREE.Group();
+
+  // 1. Definisikan area clipping (agar teks tidak keluar dari viewport)
+  const clippingPlanes = [
+    new THREE.Plane(new THREE.Vector3(0, 1, 0), viewportHeight / 2),
+    new THREE.Plane(new THREE.Vector3(0, -1, 0), viewportHeight / 2),
+  ];
+
+  // 2. Buat panel konten yang panjang
+  const contentWidth = viewportWidth * 0.9; // Konten sedikit lebih sempit
+  const contentText = createBodyText(text, contentWidth);
+
+  // Terapkan clipping ke material konten
+  contentText.material.clippingPlanes = clippingPlanes;
+  contentText.material.needsUpdate = true;
+
+  const contentHeight = contentText.geometry.parameters.height;
+
+  // Hanya tampilkan scrollbar jika konten lebih panjang dari viewport
+  const isScrollable = contentHeight > viewportHeight;
+
+  // Posisi awal konten (bagian atas terlihat)
+  // Posisi awal konten (bagian atas terlihat)
+  contentText.position.y = (contentHeight - viewportHeight) / 2;
+  scrollableGroup.add(contentText);
+
+  if (isScrollable) {
+    // 3. Buat Scrollbar (tombol atas dan bawah)
+    const scrollButtonSize = 0.2;
+    const scrollbarX = viewportWidth / 2 - scrollButtonSize / 2 - 0.05;
+
+    const upButton = createButton(
+      "▲",
+      "scroll_up",
+      scrollButtonSize,
+      scrollButtonSize,
+      BG_COLOR,
+      "circle"
+    );
+    upButton.position.set(
+      scrollbarX,
+      viewportHeight / 2 - scrollButtonSize / 2 - 0.05,
+      0.01
+    );
+    scrollableGroup.add(upButton);
+
+    const downButton = createButton(
+      "▼",
+      "scroll_down",
+      scrollButtonSize,
+      scrollButtonSize,
+      BG_COLOR,
+      "circle"
+    );
+    downButton.position.set(
+      scrollbarX,
+      -viewportHeight / 2 + scrollButtonSize / 2 + 0.05,
+      0.01
+    );
+    scrollableGroup.add(downButton);
+
+    // 4. Simpan data penting untuk interaksi scroll
+    scrollableGroup.userData = {
+      isScrollable: true,
+      content: contentText,
+      // Batas atas dan bawah untuk posisi Y konten
+      scrollBounds: {
+        top: (contentHeight - viewportHeight) / 2,
+        bottom: -(contentHeight - viewportHeight) / 2,
+      },
+    };
+    upButton.userData.scrollParent = scrollableGroup;
+    downButton.userData.scrollParent = scrollableGroup;
+  }
+
+  return scrollableGroup;
 }

@@ -230,6 +230,10 @@ function changeState(newState) {
   switch (newState) {
     case AppState.MODE_SELECTION:
     case AppState.LANDING:
+      controls.enabled = true;
+      camera.position.set(0, 1.6, 5);
+      controls.target.set(0, 1.6, 0);
+      break;
     case AppState.MENU:
     case AppState.QUIZ:
     case AppState.QUIZ_RESULT:
