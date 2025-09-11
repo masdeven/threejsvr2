@@ -222,9 +222,22 @@ function reloadViewer() {
 function changeState(newState) {
   if (currentState === newState) return;
   stopAudio();
-  unloadComponentModel();
-  currentState = newState;
 
+  // Cegah model hilang saat transisi antara viewer, mini quiz, dan hasilnya
+  const isTransitioningWithinViewer =
+    (currentState === AppState.VIEWER &&
+      (newState === AppState.MINI_QUIZ ||
+        newState === AppState.MINI_QUIZ_RESULT)) ||
+    (currentState === AppState.MINI_QUIZ &&
+      newState === AppState.MINI_QUIZ_RESULT) ||
+    (currentState === AppState.MINI_QUIZ_RESULT &&
+      newState === AppState.VIEWER);
+
+  if (!isTransitioningWithinViewer) {
+    unloadComponentModel();
+  }
+
+  currentState = newState;
   refreshUI();
 
   switch (newState) {
@@ -244,22 +257,17 @@ function changeState(newState) {
       camera.position.set(0, 1.6, 5);
       controls.target.set(0, 1.6, 0);
       break;
+
+    // GABUNGKAN LOGIKA UNTUK MINI_QUIZ_RESULT DENGAN VIEWER DAN MINI_QUIZ
     case AppState.MINI_QUIZ:
-      controls.enabled = false;
-      camera.position.set(0, 1.6, 5);
-      controls.target.set(0, 1.6, 0);
-      break;
     case AppState.MINI_QUIZ_RESULT:
-      controls.enabled = false;
-      camera.position.set(0, 1.6, 5);
-      controls.target.set(0, 1.6, 0);
-      break;
-    case AppState.HELP:
-      controls.enabled = false;
-      break;
     case AppState.VIEWER:
       controls.enabled = true;
       controls.target.set(0, 1, 0);
+      break;
+
+    case AppState.HELP:
+      controls.enabled = false;
       break;
   }
 }
