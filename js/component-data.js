@@ -8,9 +8,9 @@ export const components = [
     unlocked: true,
     quiz: [
       {
-        question: "Monitor berfungsi sebagai perangkat input atau output?",
-        answers: ["Input", "Output"],
-        correctAnswerIndex: 1,
+        question: "Monitor adalah perangkat output.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -23,9 +23,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Fungsi utama keyboard adalah untuk...?",
-        answers: ["Menampilkan Gambar", "Memasukkan Teks"],
-        correctAnswerIndex: 1,
+        question: "Keyboard digunakan untuk memasukkan teks ke komputer.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -38,8 +38,8 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Gerakan kursor di layar dikendalikan oleh...?",
-        answers: ["Mouse", "Speaker"],
+        question: "Mouse digunakan untuk mengendalikan kursor.",
+        answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
       },
     ],
@@ -53,9 +53,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Speaker termasuk perangkat...?",
-        answers: ["Input", "Output"],
-        correctAnswerIndex: 1,
+        question: "Speaker termasuk perangkat output.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -68,9 +68,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Fungsi utama casing adalah...?",
-        answers: ["Menghubungkan komponen", "Melindungi komponen"],
-        correctAnswerIndex: 1,
+        question: "Casing berfungsi melindungi komponen komputer.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -83,8 +83,8 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Motherboard berfungsi untuk...?",
-        answers: ["Menghubungkan komponen komputer", "Menyimpan data"],
+        question: "Motherboard berfungsi menghubungkan komponen komputer.",
+        answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
       },
     ],
@@ -98,9 +98,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Komponen manakah yang disebut otak komputer?",
-        answers: ["GPU", "CPU"],
-        correctAnswerIndex: 1,
+        question: "CPU sering disebut otak komputer.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -113,8 +113,8 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Fungsi utama fan adalah...?",
-        answers: ["Pendingin komponen", "Menyimpan data"],
+        question: "Fan berfungsi mendinginkan komponen komputer.",
+        answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
       },
     ],
@@ -128,8 +128,8 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "RAM digunakan untuk menyimpan data secara...?",
-        answers: ["Sementara", "Permanen"],
+        question: "RAM menyimpan data sementara.",
+        answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
       },
     ],
@@ -143,9 +143,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Komponen yang mempercepat pemrosesan grafis adalah...?",
-        answers: ["CPU", "GPU"],
-        correctAnswerIndex: 1,
+        question: "GPU digunakan untuk mempercepat pemrosesan grafis.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -158,9 +158,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Fungsi utama PSU adalah...?",
-        answers: ["Mengolah data", "Menyuplai daya listrik"],
-        correctAnswerIndex: 1,
+        question: "PSU berfungsi menyuplai daya listrik ke komponen komputer.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },
@@ -173,9 +173,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Manakah yang termasuk media penyimpanan jangka panjang?",
-        answers: ["RAM", "SSD/HDD"],
-        correctAnswerIndex: 1,
+        question: "SSD dan HDD termasuk media penyimpanan jangka panjang.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
       },
     ],
   },

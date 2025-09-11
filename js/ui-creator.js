@@ -941,12 +941,13 @@ export function createMiniQuizPage(component) {
   titleLabel.position.set(0, titleY, titleZ);
   viewerUIGroup.add(titleLabel);
 
-  // --- Tombol Jawaban (sebagai pengganti tombol navigasi) ---
-  const buttonWidth = 2.0;
+  // --- PENYESUAIAN TOMBOL ---
+  const buttonWidth = 1.2; // Lebar tombol diperkecil dari 2.0 menjadi 1.2
   const buttonHeight = 0.25;
   const buttonY = -panelHeight / 2 - buttonHeight / 2 - 0.1;
   const buttonZ = -buttonY * curveIntensity;
-  const positions = [-1.1, 1.1]; // Atur posisi X untuk dua tombol
+  // Sesuaikan posisi X agar tombol lebih ke tengah
+  const positions = [-0.8, 0.8];
 
   currentQuestion.answers.forEach((answer, index) => {
     const isCorrect = index === currentQuestion.correctAnswerIndex;
