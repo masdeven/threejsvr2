@@ -17,7 +17,7 @@ export function setupKTX2Loader(ktx2Loader) {
 let currentModel = null;
 let isDragging = false;
 let activeLoad = null;
-const TABLE_HEIGHT = 0.8;
+const TABLE_HEIGHT = 0.9;
 
 export function loadComponentModel(url) {
   if (activeLoad) {
@@ -31,18 +31,23 @@ export function loadComponentModel(url) {
       currentModel = gltf.scene;
 
       const box = new THREE.Box3().setFromObject(currentModel);
-      const center = box.getCenter(new THREE.Vector3());
       const size = box.getSize(new THREE.Vector3());
 
-      currentModel.position.sub(center);
-
+      // 1. Normalisasi ukuran (misal 0.8 m maksimum)
       const maxDim = Math.max(size.x, size.y, size.z);
       const scaleFactor = 0.8 / maxDim;
       currentModel.scale.setScalar(scaleFactor);
 
+      // 2. Hitung bounding box ulang setelah scaling
       const newBox = new THREE.Box3().setFromObject(currentModel);
+      const center = newBox.getCenter(new THREE.Vector3());
+
+      // 3. Geser supaya center pas di (0,0) di sumbu X,Z
+      currentModel.position.x -= center.x;
+      currentModel.position.z -= center.z;
+
+      // 4. Geser Y supaya bawah mesh pas di meja
       const newMinY = newBox.min.y;
-      // currentModel.position.y -= newMinY;
       currentModel.position.y = TABLE_HEIGHT - newMinY;
 
       scene.add(currentModel);
