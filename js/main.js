@@ -6,7 +6,7 @@ import {
   createMenuPage,
   createViewerPage,
   clearUI,
-  updateViewerUIPosition,
+  // updateViewerUIPosition,
   updateUIGroupPosition,
   createHelpPanel,
   createQuizScreen,
@@ -409,12 +409,12 @@ function render() {
     handleVRHover();
     // Dalam mode VR, perbarui posisi kedua grup UI agar mengikuti headset
     updateUIGroupPosition();
-    updateViewerUIPosition();
+    // updateViewerUIPosition();
   } else {
     controls.update();
     // Dalam mode non-VR, hanya UI viewer yang perlu mengikuti pergerakan kamera
     if (currentState === AppState.VIEWER || currentState === AppState.HELP) {
-      updateViewerUIPosition();
+      // updateViewerUIPosition();
     }
   }
 

@@ -355,50 +355,84 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 }
 
 export function createViewerPage(component, index) {
-  if (index > 0) {
-    const prevButton = createButton("<", "prev_component", 0.3, 0.3);
-    prevButton.position.set(-2.2, 0, 0);
-    viewerUIGroup.add(prevButton);
-  }
-  const nextButton = createButton(">", "next_component", 0.3, 0.3);
-  nextButton.position.set(2.2, 0, 0);
-  viewerUIGroup.add(nextButton);
-  const descPanel = createTextPanel(component.description, 3);
+  // --- Konfigurasi Posisi dan Tata Letak ---
+  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const curveIntensity = 0.05; // Mengatur seberapa cekung UI
+
+  // --- Panel Deskripsi Utama ---
+  const descPanel = createTextPanel(component.description, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
-  const panelYPosition = -0.6 - panelHeight / 2;
-  descPanel.position.set(0, panelYPosition, 0);
+  descPanel.position.set(0, 0, 0); // Titik pusat
   viewerUIGroup.add(descPanel);
-  const titleWidth = 2;
+
+  // --- Label Judul ---
+  const titleWidth = 2.0;
   const titleHeight = 0.3;
   const titleLabel = createTitleLabel(component.label, titleWidth, titleHeight);
-  const titleYPosition =
-    panelYPosition + panelHeight / 2 + titleHeight / 2 + 0.05;
-  const titleXPosition = -(panelWidth / 2) + titleWidth / 2;
-  titleLabel.position.set(titleXPosition, titleYPosition, 0);
+  const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
+  const titleZ = -titleY * curveIntensity; // Semakin atas, semakin ke belakang
+  titleLabel.position.set(0, titleY, titleZ);
   viewerUIGroup.add(titleLabel);
-  const buttonWidth = 0.7;
-  const buttonHeight = 0.25;
-  const buttonPadding = 0.1;
-  const buttonXPosition = panelWidth / 2 + buttonWidth / 2 + buttonPadding;
+
+  // --- Tombol Navigasi ---
+  const navButtonWidth = 1.2;
+  const navButtonHeight = 0.25;
+  const navY = -panelHeight / 2 - navButtonHeight / 2 - 0.1;
+  const navZ = -navY * curveIntensity; // Semakin bawah, semakin ke depan
+
+  if (index > 0) {
+    const prevButton = createButton(
+      "< Sebelumnya",
+      "prev_component",
+      navButtonWidth,
+      navButtonHeight
+    );
+    prevButton.position.set(-(panelWidth / 2) + navButtonWidth / 2, navY, navZ);
+    viewerUIGroup.add(prevButton);
+  }
+
+  const nextButton = createButton(
+    "Berikutnya >",
+    "next_component",
+    navButtonWidth,
+    navButtonHeight
+  );
+  nextButton.position.set(panelWidth / 2 - navButtonWidth / 2, navY, navZ);
+  viewerUIGroup.add(nextButton);
+
+  // --- Tombol Aksi ---
+  const actionButtonWidth = 2.0;
+  const actionButtonHeight = 0.25;
+  const buttonSpacing = 0.1;
+
+  const audioY =
+    navY - navButtonHeight / 2 - actionButtonHeight / 2 - buttonSpacing;
+  const audioZ = -audioY * curveIntensity;
   const audioButton = createButton(
-    "Audio",
+    "Dengarkan Audio",
     "play_audio",
-    buttonWidth,
-    buttonHeight
+    actionButtonWidth,
+    actionButtonHeight
   );
-  const audioYPosition = panelYPosition + buttonHeight / 2 + buttonPadding / 2;
-  audioButton.position.set(buttonXPosition, audioYPosition, 0);
+  audioButton.position.set(0, audioY, audioZ);
   viewerUIGroup.add(audioButton);
+
+  const menuY = audioY - actionButtonHeight - buttonSpacing;
+  const menuZ = -menuY * curveIntensity;
   const menuButton = createButton(
-    "Materi",
+    "Kembali ke Menu",
     "back_to_menu",
-    buttonWidth,
-    buttonHeight
+    actionButtonWidth,
+    actionButtonHeight
   );
-  const menuYPosition = panelYPosition - buttonHeight / 2 - buttonPadding / 2;
-  menuButton.position.set(buttonXPosition, menuYPosition, 0);
+  menuButton.position.set(0, menuY, menuZ);
   viewerUIGroup.add(menuButton);
+
+  // Posisikan dan orientasikan GROUP-nya
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
 function createTitleLabel(text, width, height, color = TEXT_COLOR) {
@@ -442,19 +476,19 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   return new THREE.Mesh(geometry, material);
 }
 
-export function updateViewerUIPosition() {
-  if (viewerUIGroup.children.length > 0) {
-    const distance = UI_DISTANCE;
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
-    const newPosition = new THREE.Vector3();
-    newPosition
-      .copy(camera.position)
-      .add(cameraDirection.multiplyScalar(distance));
-    viewerUIGroup.position.copy(newPosition);
-    viewerUIGroup.lookAt(camera.position);
-  }
-}
+// export function updateViewerUIPosition() {
+//   if (viewerUIGroup.children.length > 0) {
+//     const distance = UI_DISTANCE;
+//     const cameraDirection = new THREE.Vector3();
+//     camera.getWorldDirection(cameraDirection);
+//     const newPosition = new THREE.Vector3();
+//     newPosition
+//       .copy(camera.position)
+//       .add(cameraDirection.multiplyScalar(distance));
+//     viewerUIGroup.position.copy(newPosition);
+//     viewerUIGroup.lookAt(camera.position);
+//   }
+// }
 
 export function createHelpPanel() {
   const helpLabel = createTitleLabel("Bantuan", 3, 0.5);
