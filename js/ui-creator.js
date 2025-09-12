@@ -137,8 +137,9 @@ function createButton(
 
   return mesh;
 }
-function createTextPanel(text, width) {
-  const MAX_PANEL_HEIGHT_3D = 0.5;
+function createTextPanel(text, width, options = {}) {
+  const { footerHeight = 0 } = options; // Default footerHeight adalah 0
+  const MAX_PANEL_HEIGHT_3D = 0.6; // Sedikit diperbesar untuk memberi ruang
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const font = isVRMode() ? "30px Arial" : "26px Arial";
@@ -152,13 +153,18 @@ function createTextPanel(text, width) {
 
   const textMetrics = wrapText(ctx, text, 0, 0, maxWidth, lineHeight, false);
   const totalTextPixelHeight = textMetrics.pixelHeight;
+  const footerPixelHeight = footerHeight * resolution; // Konversi tinggi footer ke piksel
 
-  let finalPanelHeight3D = (totalTextPixelHeight + padding * 2) / resolution;
+  // --- PENYESUAIAN --- Tambahkan ruang footer ke total tinggi canvas
+  let finalPanelHeight3D =
+    (totalTextPixelHeight + padding * 2 + footerPixelHeight) / resolution;
+
   finalPanelHeight3D = Math.min(finalPanelHeight3D, MAX_PANEL_HEIGHT_3D);
 
   canvas.width = canvasWidth;
   canvas.height = finalPanelHeight3D * resolution;
 
+  // ... (sisa kode drawing canvas untuk rounded rectangle tetap sama)
   const radius = 20;
   ctx.beginPath();
   ctx.moveTo(radius, 0);
@@ -194,6 +200,7 @@ function createTextPanel(text, width) {
   ctx.shadowOffsetY = 1;
 
   ctx.fillStyle = TEXT_COLOR;
+  // Gambar teks dengan padding seperti biasa
   wrapText(ctx, text, padding, padding, maxWidth, lineHeight, true);
 
   ctx.shadowColor = "transparent";
@@ -410,18 +417,15 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     uiGroup.add(button);
   });
 
-  // 3. TOMBOL AKSI DI BAWAH
   const actionButtonY = centerPosition.y - 0.8;
   const actionZ = -radius + 1.5;
   const actionSpacingX = 2.4;
 
-  // Tombol Kembali
   const exitButton = createButton("Kembali", "back_to_landing", 2.2, 0.3);
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(centerPosition);
   uiGroup.add(exitButton);
 
-  // Tombol Kuis/Laporan
   let quizButtonLabel, quizButtonAction, quizButtonColor;
   if (!allComponentsUnlocked) {
     quizButtonLabel = "Uji Pemahaman (Terkunci)";
@@ -444,7 +448,6 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     quizButtonColor
   );
 
-  // PERBAIKAN: Menggunakan variabel yang benar (allComponentsUnlocked)
   if (!allComponentsUnlocked) {
     quizButton.userData.colors = null;
   }
@@ -454,33 +457,110 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   uiGroup.add(quizButton);
 }
 
-export function createViewerPage(component, index) {
+export function createViewerPage(component, index, descriptionIndex = 0) {
   // --- Konfigurasi Posisi dan Tata Letak ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
-  const curveIntensity = 0.05; // Mengatur seberapa cekung UI
 
-  // --- Panel Deskripsi Utama ---
-  const descPanel = createTextPanel(component.description, 2.5);
+  clearViewerUI();
+
+  // --- 1. Panel Latar Belakang Utama ---
+  const totalPanelWidth = 3.0;
+  const totalPanelHeight = 1.7;
+  const backgroundPanel = createUIPanel(
+    totalPanelWidth,
+    totalPanelHeight,
+    0.05,
+    "#1A202C",
+    0.9
+  );
+  backgroundPanel.position.set(0, 0, 0);
+  backgroundPanel.renderOrder = 0;
+  viewerUIGroup.add(backgroundPanel);
+
+  // --- 2. Panel Deskripsi ---
+  const currentDescription = component.description[descriptionIndex];
+  const descPanel = createTextPanel(currentDescription, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
-  descPanel.position.set(0, 0, 0); // Titik pusat
+  const descPanelYOffset = 0.15;
+  descPanel.position.set(0, descPanelYOffset, 0.01);
+  descPanel.renderOrder = 1;
   viewerUIGroup.add(descPanel);
 
-  // --- Label Judul ---
-  const titleWidth = 2.0;
-  const titleHeight = 0.3;
+  // --- 3. Label Judul ---
+  const titleWidth = 2.2;
+  const titleHeight = 0.35;
   const titleLabel = createTitleLabel(component.label, titleWidth, titleHeight);
-  const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
-  const titleZ = -titleY * curveIntensity; // Semakin atas, semakin ke belakang
-  titleLabel.position.set(0, titleY, titleZ);
+  const titleY = descPanelYOffset + panelHeight / 2 + titleHeight / 2 - 0.05;
+  titleLabel.position.set(0, titleY, 0.02);
+  titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  // --- Tombol Navigasi ---
+  // --- 4. Tombol Navigasi Deskripsi ---
+  const descNavY = descPanelYOffset - panelHeight / 2 - 0.15;
+  if (component.description.length > 1) {
+    const rightEdgeX = panelWidth / 2;
+    // --- PENYESUAIAN --- Tombol dibuat lebih pendek (persegi)
+    const buttonWidth = 0.25;
+    const indicatorWidth = 0.6;
+    // --- PENYESUAIAN --- Jarak antar elemen dipersempit
+    const padding = 0.05;
+    let currentX = rightEdgeX;
+
+    // Tombol Next
+    const isLastPage = descriptionIndex >= component.description.length - 1;
+    const nextDescButton = createButton(
+      ">",
+      isLastPage ? "locked" : "next_description",
+      buttonWidth,
+      0.2,
+      isLastPage ? "#4A5568" : BG_COLOR
+    );
+    if (isLastPage) nextDescButton.userData.colors = null;
+    const nextButtonX = currentX - buttonWidth / 2;
+    nextDescButton.position.set(nextButtonX, descNavY, 0.01);
+    nextDescButton.renderOrder = 1;
+    viewerUIGroup.add(nextDescButton);
+    currentX = nextButtonX - buttonWidth / 2 - padding;
+
+    // Indeks Halaman
+    const pageIndicatorText = `${descriptionIndex + 1} / ${
+      component.description.length
+    }`;
+    const pageIndicator = createTitleLabel(
+      pageIndicatorText,
+      indicatorWidth,
+      0.15
+    );
+    pageIndicator.material.depthWrite = false;
+    const indicatorX = currentX - indicatorWidth / 2;
+    pageIndicator.position.set(indicatorX, descNavY, 0.02);
+    pageIndicator.renderOrder = 2;
+    viewerUIGroup.add(pageIndicator);
+    currentX = indicatorX - indicatorWidth / 2 - padding;
+
+    // Tombol Prev
+    const isFirstPage = descriptionIndex <= 0;
+    const prevDescButton = createButton(
+      "<",
+      isFirstPage ? "locked" : "prev_description",
+      buttonWidth,
+      0.2,
+      isFirstPage ? "#4A5568" : BG_COLOR
+    );
+    if (isFirstPage) prevDescButton.userData.colors = null;
+    const prevButtonX = currentX - buttonWidth / 2;
+    prevDescButton.position.set(prevButtonX, descNavY, 0.01);
+    prevDescButton.renderOrder = 1;
+    viewerUIGroup.add(prevDescButton);
+  }
+
+  // --- 5. Tombol Navigasi Komponen ---
   const navButtonWidth = 1.2;
   const navButtonHeight = 0.25;
-  const navY = -panelHeight / 2 - navButtonHeight / 2 - 0.1;
-  const navZ = -navY * curveIntensity; // Semakin bawah, semakin ke depan
+  const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
+  const navZ = 0.01;
 
   if (index > 0) {
     const prevButton = createButton(
@@ -489,7 +569,12 @@ export function createViewerPage(component, index) {
       navButtonWidth,
       navButtonHeight
     );
-    prevButton.position.set(-(panelWidth / 2) + navButtonWidth / 2, navY, navZ);
+    prevButton.position.set(
+      -(totalPanelWidth / 2) + navButtonWidth / 2 + 0.1,
+      navY,
+      navZ
+    );
+    prevButton.renderOrder = 1;
     viewerUIGroup.add(prevButton);
   }
 
@@ -499,15 +584,19 @@ export function createViewerPage(component, index) {
     navButtonWidth,
     navButtonHeight
   );
-  nextButton.position.set(panelWidth / 2 - navButtonWidth / 2, navY, navZ);
+  nextButton.position.set(
+    totalPanelWidth / 2 - navButtonWidth / 2 - 0.1,
+    navY,
+    navZ
+  );
+  nextButton.renderOrder = 1;
   viewerUIGroup.add(nextButton);
 
-  // --- Tombol Aksi (di luar panel) ---
+  // --- 6. Tombol Aksi ---
   const actionButtonSize = 0.25;
   const buttonSpacing = 0.1;
-  const actionX = -panelWidth / 2 - actionButtonSize / 2 - 0.15; // Posisi X di sebelah kiri panel
+  const actionX = -totalPanelWidth / 2 - actionButtonSize / 2 - 0.15;
 
-  // Tombol Menu (di atas)
   const menuButton = createButton(
     "X",
     "back_to_menu",
@@ -516,12 +605,11 @@ export function createViewerPage(component, index) {
     BG_COLOR,
     "circle"
   );
-  const menuY = 0.15; // Sesuaikan posisi Y sesuai kebutuhan
-  const menuZ = -menuY * curveIntensity;
-  menuButton.position.set(actionX, menuY, menuZ);
+  const menuY = totalPanelHeight / 2 - actionButtonSize / 2;
+  menuButton.position.set(actionX, menuY, 0.01);
+  menuButton.renderOrder = 1;
   viewerUIGroup.add(menuButton);
 
-  // Tombol Audio (di bawah tombol menu)
   const audioButton = createButton(
     "🔊",
     "play_audio",
@@ -531,13 +619,22 @@ export function createViewerPage(component, index) {
     "circle"
   );
   const audioY = menuY - actionButtonSize - buttonSpacing;
-  const audioZ = -audioY * curveIntensity;
-  audioButton.position.set(actionX, audioY, audioZ);
+  audioButton.position.set(actionX, audioY, 0.01);
+  audioButton.renderOrder = 1;
   viewerUIGroup.add(audioButton);
 
-  // Posisikan dan orientasikan GROUP-nya
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
+}
+
+// Tambahkan fungsi helper baru untuk membersihkan UI viewer saja
+export function clearViewerUI() {
+  viewerUIGroup.children.forEach((child) => {
+    child.geometry.dispose();
+    child.material.map?.dispose();
+    child.material.dispose();
+  });
+  viewerUIGroup.clear();
 }
 function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   const canvas = document.createElement("canvas");
@@ -578,7 +675,7 @@ function createSubtitleLabel(text, width, height) {
   ctx.font = `${fontSize}px Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#E2E8F0"; // Warna lebih lembut dari putih murni
+  ctx.fillStyle = "#E2E8F0";
 
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 6;
@@ -596,17 +693,12 @@ function createSubtitleLabel(text, width, height) {
   const geometry = new THREE.PlaneGeometry(width, height);
   return new THREE.Mesh(geometry, material);
 }
-// ui-creator.js
 
-/**
- * Membuat teks multi-baris tanpa latar belakang, konsisten dengan desain.
- */
 function createBodyText(text, width, lineHeight = 40, fontSize = 32) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
 
-  // Atur font dan hitung dimensi teks
   ctx.font = `${fontSize}px Arial`;
   const textMetrics = wrapText(
     ctx,
@@ -619,15 +711,13 @@ function createBodyText(text, width, lineHeight = 40, fontSize = 32) {
   );
 
   canvas.width = width * resolution;
-  canvas.height = textMetrics.pixelHeight * 1.2; // Beri sedikit padding vertikal
+  canvas.height = textMetrics.pixelHeight * 1.2;
 
-  // Gambar teks ke canvas
   ctx.font = `${fontSize * (resolution / 256)}px Arial`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.fillStyle = "#E2E8F0"; // Warna teks lembut
+  ctx.fillStyle = "#E2E8F0";
 
-  // Tambahkan bayangan untuk keterbacaan
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 6;
   ctx.shadowOffsetX = 2;

@@ -6,6 +6,7 @@ import {
   createMenuPage,
   createViewerPage,
   clearUI,
+  clearViewerUI,
   // updateViewerUIPosition,
   updateUIGroupPosition,
   createHelpPanel,
@@ -57,6 +58,7 @@ let wasAnswerCorrect = false;
 let wasMiniQuizCorrect = false;
 let currentState = null;
 let currentComponentIndex = -1;
+let currentDescriptionIndex = 0;
 
 function refreshUI() {
   clearUI();
@@ -72,7 +74,9 @@ function refreshUI() {
       createMenuPage(allUnlocked, hasAttemptedQuiz);
       break;
     case AppState.VIEWER:
-      reloadViewer();
+      if (currentComponentIndex !== -1) {
+        showViewer(currentComponentIndex);
+      }
       break;
     case AppState.MINI_QUIZ:
       createMiniQuizPage(components[currentComponentIndex]);
@@ -100,7 +104,17 @@ function refreshUI() {
       break;
   }
 }
+function showViewer(index) {
+  const component = components[index];
+  if (!component) return;
 
+  currentComponentIndex = index;
+  currentDescriptionIndex = 0; // Selalu reset ke halaman pertama saat ganti komponen
+
+  clearUI(); // Bersihkan UI dari state sebelumnya (misal: menu)
+  loadComponentModel(component.modelFile);
+  createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
+}
 function init() {
   audioListener = new THREE.AudioListener();
   camera.add(audioListener);
@@ -208,15 +222,11 @@ function playComponentAudio(audioFile) {
 }
 
 function reloadViewer() {
-  stopAudio();
-  clearUI();
-  unloadComponentModel();
-  if (currentComponentIndex < 0) currentComponentIndex = components.length - 1;
-  if (currentComponentIndex >= components.length) currentComponentIndex = 0;
-  createViewerPage(components[currentComponentIndex], currentComponentIndex);
-  loadComponentModel(components[currentComponentIndex].modelFile);
-  controls.enabled = true;
-  controls.target.set(0, 1, 0);
+  const component = components[currentComponentIndex];
+  if (!component) return;
+
+  clearViewerUI(); // Hanya bersihkan UI di viewer group, bukan semuanya
+  createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
 }
 
 function changeState(newState) {
@@ -321,31 +331,41 @@ function handleInteraction(action) {
     case "show_credits":
       changeState(AppState.CREDITS);
       break;
+    case "prev_description":
+      if (currentDescriptionIndex > 0) {
+        currentDescriptionIndex--;
+        reloadViewer();
+      }
+      break;
+    case "next_description":
+      const currentComp = components[currentComponentIndex];
+      if (
+        currentComp &&
+        currentDescriptionIndex < currentComp.description.length - 1
+      ) {
+        currentDescriptionIndex++;
+        reloadViewer();
+      }
+      break;
+
     case "next_component":
       if (isChangingComponent) return;
+      isChangingComponent = true;
 
-      const nextIndex = currentComponentIndex + 1;
-
-      if (nextIndex >= components.length) {
-        changeState(AppState.COMPLETION);
-        return;
-      }
-
-      if (components[nextIndex].unlocked) {
-        isChangingComponent = true;
-        currentComponentIndex++;
-        reloadViewer();
-        setTimeout(() => {
-          isChangingComponent = false;
-        }, CHANGE_DEBOUNCE_TIME);
+      // Jika komponen saat ini adalah yang terakhir belum terbuka
+      if (currentComponentIndex === highestComponentUnlocked) {
+        // Lanjut ke kuis singkat sebelum membuka komponen berikutnya
+        changeState(AppState.MINI_QUIZ);
+      } else if (currentComponentIndex < components.length - 1) {
+        // Jika komponen berikutnya sudah terbuka, langsung pindah
+        showViewer(currentComponentIndex + 1);
       } else {
-        if (
-          components[currentComponentIndex].quiz &&
-          components[currentComponentIndex].quiz.length > 0
-        ) {
-          changeState(AppState.MINI_QUIZ);
-        }
+        // Jika ini adalah komponen terakhir
+        changeState(AppState.COMPLETION);
       }
+      setTimeout(() => {
+        isChangingComponent = false;
+      }, CHANGE_DEBOUNCE_TIME);
       break;
     case "mini_quiz_correct":
       wasMiniQuizCorrect = true;
@@ -397,8 +417,9 @@ function handleInteraction(action) {
       if (action.startsWith("select_")) {
         const index = parseInt(action.split("_")[1], 10);
         if (!isNaN(index) && index >= 0 && index < components.length) {
-          currentComponentIndex = index;
-          changeState(AppState.VIEWER);
+          // --- MODIFIKASI --- Memanggil showViewer saat memilih komponen
+          showViewer(index);
+          currentState = AppState.VIEWER; // Set state secara manual
         }
       }
       break;
