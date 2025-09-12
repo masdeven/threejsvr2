@@ -362,7 +362,7 @@ export function createLandingPage(playerName) {
 // ui-creator.js
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  clearUI(); // Hapus semua UI yang ada di kedua grup
+  clearUI();
 
   // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
@@ -381,7 +381,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 
   // 1. PANEL LATAR BELAKANG
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
-  mainPanel.position.set(0, 0, 0); // Posisi relatif terhadap grup
+  mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
   // 2. JUDUL HALAMAN
@@ -397,7 +397,6 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const spacingY = 0.35;
   const startX = -spacingX;
   const startY = titleY - 0.4;
-
   components.forEach((comp, index) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
@@ -420,26 +419,17 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     viewerUIGroup.add(button);
   });
 
-  // 4. TOMBOL AKSI DI BAWAH
-  const actionButtonWidth = 2.2;
+  // 4. TOMBOL AKSI DI BAWAH (DITENGahkan)
+  const actionButtonWidth = 3.0; // Lebar disesuaikan
   const actionButtonHeight = 0.3;
   const actionButtonY = -panelHeight / 2 + 0.3;
-  const actionSpacingX = 2.4;
-  const backButton = createButton(
-    "< Kembali",
-    "back_to_landing",
-    actionButtonWidth,
-    actionButtonHeight
-  );
-  backButton.position.set(-actionSpacingX / 2, actionButtonY, 0.01);
-  viewerUIGroup.add(backButton);
   let quizButtonLabel, quizButtonAction, quizButtonColor;
   if (!allComponentsUnlocked) {
     quizButtonLabel = "Uji Pemahaman (Terkunci)";
     quizButtonAction = "locked";
     quizButtonColor = "#4A5568";
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Uji Pemahaman >";
+    quizButtonLabel = "Uji Pemahaman";
     quizButtonAction = "show_quiz";
     quizButtonColor = ACCENT_COLOR;
   } else {
@@ -457,8 +447,26 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   if (!allComponentsUnlocked) {
     quizButton.userData.colors = null;
   }
-  quizButton.position.set(actionSpacingX / 2, actionButtonY, 0.01);
+  quizButton.position.set(0, actionButtonY, 0.01); // Posisi X diatur ke 0 (tengah)
   viewerUIGroup.add(quizButton);
+
+  // 5. TOMBOL "X" KEMBALI (di sudut kiri atas panel)
+  const exitButtonSize = 0.25;
+  const padding = 0.15;
+  const exitButton = createButton(
+    "X",
+    "back_to_landing",
+    exitButtonSize,
+    exitButtonSize,
+    "rgba(45, 55, 72, 0.7)",
+    "circle"
+  );
+  exitButton.position.set(
+    -(panelWidth / 2) + padding + exitButtonSize / 2,
+    panelHeight / 2 - padding - exitButtonSize / 2,
+    0.02
+  );
+  viewerUIGroup.add(exitButton);
 
   // Atur posisi dan orientasi seluruh viewerUIGroup
   viewerUIGroup.position.copy(uiBasePosition);
@@ -750,13 +758,13 @@ export function createCompletionScreen(playerName) {
 // ui-creator.js
 
 export function createCreditsScreen() {
-  clearUI(); // Penting: Hapus UI yang ada di uiGroup sebelum menambahkan ke viewerUIGroup
+  clearUI();
 
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5); // Contoh posisi (bisa diubah)
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0); // Titik fokus kamera untuk group ini
-  const curveIntensity = 0.05; // Intensitas lengkungan
+  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const curveIntensity = 0.05;
 
-  // 1. Panel Teks Utama (menggunakan createTextPanel seperti di viewer)
+  // 1. Panel Teks Utama
   const creditsContent = `Aplikasi ini dikembangkan sebagai media pembelajaran interaktif komponen komputer berbasis WebXR.
 
 Pengembang: Mas Deven
@@ -767,12 +775,10 @@ Aset 3D & Komponen:
 
 Terima kasih atas dukungan dan partisipasi Anda dalam belajar bersama kami.
 `;
-  const descPanel = createTextPanel(creditsContent, 2.5); // Lebar panel
+  const descPanel = createTextPanel(creditsContent, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
-
-  // Atur posisi Z untuk lengkungan
-  descPanel.position.set(0, 0, 0); // Relatif terhadap viewerUIGroup
+  descPanel.position.set(0, 0, 0);
   viewerUIGroup.add(descPanel);
 
   // 2. Judul (di atas panel utama)
@@ -784,30 +790,33 @@ Terima kasih atas dukungan dan partisipasi Anda dalam belajar bersama kami.
     titleHeight
   );
   const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
-  const titleZ = -titleY * curveIntensity; // Efek lengkungan
+  const titleZ = -titleY * curveIntensity;
   titleLabel.position.set(0, titleY, titleZ);
   viewerUIGroup.add(titleLabel);
 
-  // 3. Tombol "Kembali" (di bawah panel utama, seperti tombol menu di viewer)
-  const actionButtonWidth = 2.0;
-  const actionButtonHeight = 0.25;
-  const buttonSpacing = 0.1;
-
-  const menuY = -panelHeight / 2 - actionButtonHeight / 2 - buttonSpacing;
-  const menuZ = -menuY * curveIntensity; // Efek lengkungan
-  const menuButton = createButton(
-    "Kembali ke Awal", // Teks tombol
-    "back_to_landing", // Aksi kembali ke landing page
-    actionButtonWidth,
-    actionButtonHeight
+  // 3. Tombol "X" Kembali (di luar panel kiri atas)
+  const exitButtonSize = 0.25;
+  const exitButton = createButton(
+    "X",
+    "back_to_landing",
+    exitButtonSize,
+    exitButtonSize,
+    "rgba(45, 55, 72, 0.7)",
+    "circle"
   );
-  menuButton.position.set(0, menuY, menuZ);
-  viewerUIGroup.add(menuButton);
 
-  // Atur posisi dan orientasi seluruh viewerUIGroup (tempat semua elemen kredit berada)
+  // Atur posisi agar sejajar dengan sudut kiri atas panel deskripsi
+  const exitX = -(panelWidth / 2) - exitButtonSize / 2 - 0.15; // Di sebelah kiri panel
+  const exitY = panelHeight / 2 - exitButtonSize / 2; // Sejajar dengan tepi atas panel deskripsi
+  const exitZ = -exitY * curveIntensity;
+  exitButton.position.set(exitX, exitY, exitZ);
+  viewerUIGroup.add(exitButton);
+
+  // Atur posisi dan orientasi seluruh viewerUIGroup
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 export function createQuizScreen(questionIndex) {
   const currentQuestion = quizData[questionIndex];
 
