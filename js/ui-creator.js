@@ -364,72 +364,71 @@ export function createLandingPage(playerName) {
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   clearUI();
 
-  // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  // --- Konfigurasi Tata Letak Melingkar ---
+  const isVR = isVRMode();
+  const centerPosition = new THREE.Vector3(0, isVR ? 1.4 : 1.6, 0);
+  const radius = isVR ? 2.0 : 3.5;
+  const angleSpan = Math.PI * 0.8;
+  const itemsPerRow = 5;
+  const rowHeight = 0.5;
 
-  // --- Perhitungan Dinamis untuk Ukuran Panel ---
-  const columns = 3;
-  const numRows = Math.ceil(components.length / columns);
-  const titleHeight = 0.35;
-  const materialGridHeight = numRows * 0.25 + (numRows - 1) * 0.1;
-  const actionButtonsHeight = 0.3;
-  const verticalPadding = 0.8;
-  const panelHeight =
-    titleHeight + materialGridHeight + actionButtonsHeight + verticalPadding;
-  const panelWidth = 5.0;
-
-  // 1. PANEL LATAR BELAKANG
-  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
-  mainPanel.position.set(0, 0, 0);
-  viewerUIGroup.add(mainPanel);
-
-  // 2. JUDUL HALAMAN
-  const titleY = panelHeight / 2 - 0.4;
+  // 1. JUDUL HALAMAN
   const titleLabel = createTitleLabel("Pilih Materi", 4.0, 0.35);
-  titleLabel.position.set(0, titleY, 0.01);
-  viewerUIGroup.add(titleLabel);
+  titleLabel.position.set(0, centerPosition.y + 0.9, -radius + 1);
+  titleLabel.lookAt(centerPosition);
+  uiGroup.add(titleLabel);
 
-  // 3. GRID TOMBOL MATERI
-  const buttonWidth = 1.4;
-  const buttonHeight = 0.25;
-  const spacingX = 1.6;
-  const spacingY = 0.35;
-  const startX = -spacingX;
-  const startY = titleY - 0.4;
+  // 2. GRID TOMBOL MATERI MELINGKAR
+  const startAngle = -angleSpan / 2;
+  const angleStep = angleSpan / (itemsPerRow - 1);
+
   components.forEach((comp, index) => {
-    const row = Math.floor(index / columns);
-    const col = index % columns;
+    const row = Math.floor(index / itemsPerRow);
+    const col = index % itemsPerRow;
+
+    const angle = startAngle + col * angleStep;
     const isUnlocked = comp.unlocked;
     const buttonLabel = isUnlocked ? comp.label : "🔒 Terkunci";
     const buttonColor = isUnlocked ? BG_COLOR : "#4A5568";
     const button = createButton(
       buttonLabel,
       isUnlocked ? `select_${index}` : "locked",
-      buttonWidth,
-      buttonHeight,
+      1.4,
+      0.25,
       buttonColor
     );
     if (!isUnlocked) {
       button.userData.colors = null;
     }
-    const buttonX = startX + col * spacingX;
-    const buttonY = startY - row * spacingY;
-    button.position.set(buttonX, buttonY, 0.01);
-    viewerUIGroup.add(button);
+
+    const x = radius * Math.sin(angle);
+    const z = -radius * Math.cos(angle);
+    const y = centerPosition.y + 0.5 - row * rowHeight;
+
+    button.position.set(x, y, z);
+    button.lookAt(centerPosition);
+    uiGroup.add(button);
   });
 
-  // 4. TOMBOL AKSI DI BAWAH (DITENGahkan)
-  const actionButtonWidth = 3.0; // Lebar disesuaikan
-  const actionButtonHeight = 0.3;
-  const actionButtonY = -panelHeight / 2 + 0.3;
+  // 3. TOMBOL AKSI DI BAWAH
+  const actionButtonY = centerPosition.y - 0.8;
+  const actionZ = -radius + 1.5;
+  const actionSpacingX = 2.4;
+
+  // Tombol Kembali
+  const exitButton = createButton("Kembali", "back_to_landing", 2.2, 0.3);
+  exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
+  exitButton.lookAt(centerPosition);
+  uiGroup.add(exitButton);
+
+  // Tombol Kuis/Laporan
   let quizButtonLabel, quizButtonAction, quizButtonColor;
   if (!allComponentsUnlocked) {
     quizButtonLabel = "Uji Pemahaman (Terkunci)";
     quizButtonAction = "locked";
     quizButtonColor = "#4A5568";
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Uji Pemahaman";
+    quizButtonLabel = "Uji Pemahaman >";
     quizButtonAction = "show_quiz";
     quizButtonColor = ACCENT_COLOR;
   } else {
@@ -440,37 +439,19 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const quizButton = createButton(
     quizButtonLabel,
     quizButtonAction,
-    actionButtonWidth,
-    actionButtonHeight,
+    2.2,
+    0.3,
     quizButtonColor
   );
+
+  // PERBAIKAN: Menggunakan variabel yang benar (allComponentsUnlocked)
   if (!allComponentsUnlocked) {
     quizButton.userData.colors = null;
   }
-  quizButton.position.set(0, actionButtonY, 0.01); // Posisi X diatur ke 0 (tengah)
-  viewerUIGroup.add(quizButton);
 
-  // 5. TOMBOL "X" KEMBALI (di sudut kiri atas panel)
-  const exitButtonSize = 0.25;
-  const padding = 0.15;
-  const exitButton = createButton(
-    "X",
-    "back_to_landing",
-    exitButtonSize,
-    exitButtonSize,
-    "rgba(45, 55, 72, 0.7)",
-    "circle"
-  );
-  exitButton.position.set(
-    -(panelWidth / 2) + padding + exitButtonSize / 2,
-    panelHeight / 2 - padding - exitButtonSize / 2,
-    0.02
-  );
-  viewerUIGroup.add(exitButton);
-
-  // Atur posisi dan orientasi seluruh viewerUIGroup
-  viewerUIGroup.position.copy(uiBasePosition);
-  viewerUIGroup.lookAt(uiLookAtPosition);
+  quizButton.position.set(actionSpacingX / 2, actionButtonY, actionZ);
+  quizButton.lookAt(centerPosition);
+  uiGroup.add(quizButton);
 }
 
 export function createViewerPage(component, index) {

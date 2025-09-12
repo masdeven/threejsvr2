@@ -412,9 +412,11 @@ function animate() {
 function render() {
   if (isVRMode()) {
     handleVRHover();
-    // Dalam mode VR, perbarui posisi kedua grup UI agar mengikuti headset
-    updateUIGroupPosition();
-    // updateViewerUIPosition();
+    // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
+    if (currentState !== AppState.MENU) {
+      updateUIGroupPosition();
+    }
+    // updateViewerUIPosition(); // Komentar ini tetap ada
   } else {
     controls.update();
     // Dalam mode non-VR, hanya UI viewer yang perlu mengikuti pergerakan kamera
