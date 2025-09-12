@@ -595,7 +595,7 @@ export function createViewerPage(component, index, descriptionIndex = 0) {
   // --- 6. Tombol Aksi ---
   const actionButtonSize = 0.25;
   const buttonSpacing = 0.1;
-  const actionX = -totalPanelWidth / 2 - actionButtonSize / 2 - 0.15;
+  const actionX = totalPanelWidth / 2 + actionButtonSize / 2 + 0.15;
 
   const menuButton = createButton(
     "X",
@@ -1046,7 +1046,7 @@ export function createQuizReportScreen(score, hasAttempted) {
 
   // Hitung posisi di sudut kiri atas panel
   exitButton.position.set(
-    -(panelWidth / 2) + padding + exitButtonSize / 2, // Kiri atas
+    panelWidth / 2 - padding - exitButtonSize / 2, // Kiri atas
     panelHeight / 2 - padding - exitButtonSize / 2, // Kiri atas
     0.02 // Sedikit di depan panel
   );
