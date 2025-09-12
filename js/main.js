@@ -203,11 +203,16 @@ function preloadAssets() {
       audioLoader.load(component.audioFile, () => {});
     }
   }
+
+  // Preload audio untuk interaksi tombol
+  audioLoader.load("assets/audio/button_press.mp3", () => {});
+  audioLoader.load("assets/audio/button_confirm.mp3", () => {});
 }
 
 function stopAudio() {
   if (sound && sound.isPlaying) sound.stop();
 }
+
 function playComponentAudio(audioFile) {
   stopAudio();
   if (!audioFile) {
@@ -216,6 +221,26 @@ function playComponentAudio(audioFile) {
   audioLoader.load(audioFile, (buffer) => {
     sound.setBuffer(buffer);
     sound.setLoop(false);
+    sound.setVolume(0.5);
+    sound.play();
+  });
+}
+
+// Fungsi untuk memainkan audio tombol navigasi/kembali
+function playButtonPressAudio() {
+  stopAudio();
+  audioLoader.load("assets/audio/button_press.mp3", (buffer) => {
+    sound.setBuffer(buffer);
+    sound.setVolume(0.5);
+    sound.play();
+  });
+}
+
+// Fungsi untuk memainkan audio tombol konfirmasi/lanjut
+function playButtonConfirmAudio() {
+  stopAudio();
+  audioLoader.load("assets/audio/button_confirm.mp3", (buffer) => {
+    sound.setBuffer(buffer);
     sound.setVolume(0.5);
     sound.play();
   });
@@ -276,6 +301,34 @@ function changeState(newState) {
 }
 
 function handleInteraction(action) {
+  // Panggil fungsi audio yang sesuai berdasarkan aksi
+  const confirmActions = [
+    "start_browser",
+    "start_vr",
+    "start",
+    "help",
+    "close_help",
+    "show_quiz",
+    "show_quiz_report",
+    "answer_correct",
+    "answer_incorrect",
+    "next_question",
+    "show_credits",
+    "prev_description",
+    "next_description",
+    "next_component",
+    "mini_quiz_correct",
+    "mini_quiz_incorrect",
+    "continue_after_mini_quiz",
+    "prev_component",
+  ];
+
+  if (confirmActions.includes(action) || action.startsWith("select_")) {
+    playButtonConfirmAudio();
+  } else if (action !== "play_audio" && action !== "locked") {
+    playButtonPressAudio();
+  }
+
   switch (action) {
     case "start_browser":
       changeState(AppState.LANDING);
@@ -403,7 +456,7 @@ function handleInteraction(action) {
       isChangingComponent = true;
 
       currentComponentIndex--;
-      reloadViewer();
+      showViewer(currentComponentIndex);
       setTimeout(() => {
         isChangingComponent = false;
       }, CHANGE_DEBOUNCE_TIME);
