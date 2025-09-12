@@ -242,32 +242,25 @@ function changeState(newState) {
 
   switch (newState) {
     case AppState.MODE_SELECTION:
-    case AppState.LANDING:
       controls.enabled = true;
       camera.position.set(0, 1.6, 5);
       controls.target.set(0, 1.6, 0);
       break;
+
+    // SEMUA STATE LAINNYA DIJADIKAN SATU DENGAN KONTROL VIEWER
     case AppState.MENU:
     case AppState.QUIZ:
     case AppState.QUIZ_RESULT:
     case AppState.QUIZ_REPORT:
     case AppState.COMPLETION:
+    case AppState.HELP:
+    case AppState.LANDING:
     case AppState.CREDITS:
-      controls.enabled = false;
-      camera.position.set(0, 1.6, 5);
-      controls.target.set(0, 1.6, 0);
-      break;
-
-    // GABUNGKAN LOGIKA UNTUK MINI_QUIZ_RESULT DENGAN VIEWER DAN MINI_QUIZ
     case AppState.MINI_QUIZ:
     case AppState.MINI_QUIZ_RESULT:
     case AppState.VIEWER:
       controls.enabled = true;
       controls.target.set(0, 1, 0);
-      break;
-
-    case AppState.HELP:
-      controls.enabled = false;
       break;
   }
 }
