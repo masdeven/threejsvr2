@@ -1,14 +1,36 @@
 export const components = [
   {
+    label: "Pengantar",
+    modelFile: null,
+    audioFile: "assets/audio/history.mp3",
+    description: [
+      "Komputer telah berevolusi melalui 5 generasi sejak 1940-an.",
+      "Generasi pertama (1946–1959) memakai tabung vakum, ukurannya besar dan boros daya.",
+      "Generasi kedua (1959–1964) mengganti tabung dengan transistor, lebih kecil dan efisien.",
+      "Generasi ketiga (1965–1971) menggunakan IC serta memperkenalkan monitor dan keyboard.",
+      "Generasi keempat (1971–1982) menghadirkan mikroprosesor dan komputer pribadi.",
+      "Generasi kelima (1980–sekarang) berkembang dengan AI, multimedia, dan pemrosesan modern.",
+    ],
+    unlocked: true,
+    quiz: [
+      {
+        question: "Komputer generasi pertama menggunakan tabung vakum.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
+      },
+    ],
+  },
+  {
     label: "Monitor",
     modelFile: "assets/models/monitor.glb",
     audioFile: "assets/audio/monitor.mp3",
     description: [
-      "Monitor adalah perangkat output yang menampilkan gambar, teks, dan video dari komputer.",
-      "Ada berbagai jenis monitor, seperti CRT, LCD, dan LED, masing-masing dengan teknologi tampilan yang berbeda.",
-      "Resolusi dan refresh rate adalah spesifikasi penting yang menentukan kualitas gambar pada monitor.",
+      "Monitor menampilkan teks, gambar, dan video sebagai keluaran komputer.",
+      "Generasi ketiga sudah mengenalkan monitor dan keyboard untuk interaksi pengguna.",
+      "Pada generasi keempat, monitor masih monokrom sebelum berkembang menjadi berwarna.",
+      "Generasi kelima membawa monitor dengan kualitas gambar lebih tajam dan multimedia.",
     ],
-    unlocked: true,
+    unlocked: false,
     quiz: [
       {
         question: "Monitor adalah perangkat output.",
@@ -22,9 +44,10 @@ export const components = [
     modelFile: "assets/models/keyboard.glb",
     audioFile: "assets/audio/keyboard.mp3",
     description: [
-      "Keyboard adalah perangkat input utama yang digunakan untuk memasukkan huruf, angka, dan perintah ke dalam komputer.",
-      "Tata letak keyboard yang paling umum adalah QWERTY, dinamai sesuai enam huruf pertama di baris atas.",
-      "Selain untuk mengetik, keyboard juga memiliki tombol fungsi (F1-F12) dan tombol khusus untuk navigasi dan shortcut.",
+      "Keyboard berfungsi memasukkan teks, angka, dan perintah ke komputer.",
+      "Generasi ketiga mengenalkan interaksi melalui keyboard dan monitor.",
+      "Tata letak QWERTY masih menjadi standar paling umum hingga kini.",
+      "Keyboard juga memiliki tombol fungsi dan navigasi untuk memudahkan penggunaan.",
     ],
     unlocked: false,
     quiz: [
@@ -40,9 +63,9 @@ export const components = [
     modelFile: "assets/models/mouse.glb",
     audioFile: "assets/audio/mouse.mp3",
     description: [
-      "Mouse adalah perangkat input yang digunakan untuk menggerakkan kursor dan melakukan klik pada layar komputer.",
-      "Mouse modern umumnya menggunakan sensor optik atau laser untuk melacak gerakan dengan presisi tinggi.",
-      "Tombol klik kanan pada mouse biasanya digunakan untuk membuka menu konteks yang berisi opsi tambahan.",
+      "Mouse digunakan untuk menggerakkan kursor dan memilih objek di layar.",
+      "Mouse modern memakai sensor optik atau laser untuk presisi tinggi.",
+      "Klik kanan biasanya menampilkan menu konteks berisi opsi tambahan.",
     ],
     unlocked: false,
     quiz: [
@@ -58,9 +81,9 @@ export const components = [
     modelFile: "assets/models/speaker.glb",
     audioFile: "assets/audio/speaker.mp3",
     description: [
-      "Speaker adalah perangkat output audio yang menghasilkan suara dari komputer, seperti musik, suara sistem, dan efek multimedia.",
-      "Speaker mengubah sinyal audio elektrik menjadi gelombang suara yang dapat didengar oleh telinga manusia.",
-      "Beberapa monitor sudah dilengkapi dengan speaker internal, namun speaker eksternal seringkali menawarkan kualitas suara yang lebih baik.",
+      "Speaker menghasilkan suara dari komputer, seperti musik atau efek sistem.",
+      "Kemampuan audio mulai hadir sejak generasi ketiga komputer.",
+      "Speaker internal praktis, tetapi speaker eksternal umumnya lebih baik kualitasnya.",
     ],
     unlocked: false,
     quiz: [
@@ -76,9 +99,10 @@ export const components = [
     modelFile: "assets/models/casing.glb",
     audioFile: "assets/audio/casing.mp3",
     description: [
-      "Casing adalah wadah yang melindungi komponen internal komputer serta membantu pengaturan sirkulasi udara.",
-      "Selain melindungi dari debu dan benturan, casing juga berperan penting dalam menjaga suhu komponen tetap dingin.",
-      "Casing tersedia dalam berbagai ukuran (form factor) seperti ATX, Micro-ATX, dan Mini-ITX untuk disesuaikan dengan motherboard.",
+      "Casing melindungi komponen internal komputer dan membantu sirkulasi udara.",
+      "Komputer generasi pertama seperti ENIAC berukuran raksasa, berbeda jauh dengan casing modern.",
+      "Selain perlindungan, casing juga berperan menjaga suhu komponen tetap stabil.",
+      "Ukuran casing bervariasi, seperti ATX, Micro-ATX, hingga Mini-ITX.",
     ],
     unlocked: false,
     quiz: [
@@ -94,9 +118,9 @@ export const components = [
     modelFile: "assets/models/motherboard.glb",
     audioFile: "assets/audio/motherboard.mp3",
     description: [
-      "Motherboard adalah papan sirkuit utama yang menghubungkan dan mengatur komunikasi antar komponen komputer.",
-      "Semua komponen seperti CPU, RAM, dan kartu grafis terpasang langsung atau terhubung ke motherboard.",
-      "Chipset pada motherboard menentukan kompatibilitas prosesor dan fitur-fitur lain yang didukung.",
+      "Motherboard adalah papan sirkuit utama tempat semua komponen komputer terhubung.",
+      "Evolusi motherboard dimulai dari tabung vakum, transistor, hingga IC di generasi ketiga.",
+      "Chipset menentukan kompatibilitas prosesor dan fitur yang tersedia pada motherboard.",
     ],
     unlocked: false,
     quiz: [
@@ -112,9 +136,10 @@ export const components = [
     modelFile: "assets/models/cpu.glb",
     audioFile: "assets/audio/cpu.mp3",
     description: [
-      "CPU (Central Processing Unit) adalah otak komputer yang bertanggung jawab menjalankan instruksi dan memproses data.",
-      "Kecepatan CPU diukur dalam Hertz (Hz), yang menunjukkan jumlah siklus instruksi yang dapat dijalankan per detik.",
-      "CPU modern memiliki beberapa 'core' yang memungkinkannya untuk melakukan banyak tugas secara bersamaan (multitasking).",
+      "CPU adalah otak komputer yang mengeksekusi instruksi dan memproses data.",
+      "Konsep CPU modern berasal dari arsitektur von Neumann pada komputer EDVAC.",
+      "Mikroprosesor pertama kali diperkenalkan oleh Intel pada tahun 1971.",
+      "Kecepatan CPU terus meningkat dari seri 4004 hingga prosesor modern.",
     ],
     unlocked: false,
     quiz: [
@@ -130,9 +155,10 @@ export const components = [
     modelFile: "assets/models/fan.glb",
     audioFile: "assets/audio/fan.mp3",
     description: [
-      "Fan adalah kipas pendingin yang menjaga suhu komponen komputer tetap stabil agar tidak mengalami overheat.",
-      "Fan bekerja dengan cara mengalirkan udara dingin ke komponen panas seperti CPU dan GPU, serta membuang udara panas keluar dari casing.",
-      "Selain fan, sistem pendingin lain seperti pendingin cair (liquid cooling) juga digunakan untuk performa yang lebih tinggi.",
+      "Fan berfungsi mendinginkan komponen komputer agar tidak overheat.",
+      "Kebutuhan pendingin sudah ada sejak komputer generasi pertama dengan tabung vakum.",
+      "Fan mengalirkan udara dingin ke CPU atau GPU dan membuang panas keluar casing.",
+      "Selain fan, ada juga pendingin cair untuk performa lebih tinggi.",
     ],
     unlocked: false,
     quiz: [
@@ -148,9 +174,9 @@ export const components = [
     modelFile: "assets/models/ram.glb",
     audioFile: "assets/audio/ram.mp3",
     description: [
-      "RAM (Random Access Memory) adalah memori sementara yang digunakan untuk menyimpan data yang sedang aktif diproses.",
-      "Semakin besar kapasitas RAM, semakin banyak aplikasi yang dapat dijalankan secara bersamaan tanpa melambat.",
-      "Data di dalam RAM akan hilang ketika komputer dimatikan, karena sifatnya yang 'volatile' (menguap).",
+      "RAM adalah memori sementara untuk menyimpan data yang sedang diproses.",
+      "Generasi awal memakai memori magnetik sebelum beralih ke chip semikonduktor.",
+      "RAM bersifat volatile, artinya data hilang saat komputer dimatikan.",
     ],
     unlocked: false,
     quiz: [
@@ -166,9 +192,9 @@ export const components = [
     modelFile: "assets/models/gpu.glb",
     audioFile: "assets/audio/gpu.mp3",
     description: [
-      "GPU (Graphics Processing Unit) dirancang khusus untuk mempercepat pemrosesan grafis dan visualisasi.",
-      "GPU sangat penting untuk aplikasi yang membutuhkan grafis intensif seperti game, desain 3D, dan video editing.",
-      "Selain grafis, GPU juga dapat digunakan untuk komputasi umum (GPGPU) pada bidang sains dan kecerdasan buatan.",
+      "GPU mempercepat pemrosesan grafis untuk menampilkan gambar dan video.",
+      "Perkembangan GPU penting di era multimedia dan komputer generasi kelima.",
+      "Selain grafis, GPU juga digunakan untuk komputasi umum seperti AI dan sains.",
     ],
     unlocked: false,
     quiz: [
@@ -184,9 +210,9 @@ export const components = [
     modelFile: "assets/models/psu.glb",
     audioFile: "assets/audio/psu.mp3",
     description: [
-      "PSU (Power Supply Unit) mengubah arus listrik dari sumber daya menjadi arus yang sesuai untuk komponen komputer.",
-      "Kapasitas PSU diukur dalam Watt (W) dan harus cukup untuk menyuplai daya ke semua komponen di dalam PC.",
-      "PSU dengan sertifikasi efisiensi (seperti 80 Plus Bronze, Gold, dll.) dapat menghemat energi dan menghasilkan lebih sedikit panas.",
+      "PSU mengubah listrik dari sumber daya menjadi arus yang sesuai untuk komponen.",
+      "Komputer generasi awal seperti ENIAC membutuhkan daya listrik yang sangat besar.",
+      "PSU modern lebih hemat energi, terutama yang bersertifikasi 80 Plus.",
     ],
     unlocked: false,
     quiz: [
@@ -202,9 +228,9 @@ export const components = [
     modelFile: "assets/models/storage.glb",
     audioFile: "assets/audio/storage.mp3",
     description: [
-      "Storage adalah media penyimpanan data jangka panjang pada komputer, seperti HDD atau SSD.",
-      "HDD (Hard Disk Drive) menggunakan piringan magnetik berputar untuk menyimpan data, menawarkan kapasitas besar dengan harga terjangkau.",
-      "SSD (Solid State Drive) menggunakan chip memori flash tanpa bagian bergerak, memberikan kecepatan baca/tulis yang jauh lebih tinggi daripada HDD.",
+      "Storage adalah media penyimpanan jangka panjang, seperti HDD atau SSD.",
+      "Evolusi storage dimulai dari pita magnetik, disket, hingga hard disk.",
+      "SSD modern lebih cepat karena memakai chip flash tanpa bagian bergerak.",
     ],
     unlocked: false,
     quiz: [

@@ -112,7 +112,9 @@ function showViewer(index) {
   currentDescriptionIndex = 0; // Selalu reset ke halaman pertama saat ganti komponen
 
   clearUI(); // Bersihkan UI dari state sebelumnya (misal: menu)
-  loadComponentModel(component.modelFile);
+  if (component.modelFile) {
+    loadComponentModel(component.modelFile);
+  }
   createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
 }
 function init() {
@@ -195,7 +197,9 @@ function showNameInputScreen() {
 function preloadAssets() {
   console.log("Preloading assets...");
   for (const component of components) {
-    loader.load(component.modelFile, () => {});
+    if (component.modelFile) {
+      loader.load(component.modelFile, () => {});
+    }
   }
 
   for (const component of components) {
