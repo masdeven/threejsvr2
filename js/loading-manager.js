@@ -36,4 +36,12 @@ loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
 
 loadingManager.onError = function (url) {
   console.error("There was an error loading " + url);
+  const loadingText = document.getElementById("loading-text");
+  if (loadingText) {
+    loadingText.innerText = "Gagal memuat aset. Coba muat ulang halaman.";
+  }
+  const progressBar = document.getElementById("progress-bar");
+  if (progressBar) progressBar.style.display = "none";
+  const spinner = document.querySelector(".spinner");
+  if (spinner) spinner.style.display = "none";
 };

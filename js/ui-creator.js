@@ -428,11 +428,11 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 
   let quizButtonLabel, quizButtonAction, quizButtonColor;
   if (!allComponentsUnlocked) {
-    quizButtonLabel = "Uji Pemahaman (Terkunci)";
+    quizButtonLabel = "Tes Akhir (Terkunci)";
     quizButtonAction = "locked";
     quizButtonColor = "#4A5568";
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Uji Pemahaman >";
+    quizButtonLabel = "Tes Akhir";
     quizButtonAction = "show_quiz";
     quizButtonColor = ACCENT_COLOR;
   } else {
@@ -460,7 +460,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 export function createViewerPage(component, index, descriptionIndex = 0) {
   // --- Konfigurasi Posisi dan Tata Letak ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
 
   clearViewerUI();
 
@@ -779,7 +779,7 @@ export function createCompletionScreen(playerName) {
 
   // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
 
   // --- Buat elemen-elemen UI ---
   let titleText = "Selamat!";
@@ -789,7 +789,7 @@ export function createCompletionScreen(playerName) {
   const titleLabel = createTitleLabel(titleText, 3.5, 0.4);
 
   const messageText =
-    "Semua materi sudah berhasil kamu pelajari! Sekarang, ayo uji pemahamanmu dengan mengerjakan kuis pada menu utama.";
+    "Semua materi sudah berhasil kamu pelajari! Sekarang, ayo uji pemahamanmu dengan mengerjakan Tes Akhir pada menu utama.";
   const messagePanel = createTextPanel(messageText, 4.0);
   const panelHeight = messagePanel.geometry.parameters.height;
 
@@ -832,20 +832,11 @@ export function createCreditsScreen() {
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
   const curveIntensity = 0.05;
 
   // 1. Panel Teks Utama
-  const creditsContent = `Aplikasi ini dikembangkan sebagai media pembelajaran interaktif komponen komputer berbasis WebXR.
-
-Pengembang: Mas Deven
-Teknologi: Three.js, WebXR API
-
-Aset 3D & Komponen:
-- Model Ruangan, Motherboard, CPU, RAM, GPU, Storage, PSU, Casing, Kipas, Monitor, Keyboard, Mouse, Speaker oleh [Sumber Aset Anda]
-
-Terima kasih atas dukungan dan partisipasi Anda dalam belajar bersama kami.
-`;
+  const creditsContent = `Aplikasi VR lintas platform dengan aksesbilitas tinggi untuk visualisas perangkat keras komputer.`;
   const descPanel = createTextPanel(creditsContent, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
@@ -888,19 +879,53 @@ Terima kasih atas dukungan dan partisipasi Anda dalam belajar bersama kami.
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-export function createQuizScreen(questionIndex) {
-  const currentQuestion = quizData[questionIndex];
+// js/ui-creator.js
 
-  const questionPanel = createTextPanel(currentQuestion.question, 4.5);
-  const panelHeight = questionPanel.geometry.parameters.height;
-  questionPanel.position.set(0, 1.8, 0);
+// Ganti fungsi createQuizScreen yang lama dengan yang ini:
+export function createQuizScreen(questionIndex) {
+  clearUI();
+
+  const currentQuestion = quizData[questionIndex];
+  const centerPosition = new THREE.Vector3(0, 1.6, 0);
+
+  // --- 1. Panel Latar Belakang Utama ---
+  const panelWidth = 4.8;
+  const panelHeight = 1.9;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.copy(centerPosition);
+  uiGroup.add(mainPanel);
+
+  // --- 2. Judul dan Indikator Progres ---
+  const titleText = `Uji Pemahaman (Soal ${questionIndex + 1}/${
+    quizData.length
+  })`;
+  const titleLabel = createTitleLabel(titleText, 4.5, 0.3);
+  titleLabel.position.set(
+    centerPosition.x,
+    centerPosition.y + 0.7, // Posisi Y di atas
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(titleLabel);
+
+  // --- 3. Panel Pertanyaan ---
+  const questionPanel = createTextPanel(currentQuestion.question, 4.4);
+  const questionPanelHeight = questionPanel.geometry.parameters.height;
+  questionPanel.position.set(
+    centerPosition.x,
+    centerPosition.y + 0.1, // Posisi Y di tengah atas
+    centerPosition.z + 0.01
+  );
   uiGroup.add(questionPanel);
 
-  const buttonWidth = 2.0;
-  const buttonHeight = 0.4;
-  const buttonY = 1.8 - panelHeight / 2 - buttonHeight / 2 - 0.2;
+  // --- 4. Tombol Pilihan Jawaban ---
+  const buttonWidth = 2.1;
+  const buttonHeight = 0.35;
+  // Posisi Y di bawah panel pertanyaan
+  const buttonY = centerPosition.y - questionPanelHeight / 2 - 0.4;
+  const buttonSpacingX = 2.3;
 
-  const positions = [-1.1, 1.1];
+  // Acak posisi tombol jawaban agar tidak selalu sama
+  const positions = [-buttonSpacingX / 2, buttonSpacingX / 2];
   const shuffledPositions = positions.sort(() => Math.random() - 0.5);
 
   currentQuestion.answers.forEach((answer, index) => {
@@ -908,48 +933,74 @@ export function createQuizScreen(questionIndex) {
     const action = isCorrect ? "answer_correct" : "answer_incorrect";
     const button = createButton(answer, action, buttonWidth, buttonHeight);
 
-    button.position.set(shuffledPositions[index], buttonY, 0);
+    button.position.set(
+      shuffledPositions[index],
+      buttonY,
+      centerPosition.z + 0.01
+    );
     uiGroup.add(button);
   });
 }
+
+// Ganti fungsi createQuizResultScreen yang lama dengan yang ini:
 export function createQuizResultScreen(isCorrect, questionIndex) {
+  clearUI();
+
   const currentQuestion = quizData[questionIndex];
-  const isLastQuestion = questionIndex >= quizData.length - 1;
+  const centerPosition = new THREE.Vector3(0, 1.6, 0);
 
+  // --- 1. Panel Latar Belakang Utama (Ukuran sama dengan layar pertanyaan) ---
+  const panelWidth = 4.8;
+  const panelHeight = 1.9;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.copy(centerPosition);
+  uiGroup.add(mainPanel);
+
+  // --- 2. Judul Hasil (Benar / Salah) ---
   const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
-  const titleColor = isCorrect ? "#28a745" : "#dc3545";
-
-  const titleLabel = createTitleLabel(titleText, 3.5, 0.5, titleColor);
-  titleLabel.position.set(0, 2.4, 0);
+  const titleColor = isCorrect ? "#28a745" : "#dc3545"; // Hijau untuk benar, Merah untuk salah
+  const titleLabel = createTitleLabel(titleText, 3.5, 0.45, titleColor);
+  titleLabel.position.set(
+    centerPosition.x,
+    centerPosition.y + 0.65,
+    centerPosition.z + 0.01
+  );
   uiGroup.add(titleLabel);
 
-  const explanationText = `Soal: ${
-    currentQuestion.question
-  }, dan jawaban yang benar adalah ${
+  // --- 3. Panel Penjelasan ---
+  const explanationText = `**Jawaban yang benar adalah:**\n${
     currentQuestion.answers[currentQuestion.correctAnswerIndex]
-  }.`;
-
-  const explanationPanel = createTextPanel(explanationText, 4.5);
-  const panelHeight = explanationPanel.geometry.parameters.height;
-  explanationPanel.position.set(0, 1.6, 0);
+  }`;
+  const explanationPanel = createTextPanel(explanationText, 4.4);
+  const panelHeight2 = explanationPanel.geometry.parameters.height;
+  explanationPanel.position.set(
+    centerPosition.x,
+    centerPosition.y,
+    centerPosition.z + 0.01
+  );
   uiGroup.add(explanationPanel);
 
-  const backButton = createButton("Lanjutkan", "next_question", 2.5, 0.5);
-  const buttonHeight = backButton.geometry.parameters.height;
-  const buttonY = 1.6 - panelHeight / 2 - buttonHeight / 2 - 0.2;
-  backButton.position.set(0, buttonY, 0);
-  uiGroup.add(backButton);
+  // --- 4. Tombol Lanjutkan ---
+  const isLastQuestion = questionIndex >= quizData.length - 1;
+  const buttonText = isLastQuestion
+    ? "Lihat Hasil"
+    : "Lanjut ke Soal Berikutnya";
+
+  const continueButton = createButton(
+    buttonText,
+    "next_question",
+    3.0,
+    0.35,
+    ACCENT_COLOR
+  );
+  const buttonY = centerPosition.y - panelHeight2 / 2 - 0.4;
+  continueButton.position.set(
+    centerPosition.x,
+    buttonY,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(continueButton);
 }
-
-// ui-creator.js
-
-// ui-creator.js
-
-// ui-creator.js
-
-// ui-creator.js
-
-// ui-creator.js
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -985,7 +1036,7 @@ export function createQuizReportScreen(score, hasAttempted) {
 
   // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
 
   // 1. PANEL LATAR BELAKANG
   const panelWidth = 4.8;
@@ -1005,7 +1056,7 @@ export function createQuizReportScreen(score, hasAttempted) {
   if (!hasAttempted) {
     // Tampilan jika kuis belum dikerjakan
     const reportText =
-      "Anda harus menyelesaikan semua materi dan mengerjakan Uji Pemahaman terlebih dahulu untuk melihat laporan nilai.";
+      "Anda harus menyelesaikan semua materi dan mengerjakan Tes Akhir terlebih dahulu untuk melihat laporan nilai.";
     const reportBody = createBodyText(reportText, 4.2);
     reportBody.position.set(0, 0, 0.01);
     viewerUIGroup.add(reportBody);
@@ -1059,7 +1110,7 @@ export function createQuizReportScreen(score, hasAttempted) {
 export function createMiniQuizPage(component) {
   // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
   const curveIntensity = 0.05; // Mengatur seberapa cekung UI
 
   const currentQuestion = component.quiz[0];
@@ -1073,7 +1124,7 @@ export function createMiniQuizPage(component) {
   // --- Judul Halaman Mini Quiz ---
   const titleWidth = 2.0;
   const titleHeight = 0.3;
-  const titleLabel = createTitleLabel("Kuis Singkat", titleWidth, titleHeight);
+  const titleLabel = createTitleLabel("Mini Kuis", titleWidth, titleHeight);
   const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
   const titleZ = -titleY * curveIntensity;
   titleLabel.position.set(0, titleY, titleZ);
@@ -1104,7 +1155,7 @@ export function createMiniQuizPage(component) {
 export function createMiniQuizResultPage(isCorrect) {
   // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
   const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.5, 0);
+  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
   const curveIntensity = 0.05;
 
   // --- Teks Pesan Hasil ---
@@ -1149,34 +1200,42 @@ export function createMiniQuizResultPage(isCorrect) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 export function createModeSelectionPage() {
+  clearUI();
+
+  // --- Judul Halaman ---
   const titleLabel = createTitleLabel("Pilih Mode Pengalaman", 4, 0.5);
-  titleLabel.position.set(0, 2.3, 0); // Diubah menjadi 0
+  // Posisikan judul di bagian atas layar
+  titleLabel.position.set(0, 2.2, 0);
   uiGroup.add(titleLabel);
 
-  const buttonWidth = 2.5;
+  // --- Konfigurasi Tombol ---
+  const buttonWidth = 3.0; // Tombol dibuat sedikit lebih besar
   const buttonHeight = 0.4;
-  const spacing = 0.2;
-  const startY = 1.6;
+  const spacing = 0.45; // Jarak vertikal antar tombol
+  const startY = 1.6; // Posisi Y untuk tombol pertama
 
-  // Tombol untuk Mode Browser
+  // --- Tombol untuk Mode Browser ---
   const browserButton = createButton(
     "Mode Browser",
     "start_browser",
     buttonWidth,
-    buttonHeight
+    buttonHeight,
+    ACCENT_COLOR // Warna aksen untuk pilihan default
   );
-  browserButton.position.set(0, startY, 0); // Diubah menjadi 0
+  browserButton.position.set(0, startY, 0);
   uiGroup.add(browserButton);
 
-  // Tombol untuk Mode VR
+  // --- Tombol untuk Mode VR ---
   const vrButton = createButton(
     "Mode VR",
     "start_vr",
     buttonWidth,
     buttonHeight
   );
-  vrButton.position.set(0, startY - (buttonHeight + spacing), 0); // Diubah menjadi 0
+  // Posisikan tombol kedua tepat di bawah tombol pertama
+  vrButton.position.set(0, startY - spacing, 0);
   uiGroup.add(vrButton);
 }
 export function updateUIGroupPosition() {

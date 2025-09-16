@@ -24,7 +24,7 @@ camera.position.set(0, 1.6, 4.5);
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.localClippingEnabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
@@ -49,9 +49,9 @@ controls.update();
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-dirLight.position.set(5, 10, 7.5);
-scene.add(dirLight);
+// const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+// dirLight.position.set(5, 10, 7.5);
+// scene.add(dirLight);
 
 // Environment
 new RGBELoader(loadingManager)
