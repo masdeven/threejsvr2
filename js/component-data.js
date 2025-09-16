@@ -95,25 +95,6 @@ export const components = [
     ],
   },
   {
-    label: "Casing",
-    modelFile: "assets/models/casing.glb",
-    audioFile: "assets/audio/casing.mp3",
-    description: [
-      "Casing melindungi komponen internal komputer dan membantu sirkulasi udara.",
-      "Komputer generasi pertama seperti ENIAC berukuran raksasa, berbeda jauh dengan casing modern.",
-      "Selain perlindungan, casing juga berperan menjaga suhu komponen tetap stabil.",
-      "Ukuran casing bervariasi, seperti ATX, Micro-ATX, hingga Mini-ITX.",
-    ],
-    unlocked: false,
-    quiz: [
-      {
-        question: "Casing berfungsi melindungi komponen komputer.",
-        answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
-      },
-    ],
-  },
-  {
     label: "Motherboard",
     modelFile: "assets/models/motherboard.glb",
     audioFile: "assets/audio/motherboard.mp3",
@@ -236,6 +217,25 @@ export const components = [
     quiz: [
       {
         question: "SSD dan HDD termasuk media penyimpanan jangka panjang.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
+      },
+    ],
+  },
+  {
+    label: "Casing",
+    modelFile: "assets/models/casing.glb",
+    audioFile: "assets/audio/casing.mp3",
+    description: [
+      "Casing melindungi komponen internal komputer dan membantu sirkulasi udara.",
+      "Komputer generasi pertama seperti ENIAC berukuran raksasa, berbeda jauh dengan casing modern.",
+      "Selain perlindungan, casing juga berperan menjaga suhu komponen tetap stabil.",
+      "Ukuran casing bervariasi, seperti ATX, Micro-ATX, hingga Mini-ITX.",
+    ],
+    unlocked: false,
+    quiz: [
+      {
+        question: "Casing berfungsi melindungi komponen komputer.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
       },
