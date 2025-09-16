@@ -378,13 +378,28 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const itemsPerRow = 5;
   const rowHeight = 0.5;
 
-  // 1. JUDUL HALAMAN
+  // 1. LATAR BELAKANG JUDUL
+  const titleBgWidth = 4.2;
+  const titleBgHeight = 0.5;
+  const titleBackground = createUIPanel(
+    titleBgWidth,
+    titleBgHeight,
+    0.05,
+    "#1A202C",
+    0.9
+  );
+  // Posisikan judul lebih ke atas
+  titleBackground.position.set(0, centerPosition.y + 0.9, -radius + 0.98);
+  titleBackground.lookAt(centerPosition);
+  uiGroup.add(titleBackground);
+
+  // 2. JUDUL HALAMAN
   const titleLabel = createTitleLabel("Pilih Materi", 4.0, 0.35);
   titleLabel.position.set(0, centerPosition.y + 0.9, -radius + 1);
   titleLabel.lookAt(centerPosition);
   uiGroup.add(titleLabel);
 
-  // 2. GRID TOMBOL MATERI MELINGKAR
+  // 3. GRID TOMBOL MATERI MELINGKAR (Dinaikkan posisinya)
   const startAngle = -angleSpan / 2;
   const angleStep = angleSpan / (itemsPerRow - 1);
 
@@ -409,13 +424,15 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 
     const x = radius * Math.sin(angle);
     const z = -radius * Math.cos(angle);
-    const y = centerPosition.y + 0.5 - row * rowHeight;
+    // Sesuaikan posisi Y tombol materi
+    const y = centerPosition.y + 0.4 - row * rowHeight;
 
     button.position.set(x, y, z);
     button.lookAt(centerPosition);
     uiGroup.add(button);
   });
 
+  // 4. Tombol Aksi (Dinaikkan posisinya)
   const actionButtonY = centerPosition.y - 0.8;
   const actionZ = -radius + 1.5;
   const actionSpacingX = 2.4;
@@ -835,7 +852,7 @@ export function createCreditsScreen() {
   const curveIntensity = 0.05;
 
   // 1. Panel Teks Utama
-  const creditsContent = `Aplikasi VR lintas platform dengan aksesbilitas tinggi untuk visualisas perangkat keras komputer.`;
+  const creditsContent = `Aplikasi VR lintas platform untuk visualisas perangkat keras komputer.`;
   const descPanel = createTextPanel(creditsContent, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
@@ -878,52 +895,45 @@ export function createCreditsScreen() {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-// js/ui-creator.js
-
 // Ganti fungsi createQuizScreen yang lama dengan yang ini:
 export function createQuizScreen(questionIndex) {
   clearUI();
 
+  const centerPosition = new THREE.Vector3(0, 1.65, 0);
   const currentQuestion = quizData[questionIndex];
-  const centerPosition = new THREE.Vector3(0, 1.6, 0);
 
-  // --- 1. Panel Latar Belakang Utama ---
   const panelWidth = 4.8;
-  const panelHeight = 1.9;
+  const panelHeight = 1.6;
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.copy(centerPosition);
   uiGroup.add(mainPanel);
 
-  // --- 2. Judul dan Indikator Progres ---
   const titleText = `Uji Pemahaman (Soal ${questionIndex + 1}/${
     quizData.length
   })`;
   const titleLabel = createTitleLabel(titleText, 4.5, 0.3);
   titleLabel.position.set(
     centerPosition.x,
-    centerPosition.y + 0.7, // Posisi Y di atas
+    centerPosition.y + 0.6,
     centerPosition.z + 0.01
   );
   uiGroup.add(titleLabel);
 
-  // --- 3. Panel Pertanyaan ---
   const questionPanel = createTextPanel(currentQuestion.question, 4.4);
-  const questionPanelHeight = questionPanel.geometry.parameters.height;
   questionPanel.position.set(
     centerPosition.x,
-    centerPosition.y + 0.1, // Posisi Y di tengah atas
+    centerPosition.y + 0.02,
     centerPosition.z + 0.01
   );
   uiGroup.add(questionPanel);
 
-  // --- 4. Tombol Pilihan Jawaban ---
   const buttonWidth = 2.1;
   const buttonHeight = 0.35;
-  // Posisi Y di bawah panel pertanyaan
-  const buttonY = centerPosition.y - questionPanelHeight / 2 - 0.4;
   const buttonSpacingX = 2.3;
 
-  // Acak posisi tombol jawaban agar tidak selalu sama
+  // --- [PERBAIKAN] Posisi Y tombol dikaitkan ke panel utama ---
+  const buttonY = centerPosition.y - panelHeight / 2 + buttonHeight / 2 + 0.15;
+
   const positions = [-buttonSpacingX / 2, buttonSpacingX / 2];
   const shuffledPositions = positions.sort(() => Math.random() - 0.5);
 
@@ -945,54 +955,54 @@ export function createQuizScreen(questionIndex) {
 export function createQuizResultScreen(isCorrect, questionIndex) {
   clearUI();
 
+  const centerPosition = new THREE.Vector3(0, 1.65, 0);
   const currentQuestion = quizData[questionIndex];
-  const centerPosition = new THREE.Vector3(0, 1.6, 0);
 
-  // --- 1. Panel Latar Belakang Utama (Ukuran sama dengan layar pertanyaan) ---
   const panelWidth = 4.8;
-  const panelHeight = 1.9;
+  const panelHeight = 1.6;
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.copy(centerPosition);
   uiGroup.add(mainPanel);
 
-  // --- 2. Judul Hasil (Benar / Salah) ---
   const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
-  const titleColor = isCorrect ? "#28a745" : "#dc3545"; // Hijau untuk benar, Merah untuk salah
+  const titleColor = isCorrect ? "#28a745" : "#dc3545";
   const titleLabel = createTitleLabel(titleText, 3.5, 0.45, titleColor);
   titleLabel.position.set(
     centerPosition.x,
-    centerPosition.y + 0.65,
+    centerPosition.y + 0.55,
     centerPosition.z + 0.01
   );
   uiGroup.add(titleLabel);
 
-  // --- 3. Panel Penjelasan ---
   const explanationText = `**Jawaban yang benar adalah:**\n${
     currentQuestion.answers[currentQuestion.correctAnswerIndex]
   }`;
   const explanationPanel = createTextPanel(explanationText, 4.4);
-  const panelHeight2 = explanationPanel.geometry.parameters.height;
   explanationPanel.position.set(
     centerPosition.x,
-    centerPosition.y,
+    centerPosition.y - 0.1,
     centerPosition.z + 0.01
   );
   uiGroup.add(explanationPanel);
 
-  // --- 4. Tombol Lanjutkan ---
   const isLastQuestion = questionIndex >= quizData.length - 1;
   const buttonText = isLastQuestion
     ? "Lihat Hasil"
     : "Lanjut ke Soal Berikutnya";
 
+  const buttonHeight = 0.35; // Definisikan tinggi tombol untuk perhitungan
+
   const continueButton = createButton(
     buttonText,
     "next_question",
     3.0,
-    0.35,
+    buttonHeight,
     ACCENT_COLOR
   );
-  const buttonY = centerPosition.y - panelHeight2 / 2 - 0.4;
+
+  // --- [PERBAIKAN] Posisi Y tombol dikaitkan ke panel utama ---
+  const buttonY = centerPosition.y - panelHeight / 2 + buttonHeight / 2 + 0.15;
+
   continueButton.position.set(
     centerPosition.x,
     buttonY,
