@@ -8,17 +8,12 @@ const pointer = new THREE.Vector2();
 let interactionCallback = null;
 let lastIntersectedButton = null;
 
-// The old draggingState and handleScroll are not needed for the new scroll system.
-// let draggingState = { ... };
-// function handleScroll(...) { ... }
-
 function getIntersectedObject(x, y) {
   pointer.set(x, y);
   raycaster.setFromCamera(pointer, camera);
   const intersects = raycaster.intersectObjects([uiGroup, viewerUIGroup], true);
   if (intersects.length > 0) {
     const firstHit = intersects[0].object;
-    // We only care about objects that are buttons.
     if (firstHit.userData.isButton) {
       return firstHit;
     }

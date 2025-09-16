@@ -11,10 +11,9 @@ scene.add(uiGroup);
 export const viewerUIGroup = new THREE.Group();
 scene.add(viewerUIGroup);
 
-// Ganti konstanta warna di bagian atas file
-const BG_COLOR = "#2D3748"; // Abu-abu kebiruan yang modern
+const BG_COLOR = "#2D3748";
 const TEXT_COLOR = "#FFFFFF";
-const ACCENT_COLOR = "#3182CE"; // Biru sebagai warna aksen
+const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 
 function getResolution() {

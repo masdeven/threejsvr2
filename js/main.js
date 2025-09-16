@@ -7,7 +7,6 @@ import {
   createViewerPage,
   clearUI,
   clearViewerUI,
-  // updateViewerUIPosition,
   updateUIGroupPosition,
   createHelpPanel,
   createQuizScreen,
@@ -24,11 +23,15 @@ import {
   loadComponentModel,
   unloadComponentModel,
   updateModelRotation,
+  setupDRACOLoader,
+  setupKTX2Loader,
 } from "./model-loader.js";
 import { setupInteraction, handleVRHover } from "./interaction-manager.js";
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
 import { quizData } from "./quiz-data.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 let audioListener, sound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
@@ -121,6 +124,15 @@ function init() {
   audioListener = new THREE.AudioListener();
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
+
+  const ktx2Loader = new KTX2Loader()
+    .setTranscoderPath("assets/basis/")
+    .detectSupport(renderer);
+  setupKTX2Loader(ktx2Loader);
+
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath("assets/draco/");
+  setupDRACOLoader(dracoLoader);
 
   setupVR();
   renderer.xr.addEventListener("sessionstart", () => {

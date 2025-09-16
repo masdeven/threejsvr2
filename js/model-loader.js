@@ -1,17 +1,16 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { scene, renderer } from "./scene-setup.js";
+import { scene } from "./scene-setup.js";
 import { loadingManager } from "./loading-manager.js";
 
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("assets/draco/");
-
 export const loader = new GLTFLoader(loadingManager);
-loader.setDRACOLoader(dracoLoader);
 
 export function setupKTX2Loader(ktx2Loader) {
   loader.setKTX2Loader(ktx2Loader);
+}
+
+export function setupDRACOLoader(dracoLoader) {
+  loader.setDRACOLoader(dracoLoader);
 }
 
 let currentModel = null;
