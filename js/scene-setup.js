@@ -2,10 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { loadingManager } from "./loading-manager.js";
-import { setupKTX2Loader } from "./model-loader.js";
-import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { loader as gltfLoader } from "./model-loader.js";
 
 // Scene
 export const scene = new THREE.Scene();
@@ -29,11 +26,6 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 document.getElementById("container").appendChild(renderer.domElement);
-
-const ktx2Loader = new KTX2Loader()
-  .setTranscoderPath("assets/basis/")
-  .detectSupport(renderer);
-setupKTX2Loader(ktx2Loader);
 
 // Controls
 export const controls = new OrbitControls(camera, renderer.domElement);
@@ -62,16 +54,9 @@ new RGBELoader(loadingManager)
     scene.background = texture;
   });
 
-// --- TAMBAHKAN BLOK KODE BARU DI SINI ---
 // Load Environment Room Model
-const dracoLoader = new DRACOLoader(loadingManager);
-dracoLoader.setDecoderPath("assets/draco/"); // Pastikan path ini benar
-
-const gltfLoader = new GLTFLoader(loadingManager);
-gltfLoader.setDRACOLoader(dracoLoader);
-
 gltfLoader.load(
-  "assets/models/Ruangan_Optimal.glb", // Pastikan file ini ada di root folder proyek Anda
+  "assets/models/Ruangan_Optimal.glb",
   (gltf) => {
     const room = gltf.scene;
     scene.add(room);

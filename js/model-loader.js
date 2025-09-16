@@ -14,9 +14,10 @@ export function setupDRACOLoader(dracoLoader) {
 }
 
 let currentModel = null;
-let isDragging = false;
 let activeLoad = null;
 const TABLE_HEIGHT = 0.9;
+export let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
 
 export function loadComponentModel(url) {
   if (activeLoad) {
@@ -82,7 +83,30 @@ export function unloadComponentModel() {
     currentModel = null;
   }
 }
+export function startDragging(event) {
+  isDragging = true;
+  previousMousePosition.x = event.clientX;
+}
 
+// Fungsi untuk menghentikan interaksi drag
+export function stopDragging() {
+  isDragging = false;
+}
+
+// Fungsi untuk menangani pergerakan saat drag
+export function dragModel(event) {
+  if (!isDragging || !currentModel) return;
+
+  const deltaX = event.clientX - previousMousePosition.x;
+  // Kecepatan rotasi bisa disesuaikan dengan mengubah nilai 0.01
+  currentModel.rotation.y += deltaX * 0.01;
+  previousMousePosition.x = event.clientX;
+}
+
+// Fungsi untuk mengambil model yang sedang aktif
+export function getCurrentModel() {
+  return currentModel;
+}
 export function updateModelRotation() {
   if (currentModel && !isDragging) {
     currentModel.rotation.y += 0.005;

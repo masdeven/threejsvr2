@@ -25,6 +25,7 @@ import {
   updateModelRotation,
   setupDRACOLoader,
   setupKTX2Loader,
+  isDragging,
 } from "./model-loader.js";
 import { setupInteraction, handleVRHover } from "./interaction-manager.js";
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
@@ -290,29 +291,30 @@ function changeState(newState) {
 
   currentState = newState;
   refreshUI();
+  if (!isDragging) {
+    switch (newState) {
+      case AppState.MODE_SELECTION:
+        controls.enabled = true;
+        camera.position.set(0, 1.6, 5);
+        controls.target.set(0, 1.6, 0);
+        break;
 
-  switch (newState) {
-    case AppState.MODE_SELECTION:
-      controls.enabled = true;
-      camera.position.set(0, 1.6, 5);
-      controls.target.set(0, 1.6, 0);
-      break;
-
-    // SEMUA STATE LAINNYA DIJADIKAN SATU DENGAN KONTROL VIEWER
-    case AppState.MENU:
-    case AppState.QUIZ:
-    case AppState.QUIZ_RESULT:
-    case AppState.QUIZ_REPORT:
-    case AppState.COMPLETION:
-    case AppState.HELP:
-    case AppState.LANDING:
-    case AppState.CREDITS:
-    case AppState.MINI_QUIZ:
-    case AppState.MINI_QUIZ_RESULT:
-    case AppState.VIEWER:
-      controls.enabled = true;
-      controls.target.set(0, 1, 0);
-      break;
+      // SEMUA STATE LAINNYA DIJADIKAN SATU DENGAN KONTROL VIEWER
+      case AppState.MENU:
+      case AppState.QUIZ:
+      case AppState.QUIZ_RESULT:
+      case AppState.QUIZ_REPORT:
+      case AppState.COMPLETION:
+      case AppState.HELP:
+      case AppState.LANDING:
+      case AppState.CREDITS:
+      case AppState.MINI_QUIZ:
+      case AppState.MINI_QUIZ_RESULT:
+      case AppState.VIEWER:
+        controls.enabled = true;
+        controls.target.set(0, 1, 0);
+        break;
+    }
   }
 }
 

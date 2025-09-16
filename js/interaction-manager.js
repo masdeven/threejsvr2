@@ -2,9 +2,17 @@ import * as THREE from "three";
 import { scene, camera, renderer, controls } from "./scene-setup.js";
 import { getVRControllers } from "./vr-manager.js";
 import { uiGroup, viewerUIGroup, FONT } from "./ui-creator.js";
+import {
+  startDragging,
+  stopDragging,
+  dragModel,
+  getCurrentModel,
+} from "./model-loader.js";
+import { isVRMode } from "./vr-manager.js";
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
+let hoveredObject = null;
 let interactionCallback = null;
 let lastIntersectedButton = null;
 
@@ -144,40 +152,80 @@ function handleScrollClick(action, scrollParent) {
     );
   }
 }
+function onClick(event) {
+  if (isVRMode()) return;
+
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(pointer, camera);
+
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+  for (const intersect of intersects) {
+    let interactableObject = intersect.object;
+    while (interactableObject) {
+      if (interactableObject.userData.action) {
+        if (interactionCallback) {
+          interactionCallback(interactableObject.userData.action);
+        }
+        return;
+      }
+      interactableObject = interactableObject.parent;
+    }
+  }
+}
 
 export function setupInteraction(callback) {
   interactionCallback = callback;
-  const domElement = renderer.domElement;
+  const targetElement = renderer.domElement;
 
-  domElement.addEventListener("pointermove", (event) => {
-    // Hover logic remains the same
+  targetElement.addEventListener("click", onClick);
+  targetElement.addEventListener("mousemove", (event) => {
+    if (isVRMode()) return;
+
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
     const intersectedObject = getIntersectedObject(x, y);
-    handleHover(intersectedObject);
+    handleHover(intersectedObject); // <- pakai logika hover lama
   });
 
-  domElement.addEventListener("pointerdown", (event) => {
+  // --- AWAL MODIFIKASI ROTASI MANUAL ---
+  const raycasterDrag = new THREE.Raycaster();
+
+  targetElement.addEventListener("pointerdown", (event) => {
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
-    const intersectedObject = getIntersectedObject(x, y);
+    const uiHit = getIntersectedObject(x, y);
+    if (uiHit) {
+      // Pointer sedang di atas tombol, jangan mulai drag model
+      return;
+    }
+    const currentModel = getCurrentModel();
+    if (!currentModel) return;
 
-    if (intersectedObject && intersectedObject.userData.isButton) {
-      const action = intersectedObject.userData.action;
-      const scrollParent = intersectedObject.userData.scrollParent;
+    // Cek apakah pointer mengenai model
+    pointer.x = x;
+    pointer.y = y;
+    raycasterDrag.setFromCamera(pointer, camera);
 
-      // --- PERBAIKAN DI SINI ---
-      if (action === "scroll_up" || action === "scroll_down") {
-        handleScrollClick(action, scrollParent); // Panggil fungsi scroll
-      } else if (interactionCallback) {
-        interactionCallback(action); // Kirim aksi lain ke main.js
-      }
+    const intersects = raycasterDrag.intersectObject(currentModel, true);
+
+    if (intersects.length > 0) {
+      controls.enabled = false; // Nonaktifkan OrbitControls
+      startDragging(event);
     }
   });
 
-  // pointerup listener remains the same
+  window.addEventListener("pointermove", (event) => {
+    dragModel(event); // Fungsi ini sudah memiliki pengecekan isDragging
+  });
+
   window.addEventListener("pointerup", () => {
-    /* ... */
+    if (!controls.enabled) {
+      controls.enabled = true; // Aktifkan kembali OrbitControls
+    }
+    stopDragging();
   });
 
   const controllers = getVRControllers();
