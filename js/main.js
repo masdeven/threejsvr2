@@ -51,6 +51,7 @@ let isChangingComponent = false;
 let stats;
 const CHANGE_DEBOUNCE_TIME = 500;
 const clock = new THREE.Clock(); // Tambahkan ini
+let confettiEffect = null;
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
@@ -109,7 +110,7 @@ function refreshUI() {
       createQuizReportScreen(quizScore, hasAttemptedQuiz);
       break;
     case AppState.COMPLETION:
-      createCompletionScreen(playerName);
+      confettiEffect = createCompletionScreen(playerName);
       break;
     case AppState.CREDITS:
       createCreditsScreen(creditsData, currentCreditIndex);
@@ -302,6 +303,9 @@ function reloadCreditsScreen() {
 }
 function changeState(newState) {
   if (currentState === newState) return;
+  if (currentState === AppState.COMPLETION) {
+    stopConfettiEffect();
+  }
   stopAudio();
 
   // Cegah model hilang saat transisi antara viewer, mini quiz, dan hasilnya
@@ -543,7 +547,12 @@ function handleInteraction(action) {
       break;
   }
 }
-
+function stopConfettiEffect() {
+  if (confettiEffect) {
+    confettiEffect.destroy(); // Panggil metode destroy yang akan kita buat
+    confettiEffect = null; // Reset variabel
+  }
+}
 function animate() {
   renderer.setAnimationLoop(render);
 }
@@ -570,6 +579,9 @@ function render() {
     updateModelRotation();
   }
 
+  if (confettiEffect) {
+    confettiEffect.update(deltaTime);
+  }
   updateAvatar(deltaTime); // Tambahkan ini
 
   renderer.render(scene, camera);

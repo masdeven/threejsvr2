@@ -861,51 +861,131 @@ export function createHelpPanel() {
   closeButton.position.set(0, closeButtonY, 0);
   uiGroup.add(closeButton);
 }
-export function createCompletionScreen(playerName) {
-  clearUI(); // Hapus UI yang ada
+function createConfettiEffect() {
+  const particleCount = 200;
+  const particles = new THREE.Group();
+  scene.add(particles);
 
-  // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
+  const particleGeometry = new THREE.PlaneGeometry(0.02, 0.02);
+  const colors = [0xffd700, 0xff6347, 0x4169e1, 0x32cd32, 0xffffff];
 
-  // --- Buat elemen-elemen UI ---
-  let titleText = "Selamat!";
-  if (playerName) {
-    titleText = `Selamat, ${playerName}!`;
+  for (let i = 0; i < particleCount; i++) {
+    const particleMaterial = new THREE.MeshBasicMaterial({
+      color: colors[Math.floor(Math.random() * colors.length)],
+      side: THREE.DoubleSide,
+    });
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+
+    particle.position.set(
+      (Math.random() - 0.5) * 5, // Sebaran horizontal
+      2.5 + Math.random() * 2, // Mulai dari atas
+      (Math.random() - 0.5) * 2 // Sebaran kedalaman
+    );
+
+    particle.userData.velocity = new THREE.Vector3(
+      (Math.random() - 0.5) * 0.1,
+      -0.5 - Math.random(), // Kecepatan jatuh
+      0
+    );
+
+    particle.rotation.set(
+      Math.random() * Math.PI,
+      Math.random() * Math.PI,
+      Math.random() * Math.PI
+    );
+
+    particles.add(particle);
   }
-  const titleLabel = createTitleLabel(titleText, 3.5, 0.4);
 
+  function update(deltaTime) {
+    for (const particle of particles.children) {
+      particle.position.addScaledVector(particle.userData.velocity, deltaTime);
+      particle.rotation.x += deltaTime * 2;
+      particle.rotation.y += deltaTime * 2;
+
+      // Jika sudah jatuh di bawah, reset ke atas
+      if (particle.position.y < 0) {
+        particle.position.y = 3.5;
+        particle.position.x = (Math.random() - 0.5) * 5;
+      }
+    }
+  }
+
+  function destroy() {
+    // Hapus grup partikel dari scene utama
+    scene.remove(particles);
+    // Kosongkan memori dari geometri dan material (opsional, tapi praktik yang baik)
+    particles.children.forEach((child) => {
+      child.geometry.dispose();
+      child.material.dispose();
+    });
+  }
+
+  return { update, destroy };
+}
+// Ganti fungsi createCompletionScreen yang lama dengan yang ini:
+export function createCompletionScreen(playerName) {
+  clearUI();
+
+  // Posisi tetap di tengah pandangan
+  const centerPosition = new THREE.Vector3(0, 1.6, -2.5);
+
+  // Panel utama
+  const panelWidth = 4.0;
+  const panelHeight = 1.8; // Panel sedikit lebih pendek
+  const mainPanel = createUIPanel(
+    panelWidth,
+    panelHeight,
+    0.1,
+    "#1A202C",
+    0.95
+  );
+  mainPanel.position.copy(centerPosition);
+  uiGroup.add(mainPanel);
+
+  // Judul "Selamat!"
+  let titleText = `Luar Biasa, ${playerName}!`;
+  const titleLabel = createTitleLabel(titleText, 3.8, 0.4, "#FFD700");
+  // --- Posisi Y disesuaikan karena tidak ada trofi ---
+  titleLabel.position.set(
+    centerPosition.x,
+    centerPosition.y + 0.5,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(titleLabel);
+
+  // Teks pesan
   const messageText =
-    "Semua materi sudah berhasil kamu pelajari! Sekarang, ayo uji pemahamanmu dengan mengerjakan Tes Akhir pada menu utama.";
-  const messagePanel = createTextPanel(messageText, 4.0);
-  const panelHeight = messagePanel.geometry.parameters.height;
+    "Kamu telah berhasil menyelesaikan semua materi pembelajaran.\nSaatnya menguji pemahamanmu di Tes Akhir!";
+  const messageBody = createBodyText(messageText, 3.5, 40, 30);
+  // --- Posisi Y disesuaikan ---
+  messageBody.position.set(
+    centerPosition.x,
+    centerPosition.y,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(messageBody);
 
+  // Tombol Lanjutkan
   const quizButton = createButton(
     "Lanjutkan ke Menu",
     "back_to_menu",
     3.0,
-    0.3
+    0.3,
+    ACCENT_COLOR
   );
+  // --- Posisi Y disesuaikan ---
+  quizButton.position.set(
+    centerPosition.x,
+    centerPosition.y - 0.6,
+    centerPosition.z + 0.01
+  );
+  uiGroup.add(quizButton);
 
-  // --- Atur Posisi Relatif terhadap Grup ---
-  const titleY = panelHeight / 2 + 0.3;
-  titleLabel.position.set(0, titleY, 0.01);
-
-  messagePanel.position.set(0, 0, 0);
-
-  const buttonY = -panelHeight / 2 - 0.25;
-  quizButton.position.set(0, buttonY, 0.01);
-
-  // --- Tambahkan semua elemen ke viewerUIGroup ---
-  viewerUIGroup.add(titleLabel);
-  viewerUIGroup.add(messagePanel);
-  viewerUIGroup.add(quizButton);
-
-  // Atur posisi dan orientasi seluruh viewerUIGroup
-  viewerUIGroup.position.copy(uiBasePosition);
-  viewerUIGroup.lookAt(uiLookAtPosition);
+  // --- AKTIFKAN DAN RETURN EFEK KONFETI ---
+  const confetti = createConfettiEffect();
+  return confetti; // Kembalikan objek konfeti agar bisa dikontrol oleh main.js
 }
-
 // Ganti fungsi createCreditsScreen yang lama dengan yang ini:
 export function createCreditsScreen(creditPages, pageIndex) {
   // --- Gunakan posisi meja yang sudah kita tentukan ---
