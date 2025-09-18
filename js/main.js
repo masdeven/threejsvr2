@@ -38,6 +38,7 @@ import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import Stats from "stats.js";
 import { creditsData } from "./credits-data.js";
+import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 
 let audioListener, sound, backgroundSound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
@@ -52,6 +53,10 @@ let stats;
 const CHANGE_DEBOUNCE_TIME = 500;
 const clock = new THREE.Clock(); // Tambahkan ini
 let confettiEffect = null;
+let fps = 0;
+let frameCount = 0;
+let lastFpsUpdate = 0;
+let fpsLabel = null;
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
@@ -189,6 +194,11 @@ function init() {
 
     loadingManager.onLoad = () => {};
   };
+  fpsLabel = createFpsLabel();
+  fpsLabel.position.set(0.7, 0.5, -1); // Posisi relatif terhadap kamera
+  debugGroup.add(fpsLabel);
+  debugGroup.visible = false;
+  scene.add(debugGroup);
 
   preloadAssets();
 
@@ -567,7 +577,19 @@ function animate() {
 function render() {
   stats.update();
   const deltaTime = clock.getDelta(); // Tambahkan ini
+  frameCount++;
+  const now = performance.now();
+  if (now - lastFpsUpdate >= 1000) {
+    fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
+    frameCount = 0;
+    lastFpsUpdate = now;
+  }
+
   if (isVRMode()) {
+    debugGroup.visible = true;
+    debugGroup.position.copy(camera.position);
+    debugGroup.quaternion.copy(camera.quaternion);
+    updateFpsLabel(fpsLabel, fps);
     handleVRHover();
     // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
     if (currentState !== AppState.MENU) {
@@ -575,6 +597,7 @@ function render() {
     }
     // updateViewerUIPosition(); // Komentar ini tetap ada
   } else {
+    debugGroup.visible = false;
     controls.update();
     // Dalam mode non-VR, hanya UI viewer yang perlu mengikuti pergerakan kamera
     if (currentState === AppState.VIEWER || currentState === AppState.HELP) {

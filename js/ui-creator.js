@@ -1561,3 +1561,64 @@ export function updateUIGroupPosition() {
     uiGroup.lookAt(camera.position);
   }
 }
+export const debugGroup = new THREE.Group();
+scene.add(debugGroup);
+
+export function createFpsLabel() {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  canvas.width = 256;
+  canvas.height = 128;
+
+  // Background semi-transparent
+  context.fillStyle = "rgba(0, 0, 0, 0.7)";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = "white";
+  context.font = "bold 48px Arial";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText("0", canvas.width / 2, canvas.height / 2);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+  });
+
+  // 🔑 Hitung rasio agar panel tidak lebar/sempit
+  const aspect = canvas.width / canvas.height;
+  const height = 0.2; // tinggi panel di dunia 3D
+  const width = height * aspect; // otomatis ikuti rasio canvas
+
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const mesh = new THREE.Mesh(geometry, material);
+
+  mesh.userData = { context, canvas, texture, lastFps: -1 };
+
+  return mesh;
+}
+
+export function updateFpsLabel(mesh, fps) {
+  if (mesh.userData.lastFps === fps) return;
+  mesh.userData.lastFps = fps;
+
+  const { context, canvas, texture } = mesh.userData;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = "rgba(0, 0, 0, 0.7)";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = "white";
+  context.font = "bold 48px Arial";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(
+    `FPS: ${fps.toString()}`,
+    canvas.width / 2,
+    canvas.height / 2
+  );
+
+  texture.needsUpdate = true;
+}
