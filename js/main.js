@@ -19,7 +19,6 @@ import {
   createModeSelectionPage,
   updateAvatar, // Tambahkan ini
   toggleAvatarVisibility,
-  updateAvatarContainerPosition,
 } from "./ui-creator.js";
 import {
   loader,
@@ -147,7 +146,7 @@ function init() {
 
   setupVR();
   renderer.xr.addEventListener("sessionstart", () => {
-    refreshUI();
+    changeState(AppState.LANDING);
   });
   renderer.xr.addEventListener("sessionend", () => {
     changeState(AppState.MENU);
@@ -372,9 +371,8 @@ function handleInteraction(action) {
       break;
     case "start_vr":
       startVRSession(() => {
+        // Callback ini dijalankan saat sesi VR berakhir.
         changeState(AppState.MENU);
-      }).then(() => {
-        changeState(AppState.LANDING);
       });
       break;
     case "start":
@@ -528,7 +526,6 @@ function render() {
     // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
     if (currentState !== AppState.MENU) {
       updateUIGroupPosition();
-      updateAvatarContainerPosition();
     }
     // updateViewerUIPosition(); // Komentar ini tetap ada
   } else {

@@ -13,8 +13,9 @@ export const viewerUIGroup = new THREE.Group();
 scene.add(viewerUIGroup);
 
 let avatarMixer; // Tambahkan ini
-export const avatarContainerGroup = new THREE.Group();
-scene.add(avatarContainerGroup);
+// export const avatarContainerGroup = new THREE.Group();
+// scene.add(avatarContainerGroup);
+let currentAvatar = null;
 
 const BG_COLOR = "#2D3748";
 const TEXT_COLOR = "#FFFFFF";
@@ -219,7 +220,7 @@ function createTextPanel(text, width, options = {}) {
 }
 
 export function clearUI() {
-  [uiGroup, viewerUIGroup, avatarContainerGroup].forEach((group) => {
+  [uiGroup, viewerUIGroup].forEach((group) => {
     for (let i = group.children.length - 1; i >= 0; i--) {
       const child = group.children[i];
 
@@ -300,52 +301,11 @@ function createUIPanel(
 
   return mesh;
 }
-export function updateAvatarContainerPosition() {
-  // Pastikan avatar ada dan perlu diperbarui
-  if (
-    avatarContainerGroup.children.length > 0 &&
-    avatarContainerGroup.visible
-  ) {
-    const distance = UI_DISTANCE; // Gunakan jarak yang sama dengan UI utama
-    const cameraDirection = new THREE.Vector3();
-    camera.getWorldDirection(cameraDirection);
-
-    const newPosition = new THREE.Vector3();
-    newPosition
-      .copy(camera.position)
-      .add(cameraDirection.multiplyScalar(distance));
-
-    avatarContainerGroup.position.copy(newPosition);
-    avatarContainerGroup.lookAt(camera.position);
-  }
-}
-export function createAvatar(panelCenter, panelWidth, panelHeight) {
-  // Cek apakah avatar sudah ada di container
-  if (avatarContainerGroup.children.length > 0) return;
-
-  loader.load("assets/models/bot.glb", (gltf) => {
-    const model = gltf.scene;
-    model.scale.set(0.4, 0.4, 0.4);
-
-    const avatarX = panelCenter.x - panelWidth / 2 - 0.2;
-    const avatarY = panelCenter.y - panelHeight / 2 - 0.2;
-    const avatarZ = panelCenter.z + 0.05;
-
-    model.position.set(avatarX, avatarY, avatarZ);
-
-    // Tambahkan avatar ke container khususnya
-    avatarContainerGroup.add(model);
-
-    if (gltf.animations && gltf.animations.length) {
-      avatarMixer = new THREE.AnimationMixer(model);
-      const action = avatarMixer.clipAction(gltf.animations[0]);
-      action.play();
-    }
-  });
-}
 
 export function toggleAvatarVisibility(visible) {
-  avatarContainerGroup.visible = visible;
+  if (currentAvatar) {
+    currentAvatar.visible = visible;
+  }
 }
 
 // Tambahkan fungsi ini
@@ -358,7 +318,6 @@ export function updateAvatar(deltaTime) {
 // ui-creator.js
 
 export function createLandingPage(playerName) {
-  // PERBAIKAN: Atur posisi Y berdasarkan mode (VR atau non-VR)
   const yPosition = isVRMode() ? 1.5 : 1.65;
   const centerPosition = new THREE.Vector3(0, yPosition, 0);
 
@@ -397,7 +356,6 @@ export function createLandingPage(playerName) {
       primaryButtonHeight,
       btn.color
     );
-
     const buttonY = primaryStartY - index * primarySpacingY;
     button.position.set(
       centerPosition.x,
@@ -413,25 +371,41 @@ export function createLandingPage(playerName) {
     "show_credits",
     creditButtonSize,
     creditButtonSize,
-    "rgba(45, 55, 72, 0.7)", // Opacity sedikit dinaikkan agar lebih solid
+    "rgba(45, 55, 72, 0.7)",
     "circle"
   );
-
   const panelEdgeX = panelWidth / 2;
   const panelEdgeY = -panelHeight / 2;
   const padding = 0.2;
-
   creditButton.position.set(
     centerPosition.x + panelEdgeX - padding,
     centerPosition.y + panelEdgeY + padding,
-    centerPosition.z + 0.02 // Posisi Z sedikit lebih maju lagi
+    centerPosition.z + 0.02
   );
-
-  // PERBAIKAN: Atur renderOrder agar tombol ikon digambar paling akhir.
   creditButton.renderOrder = 1;
-
   uiGroup.add(creditButton);
-  createAvatar(centerPosition, panelWidth, panelHeight);
+
+  // --- LOGIKA AVATAR BARU ---
+  loader.load("assets/models/bot.glb", (gltf) => {
+    const model = gltf.scene;
+    currentAvatar = model; // Simpan referensi model
+    model.scale.set(0.4, 0.4, 0.4);
+
+    // Hitung posisi di samping panel (relatif terhadap pusat panel)
+    const avatarX = centerPosition.x - panelWidth / 2 - 0.2;
+    const avatarY = centerPosition.y - panelHeight / 2 - 0.2;
+    const avatarZ = centerPosition.z + 0.05;
+    model.position.set(avatarX, avatarY, avatarZ);
+
+    // Tambahkan avatar langsung ke grup UI utama
+    uiGroup.add(model);
+
+    if (gltf.animations && gltf.animations.length) {
+      avatarMixer = new THREE.AnimationMixer(model);
+      const action = avatarMixer.clipAction(gltf.animations[0]);
+      action.play();
+    }
+  });
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
