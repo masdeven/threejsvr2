@@ -923,16 +923,18 @@ function createConfettiEffect() {
 
   return { update, destroy };
 }
+
 // Ganti fungsi createCompletionScreen yang lama dengan yang ini:
 export function createCompletionScreen(playerName) {
   clearUI();
 
-  // Posisi tetap di tengah pandangan
-  const centerPosition = new THREE.Vector3(0, 1.6, -2.5);
+  // --- Gunakan Konfigurasi Posisi yang Sama dengan Laporan Belajar ---
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   // Panel utama
   const panelWidth = 4.0;
-  const panelHeight = 1.8; // Panel sedikit lebih pendek
+  const panelHeight = 1.8;
   const mainPanel = createUIPanel(
     panelWidth,
     panelHeight,
@@ -940,31 +942,21 @@ export function createCompletionScreen(playerName) {
     "#1A202C",
     0.95
   );
-  mainPanel.position.copy(centerPosition);
-  uiGroup.add(mainPanel);
+  mainPanel.position.set(0, 0, 0); // Posisi relatif terhadap grup
+  viewerUIGroup.add(mainPanel); // Pindahkan ke viewerUIGroup
 
-  // Judul "Selamat!"
+  // Judul "Luar Biasa!"
   let titleText = `Luar Biasa, ${playerName}!`;
   const titleLabel = createTitleLabel(titleText, 3.8, 0.4, "#FFD700");
-  // --- Posisi Y disesuaikan karena tidak ada trofi ---
-  titleLabel.position.set(
-    centerPosition.x,
-    centerPosition.y + 0.5,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(titleLabel);
+  titleLabel.position.set(0, 0.5, 0.01); // Sesuaikan posisi Y relatif
+  viewerUIGroup.add(titleLabel); // Pindahkan ke viewerUIGroup
 
   // Teks pesan
   const messageText =
     "Kamu telah berhasil menyelesaikan semua materi pembelajaran.\nSaatnya menguji pemahamanmu di Tes Akhir!";
   const messageBody = createBodyText(messageText, 3.5, 40, 30);
-  // --- Posisi Y disesuaikan ---
-  messageBody.position.set(
-    centerPosition.x,
-    centerPosition.y,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(messageBody);
+  messageBody.position.set(0, 0, 0.01); // Sesuaikan posisi Y relatif
+  viewerUIGroup.add(messageBody); // Pindahkan ke viewerUIGroup
 
   // Tombol Lanjutkan
   const quizButton = createButton(
@@ -974,17 +966,37 @@ export function createCompletionScreen(playerName) {
     0.3,
     ACCENT_COLOR
   );
-  // --- Posisi Y disesuaikan ---
-  quizButton.position.set(
-    centerPosition.x,
-    centerPosition.y - 0.6,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(quizButton);
+  quizButton.position.set(0, -0.6, 0.01); // Sesuaikan posisi Y relatif
+  viewerUIGroup.add(quizButton); // Pindahkan ke viewerUIGroup
 
-  // --- AKTIFKAN DAN RETURN EFEK KONFETI ---
+  // --- TAMBAHKAN AVATAR ---
+  loader.load("assets/models/bot.glb", (gltf) => {
+    const model = gltf.scene;
+    currentAvatar = model; // Simpan referensi model
+    model.scale.set(0.5, 0.5, 0.5);
+
+    // Posisikan avatar di samping kiri panel
+    const avatarX = -panelWidth / 2 - 0.5;
+    const avatarY = -panelHeight / 2 - 0.2;
+    model.position.set(avatarX, avatarY, 0.1);
+
+    // Tambahkan avatar ke grup UI yang sama dengan panel
+    viewerUIGroup.add(model);
+
+    if (gltf.animations && gltf.animations.length) {
+      avatarMixer = new THREE.AnimationMixer(model);
+      const action = avatarMixer.clipAction(gltf.animations[0]);
+      action.play();
+    }
+  });
+
+  // Atur posisi dan orientasi seluruh grup
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
+
+  // Aktifkan dan return efek konfeti
   const confetti = createConfettiEffect();
-  return confetti; // Kembalikan objek konfeti agar bisa dikontrol oleh main.js
+  return confetti;
 }
 // Ganti fungsi createCreditsScreen yang lama dengan yang ini:
 export function createCreditsScreen(creditPages, pageIndex) {
