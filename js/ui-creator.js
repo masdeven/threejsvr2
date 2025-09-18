@@ -4,6 +4,7 @@ import { components } from "./component-data.js";
 import { isVRMode } from "./vr-manager.js";
 import { quizData } from "./quiz-data.js";
 import { loader } from "./model-loader.js"; // Tambahkan ini
+import { TextureLoader } from "three";
 
 export const FONT = "bold 32px Arial";
 export const uiGroup = new THREE.Group();
@@ -21,6 +22,7 @@ const BG_COLOR = "#2D3748";
 const TEXT_COLOR = "#FFFFFF";
 const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
+const textureLoader = new TextureLoader();
 
 function getResolution() {
   return isVRMode() ? 512 : 256;
@@ -327,6 +329,24 @@ export function createLandingPage(playerName) {
   mainPanel.position.copy(centerPosition);
   uiGroup.add(mainPanel);
 
+  const logoWidth = 0.3; // Sesuaikan ukuran lebar logo
+  const logoHeight = 0.3; // Sesuaikan ukuran tinggi logo
+  const logoPanel = createImagePanel(
+    "assets/images/logo-kampus.png",
+    logoWidth,
+    logoHeight
+  );
+
+  // Atur posisi logo di sudut kiri atas panel
+  const paddingLogo = 0.1;
+  logoPanel.position.set(
+    centerPosition.x - panelWidth / 2 + logoWidth / 2 + paddingLogo,
+    centerPosition.y + panelHeight / 2 - logoHeight / 2 - paddingLogo,
+    centerPosition.z + 0.02 // Sedikit di depan panel utama
+  );
+  logoPanel.renderOrder = 1; // Pastikan logo di atas panel
+  uiGroup.add(logoPanel);
+
   if (playerName) {
     const welcomeText = `Selamat Datang, ${playerName}!`;
     const welcomeLabel = createTitleLabel(welcomeText, 3.8, 0.35);
@@ -406,6 +426,16 @@ export function createLandingPage(playerName) {
       action.play();
     }
   });
+}
+function createImagePanel(imageUrl, width, height) {
+  const texture = textureLoader.load(imageUrl);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+  });
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const mesh = new THREE.Mesh(geometry, material);
+  return mesh;
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
@@ -1085,8 +1115,12 @@ export function createQuizReportScreen(score, hasAttempted) {
   clearUI();
 
   // --- Gunakan Konfigurasi Posisi dan Tata Letak yang Sama dengan ViewerPage ---
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
+  // const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
+  // const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
+
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2);
+  // Mengatur panel agar menghadap ke posisi awal pengguna
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   // 1. PANEL LATAR BELAKANG
   const panelWidth = 4.8;
@@ -1117,7 +1151,7 @@ export function createQuizReportScreen(score, hasAttempted) {
 
     // Label "Nilai Akhir"
     const scoreTitle = createSubtitleLabel("Nilai Akhir", 2.0, 0.2);
-    scoreTitle.position.set(0, 0.4, 0.01);
+    scoreTitle.position.set(0, 0.4, 0.02);
     viewerUIGroup.add(scoreTitle);
 
     // Skor utama
