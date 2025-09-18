@@ -905,63 +905,112 @@ export function createCompletionScreen(playerName) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-// ui-creator.js
 
-// ui-creator.js
+// Ganti fungsi createCreditsScreen yang lama dengan yang ini:
+export function createCreditsScreen(creditPages, pageIndex) {
+  // --- Gunakan posisi meja yang sudah kita tentukan ---
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
-// ui-creator.js
+  clearViewerUI(); // Hapus UI sebelumnya di grup ini
 
-// ui-creator.js
+  // --- 1. Panel Latar Belakang Utama (Mirip Viewer) ---
+  const totalPanelWidth = 3.0;
+  const totalPanelHeight = 1.7;
+  const backgroundPanel = createUIPanel(
+    totalPanelWidth,
+    totalPanelHeight,
+    0.05,
+    "#1A202C",
+    0.9
+  );
+  backgroundPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(backgroundPanel);
 
-// ui-creator.js
-
-export function createCreditsScreen() {
-  clearUI();
-
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.5, -1.5);
-  const uiLookAtPosition = new THREE.Vector3(-1, 1.5, 0);
-  const curveIntensity = 0.05;
-
-  // 1. Panel Teks Utama
-  const creditsContent = `Aplikasi VR lintas platform untuk visualisas perangkat keras komputer.`;
-  const descPanel = createTextPanel(creditsContent, 2.5);
+  // --- 2. Panel Deskripsi/Teks Kredit ---
+  const currentCreditText = creditPages[pageIndex];
+  const descPanel = createTextPanel(currentCreditText, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
-  descPanel.position.set(0, 0, 0);
+  descPanel.position.set(0, 0.15, 0.01); // Naikkan sedikit
   viewerUIGroup.add(descPanel);
 
-  // 2. Judul (di atas panel utama)
-  const titleWidth = 2.0;
-  const titleHeight = 0.3;
+  // --- 3. Label Judul ---
+  const titleWidth = 2.2;
+  const titleHeight = 0.35;
   const titleLabel = createTitleLabel(
     "Tentang Aplikasi",
     titleWidth,
     titleHeight
   );
-  const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
-  const titleZ = -titleY * curveIntensity;
-  titleLabel.position.set(0, titleY, titleZ);
+  const titleY = 0.15 + panelHeight / 2 + titleHeight / 2 - 0.05;
+  titleLabel.position.set(0, titleY, 0.02);
   viewerUIGroup.add(titleLabel);
 
-  // 3. Tombol "X" Kembali (di luar panel kiri atas)
-  const exitButtonSize = 0.25;
-  const exitButton = createButton(
-    "X",
-    "back_to_landing",
-    exitButtonSize,
-    exitButtonSize,
-    "rgba(45, 55, 72, 0.7)",
-    "circle"
+  // --- 4. Tombol Navigasi Halaman (Mirip Viewer) ---
+  const descNavY = 0.15 - panelHeight / 2 - 0.15;
+  const rightEdgeX = panelWidth / 2;
+  const buttonWidth = 0.25;
+  const indicatorWidth = 0.6;
+  const padding = 0.05;
+  let currentX = rightEdgeX;
+
+  // Tombol Next
+  const isLastPage = pageIndex >= creditPages.length - 1;
+  const nextDescButton = createButton(
+    ">",
+    isLastPage ? "locked" : "next_credit",
+    buttonWidth,
+    0.2,
+    isLastPage ? "#4A5568" : BG_COLOR
   );
+  if (isLastPage) nextDescButton.userData.colors = null;
+  const nextButtonX = currentX - buttonWidth / 2;
+  nextDescButton.position.set(nextButtonX, descNavY, 0.01);
+  viewerUIGroup.add(nextDescButton);
+  currentX = nextButtonX - buttonWidth / 2 - padding;
 
-  // Atur posisi agar sejajar dengan sudut kiri atas panel deskripsi
-  const exitX = -(panelWidth / 2) - exitButtonSize / 2 - 0.15; // Di sebelah kiri panel
-  const exitY = panelHeight / 2 - exitButtonSize / 2; // Sejajar dengan tepi atas panel deskripsi
-  const exitZ = -exitY * curveIntensity;
-  exitButton.position.set(exitX, exitY, exitZ);
-  viewerUIGroup.add(exitButton);
+  // Indeks Halaman
+  const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
+  const pageIndicator = createTitleLabel(
+    pageIndicatorText,
+    indicatorWidth,
+    0.15
+  );
+  pageIndicator.material.depthWrite = false;
+  const indicatorX = currentX - indicatorWidth / 2;
+  pageIndicator.position.set(indicatorX, descNavY, 0.02);
+  viewerUIGroup.add(pageIndicator);
+  currentX = indicatorX - indicatorWidth / 2 - padding;
 
-  // Atur posisi dan orientasi seluruh viewerUIGroup
+  // Tombol Prev
+  const isFirstPage = pageIndex <= 0;
+  const prevDescButton = createButton(
+    "<",
+    isFirstPage ? "locked" : "prev_credit",
+    buttonWidth,
+    0.2,
+    isFirstPage ? "#4A5568" : BG_COLOR
+  );
+  if (isFirstPage) prevDescButton.userData.colors = null;
+  const prevButtonX = currentX - buttonWidth / 2;
+  prevDescButton.position.set(prevButtonX, descNavY, 0.01);
+  viewerUIGroup.add(prevDescButton);
+
+  // --- 5. Tombol Kembali ke Menu Utama ---
+  const navButtonWidth = 2.0; // Tombol lebih besar
+  const navButtonHeight = 0.25;
+  const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
+  const backButton = createButton(
+    "Kembali ke Menu Utama",
+    "back_to_landing",
+    navButtonWidth,
+    navButtonHeight
+  );
+  backButton.position.set(0, navY, 0.01);
+  viewerUIGroup.add(backButton);
+
+  // Atur posisi dan orientasi seluruh grup
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
@@ -970,41 +1019,52 @@ export function createCreditsScreen() {
 export function createQuizScreen(questionIndex) {
   clearUI();
 
-  const centerPosition = new THREE.Vector3(0, 1.65, 0);
+  // --- POSISI BARU: Sama seperti Laporan Belajar ---
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+
   const currentQuestion = quizData[questionIndex];
 
-  const panelWidth = 4.8;
-  const panelHeight = 1.6;
-  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
-  mainPanel.position.copy(centerPosition);
-  uiGroup.add(mainPanel);
+  // --- [PERBAIKAN RESPONSIVE] ---
+  // 1. Buat panel pertanyaan terlebih dahulu untuk mendapatkan tingginya
+  const questionPanel = createTextPanel(currentQuestion.question, 4.4);
+  const questionPanelHeight = questionPanel.geometry.parameters.height;
 
+  // 2. Tentukan ukuran dan padding elemen lain
+  const titleHeight = 0.3;
+  const buttonHeight = 0.35;
+  const verticalPadding = 0.15; // Jarak antar elemen
+
+  // 3. Hitung total tinggi panel utama secara dinamis
+  const totalPanelHeight =
+    titleHeight + questionPanelHeight + buttonHeight + verticalPadding * 4;
+
+  const panelWidth = 4.8;
+  const mainPanel = createUIPanel(panelWidth, totalPanelHeight, 0.1);
+  mainPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(mainPanel); // Gunakan viewerUIGroup untuk posisi tetap
+
+  // 4. Posisikan elemen secara relatif terhadap tinggi total
+  const titleY = totalPanelHeight / 2 - verticalPadding - titleHeight / 2;
   const titleText = `Uji Pemahaman (Soal ${questionIndex + 1}/${
     quizData.length
   })`;
-  const titleLabel = createTitleLabel(titleText, 4.5, 0.3);
-  titleLabel.position.set(
-    centerPosition.x,
-    centerPosition.y + 0.6,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(titleLabel);
+  const titleLabel = createTitleLabel(titleText, 4.5, titleHeight);
+  titleLabel.position.set(0, titleY, 0.01);
+  viewerUIGroup.add(titleLabel);
 
-  const questionPanel = createTextPanel(currentQuestion.question, 4.4);
-  questionPanel.position.set(
-    centerPosition.x,
-    centerPosition.y + 0.02,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(questionPanel);
+  const questionPanelY =
+    titleY - titleHeight / 2 - verticalPadding - questionPanelHeight / 2;
+  questionPanel.position.set(0, questionPanelY, 0.01);
+  viewerUIGroup.add(questionPanel);
 
+  const buttonY =
+    questionPanelY -
+    questionPanelHeight / 2 -
+    verticalPadding -
+    buttonHeight / 2;
   const buttonWidth = 2.1;
-  const buttonHeight = 0.35;
   const buttonSpacingX = 2.3;
-
-  // --- [PERBAIKAN] Posisi Y tombol dikaitkan ke panel utama ---
-  const buttonY = centerPosition.y - panelHeight / 2 + buttonHeight / 2 + 0.15;
-
   const positions = [-buttonSpacingX / 2, buttonSpacingX / 2];
   const shuffledPositions = positions.sort(() => Math.random() - 0.5);
 
@@ -1012,57 +1072,65 @@ export function createQuizScreen(questionIndex) {
     const isCorrect = index === currentQuestion.correctAnswerIndex;
     const action = isCorrect ? "answer_correct" : "answer_incorrect";
     const button = createButton(answer, action, buttonWidth, buttonHeight);
-
-    button.position.set(
-      shuffledPositions[index],
-      buttonY,
-      centerPosition.z + 0.01
-    );
-    uiGroup.add(button);
+    button.position.set(shuffledPositions[index], buttonY, 0.01);
+    viewerUIGroup.add(button);
   });
+
+  // Atur posisi dan orientasi seluruh grup
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
 // Ganti fungsi createQuizResultScreen yang lama dengan yang ini:
 export function createQuizResultScreen(isCorrect, questionIndex) {
   clearUI();
 
-  const centerPosition = new THREE.Vector3(0, 1.65, 0);
+  // --- POSISI BARU: Sama seperti Laporan Belajar ---
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+
   const currentQuestion = quizData[questionIndex];
 
-  const panelWidth = 4.8;
-  const panelHeight = 1.6;
-  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
-  mainPanel.position.copy(centerPosition);
-  uiGroup.add(mainPanel);
-
-  const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
-  const titleColor = isCorrect ? "#28a745" : "#dc3545";
-  const titleLabel = createTitleLabel(titleText, 3.5, 0.45, titleColor);
-  titleLabel.position.set(
-    centerPosition.x,
-    centerPosition.y + 0.55,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(titleLabel);
-
+  // --- [PERBAIKAN RESPONSIVE] ---
   const explanationText = `**Jawaban yang benar adalah:**\n${
     currentQuestion.answers[currentQuestion.correctAnswerIndex]
   }`;
   const explanationPanel = createTextPanel(explanationText, 4.4);
-  explanationPanel.position.set(
-    centerPosition.x,
-    centerPosition.y - 0.1,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(explanationPanel);
+  const explanationPanelHeight = explanationPanel.geometry.parameters.height;
 
+  const titleHeight = 0.45;
+  const buttonHeight = 0.35;
+  const verticalPadding = 0.15;
+
+  const totalPanelHeight =
+    titleHeight + explanationPanelHeight + buttonHeight + verticalPadding * 4;
+
+  const panelWidth = 4.8;
+  const mainPanel = createUIPanel(panelWidth, totalPanelHeight, 0.1);
+  mainPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(mainPanel); // Gunakan viewerUIGroup
+
+  const titleY = totalPanelHeight / 2 - verticalPadding - titleHeight / 2;
+  const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
+  const titleColor = isCorrect ? "#28a745" : "#dc3545";
+  const titleLabel = createTitleLabel(titleText, 3.5, titleHeight, titleColor);
+  titleLabel.position.set(0, titleY, 0.01);
+  viewerUIGroup.add(titleLabel);
+
+  const explanationPanelY =
+    titleY - titleHeight / 2 - verticalPadding - explanationPanelHeight / 2;
+  explanationPanel.position.set(0, explanationPanelY, 0.01);
+  viewerUIGroup.add(explanationPanel);
+
+  const buttonY =
+    explanationPanelY -
+    explanationPanelHeight / 2 -
+    verticalPadding -
+    buttonHeight / 2;
   const isLastQuestion = questionIndex >= quizData.length - 1;
   const buttonText = isLastQuestion
     ? "Lihat Hasil"
     : "Lanjut ke Soal Berikutnya";
-
-  const buttonHeight = 0.35; // Definisikan tinggi tombol untuk perhitungan
-
   const continueButton = createButton(
     buttonText,
     "next_question",
@@ -1070,16 +1138,12 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
     buttonHeight,
     ACCENT_COLOR
   );
+  continueButton.position.set(0, buttonY, 0.01);
+  viewerUIGroup.add(continueButton);
 
-  // --- [PERBAIKAN] Posisi Y tombol dikaitkan ke panel utama ---
-  const buttonY = centerPosition.y - panelHeight / 2 + buttonHeight / 2 + 0.15;
-
-  continueButton.position.set(
-    centerPosition.x,
-    buttonY,
-    centerPosition.z + 0.01
-  );
-  uiGroup.add(continueButton);
+  // Atur posisi dan orientasi seluruh grup
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
 }
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");

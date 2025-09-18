@@ -37,6 +37,7 @@ import { quizData } from "./quiz-data.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import Stats from "stats.js";
+import { creditsData } from "./credits-data.js";
 
 let audioListener, sound, backgroundSound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
@@ -45,6 +46,7 @@ let currentQuestionIndex = 0;
 let quizScore = 0;
 let hasAttemptedQuiz = false;
 let highestComponentUnlocked = 0;
+let currentCreditIndex = 0;
 let isChangingComponent = false;
 let stats;
 const CHANGE_DEBOUNCE_TIME = 500;
@@ -110,7 +112,7 @@ function refreshUI() {
       createCompletionScreen(playerName);
       break;
     case AppState.CREDITS:
-      createCreditsScreen();
+      createCreditsScreen(creditsData, currentCreditIndex);
       break;
   }
 }
@@ -294,6 +296,10 @@ function reloadViewer() {
   createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
 }
 
+function reloadCreditsScreen() {
+  clearViewerUI(); // Kita gunakan UI group yang sama agar posisinya tetap
+  createCreditsScreen(creditsData, currentCreditIndex);
+}
 function changeState(newState) {
   if (currentState === newState) return;
   stopAudio();
@@ -428,7 +434,20 @@ function handleInteraction(action) {
       }
       break;
     case "show_credits":
+      currentCreditIndex = 0; // Selalu mulai dari halaman pertama
       changeState(AppState.CREDITS);
+      break;
+    case "prev_credit":
+      if (currentCreditIndex > 0) {
+        currentCreditIndex--;
+        reloadCreditsScreen();
+      }
+      break;
+    case "next_credit":
+      if (currentCreditIndex < creditsData.length - 1) {
+        currentCreditIndex++;
+        reloadCreditsScreen();
+      }
       break;
     case "prev_description":
       if (currentDescriptionIndex > 0) {
