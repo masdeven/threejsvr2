@@ -4,6 +4,12 @@ import { scene } from "./scene-setup.js";
 import { loadingManager } from "./loading-manager.js";
 
 export const loader = new GLTFLoader(loadingManager);
+let currentModel = null;
+let activeLoad = null;
+const TABLE_HEIGHT = 0.9;
+export let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+export const modelCache = {};
 
 export function setupKTX2Loader(ktx2Loader) {
   loader.setKTX2Loader(ktx2Loader);
@@ -13,44 +19,57 @@ export function setupDRACOLoader(dracoLoader) {
   loader.setDRACOLoader(dracoLoader);
 }
 
-let currentModel = null;
-let activeLoad = null;
-const TABLE_HEIGHT = 0.9;
-export let isDragging = false;
-let previousMousePosition = { x: 0, y: 0 };
+function setupModel(model) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+
+  // 1. Normalisasi ukuran
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const scaleFactor = 0.8 / maxDim;
+  model.scale.setScalar(scaleFactor);
+
+  // 2. Hitung ulang bounding box setelah scaling
+  const newBox = new THREE.Box3().setFromObject(model);
+  const center = newBox.getCenter(new THREE.Vector3());
+
+  // 3. Geser agar pusatnya di (0,0) pada sumbu X,Z
+  model.position.x -= center.x;
+  model.position.z -= center.z;
+
+  // 4. Geser Y agar bagian bawah mesh pas di atas meja
+  const newMinY = newBox.min.y;
+  model.position.y = TABLE_HEIGHT - newMinY;
+
+  currentModel = model;
+  scene.add(currentModel);
+}
 
 export function loadComponentModel(url) {
   if (activeLoad) {
     activeLoad.cancel();
+    activeLoad = null;
+  }
+  unloadComponentModel();
+
+  // 2. Cek cache terlebih dahulu
+  if (modelCache[url]) {
+    console.log(`Mengambil model dari cache: ${url}`);
+    const modelFromCache = modelCache[url].clone();
+    setupModel(modelFromCache); // Gunakan model dari cache
+    return;
   }
 
-  unloadComponentModel();
+  // 3. Jika tidak ada di cache, muat dari file
+  console.log(`Memuat model baru: ${url}`);
   activeLoad = loader.load(
     url,
     (gltf) => {
-      currentModel = gltf.scene;
+      console.log(`Model di-cache setelah dimuat: ${url}`);
+      // Simpan model asli (sebelum di-clone) ke dalam cache
+      modelCache[url] = gltf.scene;
 
-      const box = new THREE.Box3().setFromObject(currentModel);
-      const size = box.getSize(new THREE.Vector3());
-
-      // 1. Normalisasi ukuran (misal 0.8 m maksimum)
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scaleFactor = 0.8 / maxDim;
-      currentModel.scale.setScalar(scaleFactor);
-
-      // 2. Hitung bounding box ulang setelah scaling
-      const newBox = new THREE.Box3().setFromObject(currentModel);
-      const center = newBox.getCenter(new THREE.Vector3());
-
-      // 3. Geser supaya center pas di (0,0) di sumbu X,Z
-      currentModel.position.x -= center.x;
-      currentModel.position.z -= center.z;
-
-      // 4. Geser Y supaya bawah mesh pas di meja
-      const newMinY = newBox.min.y;
-      currentModel.position.y = TABLE_HEIGHT - newMinY;
-
-      scene.add(currentModel);
+      const newModel = gltf.scene.clone(); // Selalu gunakan clone untuk scene
+      setupModel(newModel); // Setup model yang baru
       activeLoad = null;
     },
     undefined,

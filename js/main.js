@@ -26,6 +26,7 @@ import {
   setupDRACOLoader,
   setupKTX2Loader,
   isDragging,
+  modelCache,
 } from "./model-loader.js";
 import { setupInteraction, handleVRHover } from "./interaction-manager.js";
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
@@ -33,6 +34,7 @@ import { loadingManager } from "./loading-manager.js";
 import { quizData } from "./quiz-data.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import Stats from "stats.js";
 
 let audioListener, sound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
@@ -42,6 +44,7 @@ let quizScore = 0;
 let hasAttemptedQuiz = false;
 let highestComponentUnlocked = 0;
 let isChangingComponent = false;
+let stats;
 const CHANGE_DEBOUNCE_TIME = 500;
 
 const AppState = {
@@ -122,6 +125,9 @@ function showViewer(index) {
   createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
 }
 function init() {
+  stats = new Stats();
+  stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+  document.body.appendChild(stats.dom);
   audioListener = new THREE.AudioListener();
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
@@ -210,8 +216,11 @@ function showNameInputScreen() {
 function preloadAssets() {
   console.log("Preloading assets...");
   for (const component of components) {
-    if (component.modelFile) {
-      loader.load(component.modelFile, () => {});
+    if (component.modelFile && !modelCache[component.modelFile]) {
+      loader.load(component.modelFile, (gltf) => {
+        console.log(`Model di-cache saat pre-loading: ${component.modelFile}`);
+        modelCache[component.modelFile] = gltf.scene;
+      });
     }
   }
 
@@ -502,6 +511,7 @@ function animate() {
 }
 
 function render() {
+  stats.update();
   if (isVRMode()) {
     handleVRHover();
     // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
