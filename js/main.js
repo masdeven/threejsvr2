@@ -38,7 +38,7 @@ import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import Stats from "stats.js";
 
-let audioListener, sound;
+let audioListener, sound, backgroundSound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
 let playerName = "";
 let currentQuestionIndex = 0;
@@ -132,6 +132,7 @@ function init() {
   stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
   document.body.appendChild(stats.dom);
   audioListener = new THREE.AudioListener();
+  backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
 
@@ -192,6 +193,7 @@ function setupHTMLEvents() {
   welcomeNextBtn.addEventListener("click", () => {
     document.getElementById("welcome-overlay").classList.add("hidden");
     showNameInputScreen();
+    startBackgroundMusic();
   });
 
   nameContinueBtn.addEventListener("click", () => {
@@ -272,6 +274,15 @@ function playButtonConfirmAudio() {
     sound.setBuffer(buffer);
     sound.setVolume(0.5);
     sound.play();
+  });
+}
+function startBackgroundMusic() {
+  if (backgroundSound.isPlaying) return;
+  audioLoader.load("assets/audio/background_music.mp3", (buffer) => {
+    backgroundSound.setBuffer(buffer);
+    backgroundSound.setLoop(true);
+    backgroundSound.setVolume(0.15); // Atur volume sesuai keinginan
+    backgroundSound.play();
   });
 }
 
