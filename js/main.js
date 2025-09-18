@@ -17,6 +17,9 @@ import {
   createCompletionScreen,
   createCreditsScreen,
   createModeSelectionPage,
+  updateAvatar, // Tambahkan ini
+  toggleAvatarVisibility,
+  updateAvatarContainerPosition,
 } from "./ui-creator.js";
 import {
   loader,
@@ -46,6 +49,7 @@ let highestComponentUnlocked = 0;
 let isChangingComponent = false;
 let stats;
 const CHANGE_DEBOUNCE_TIME = 500;
+const clock = new THREE.Clock(); // Tambahkan ini
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
@@ -299,6 +303,12 @@ function changeState(newState) {
   }
 
   currentState = newState;
+
+  if (newState === AppState.LANDING) {
+    toggleAvatarVisibility(true);
+  } else {
+    toggleAvatarVisibility(false);
+  }
   refreshUI();
   if (!isDragging) {
     switch (newState) {
@@ -512,11 +522,13 @@ function animate() {
 
 function render() {
   stats.update();
+  const deltaTime = clock.getDelta(); // Tambahkan ini
   if (isVRMode()) {
     handleVRHover();
     // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
     if (currentState !== AppState.MENU) {
       updateUIGroupPosition();
+      updateAvatarContainerPosition();
     }
     // updateViewerUIPosition(); // Komentar ini tetap ada
   } else {
@@ -530,6 +542,8 @@ function render() {
   if (currentState === AppState.VIEWER) {
     updateModelRotation();
   }
+
+  updateAvatar(deltaTime); // Tambahkan ini
 
   renderer.render(scene, camera);
 }

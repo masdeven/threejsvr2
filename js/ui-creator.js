@@ -3,6 +3,7 @@ import { scene, camera } from "./scene-setup.js";
 import { components } from "./component-data.js";
 import { isVRMode } from "./vr-manager.js";
 import { quizData } from "./quiz-data.js";
+import { loader } from "./model-loader.js"; // Tambahkan ini
 
 export const FONT = "bold 32px Arial";
 export const uiGroup = new THREE.Group();
@@ -10,6 +11,10 @@ scene.add(uiGroup);
 
 export const viewerUIGroup = new THREE.Group();
 scene.add(viewerUIGroup);
+
+let avatarMixer; // Tambahkan ini
+export const avatarContainerGroup = new THREE.Group();
+scene.add(avatarContainerGroup);
 
 const BG_COLOR = "#2D3748";
 const TEXT_COLOR = "#FFFFFF";
@@ -48,10 +53,6 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
   }
   return { pixelHeight: totalLines * lineHeight, lineCount: totalLines };
 }
-
-// ui-creator.js
-
-// ui-creator.js
 
 function createButton(
   text,
@@ -218,13 +219,31 @@ function createTextPanel(text, width, options = {}) {
 }
 
 export function clearUI() {
-  [uiGroup, viewerUIGroup].forEach((group) => {
-    group.children.forEach((child) => {
-      child.geometry.dispose();
-      child.material.map?.dispose();
-      child.material.dispose();
-    });
-    group.clear();
+  [uiGroup, viewerUIGroup, avatarContainerGroup].forEach((group) => {
+    for (let i = group.children.length - 1; i >= 0; i--) {
+      const child = group.children[i];
+
+      child.traverse((object) => {
+        if (object.isMesh) {
+          object.geometry?.dispose();
+
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach((material) => {
+                material.map?.dispose();
+                material.dispose();
+              });
+            } else {
+              object.material.map?.dispose();
+              object.material.dispose();
+            }
+          }
+        }
+      });
+
+      // Hapus child dari grup
+      group.remove(child);
+    }
   });
 }
 
@@ -281,8 +300,60 @@ function createUIPanel(
 
   return mesh;
 }
+export function updateAvatarContainerPosition() {
+  // Pastikan avatar ada dan perlu diperbarui
+  if (
+    avatarContainerGroup.children.length > 0 &&
+    avatarContainerGroup.visible
+  ) {
+    const distance = UI_DISTANCE; // Gunakan jarak yang sama dengan UI utama
+    const cameraDirection = new THREE.Vector3();
+    camera.getWorldDirection(cameraDirection);
 
-// ui-creator.js
+    const newPosition = new THREE.Vector3();
+    newPosition
+      .copy(camera.position)
+      .add(cameraDirection.multiplyScalar(distance));
+
+    avatarContainerGroup.position.copy(newPosition);
+    avatarContainerGroup.lookAt(camera.position);
+  }
+}
+export function createAvatar(panelCenter, panelWidth, panelHeight) {
+  // Cek apakah avatar sudah ada di container
+  if (avatarContainerGroup.children.length > 0) return;
+
+  loader.load("assets/models/bot.glb", (gltf) => {
+    const model = gltf.scene;
+    model.scale.set(0.4, 0.4, 0.4);
+
+    const avatarX = panelCenter.x - panelWidth / 2 - 0.2;
+    const avatarY = panelCenter.y - panelHeight / 2 - 0.2;
+    const avatarZ = panelCenter.z + 0.05;
+
+    model.position.set(avatarX, avatarY, avatarZ);
+
+    // Tambahkan avatar ke container khususnya
+    avatarContainerGroup.add(model);
+
+    if (gltf.animations && gltf.animations.length) {
+      avatarMixer = new THREE.AnimationMixer(model);
+      const action = avatarMixer.clipAction(gltf.animations[0]);
+      action.play();
+    }
+  });
+}
+
+export function toggleAvatarVisibility(visible) {
+  avatarContainerGroup.visible = visible;
+}
+
+// Tambahkan fungsi ini
+export function updateAvatar(deltaTime) {
+  if (avatarMixer) {
+    avatarMixer.update(deltaTime);
+  }
+}
 
 // ui-creator.js
 
@@ -360,12 +431,8 @@ export function createLandingPage(playerName) {
   creditButton.renderOrder = 1;
 
   uiGroup.add(creditButton);
+  createAvatar(centerPosition, panelWidth, panelHeight);
 }
-// ui-creator.js
-
-// ui-creator.js
-
-// ui-creator.js
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   clearUI();
