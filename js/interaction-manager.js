@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { scene, camera, renderer, controls } from "./scene-setup.js";
 import { getVRControllers } from "./vr-manager.js";
-import { uiGroup, viewerUIGroup, FONT } from "./ui-creator.js";
+import { uiGroup, viewerUIGroup, FONT, getResolution } from "./ui-creator.js";
 import {
   startDragging,
   stopDragging,
@@ -42,33 +42,27 @@ function getVRIntersectedObject(controller) {
 }
 
 function redrawButton(button, color) {
-  // This function remains the same as your corrected version.
   const data = button.userData;
   const ctx = data.canvasContext;
   const canvas = ctx.canvas;
+  const width = button.geometry.parameters.width;
+  const height = button.geometry.parameters.height;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const resolution = canvas.width / button.geometry.parameters.width;
-
-  // Logic for shape drawing (circle vs roundedRectangle)
-  const shape =
-    button.geometry.parameters.width === button.geometry.parameters.height
-      ? "circle"
-      : "roundedRectangle";
+  const buttonResolution = getResolution() * 2;
+  const shape = width === height ? "circle" : "roundedRectangle";
+  ctx.fillStyle = color;
 
   if (shape === "circle") {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = canvas.width / 2;
-    ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
     ctx.fill();
   } else {
-    const radius =
-      20 * (resolution / (canvas.width / button.geometry.parameters.width / 2));
-    ctx.fillStyle = color;
+    const radius = 20 * (buttonResolution / getResolution());
     ctx.beginPath();
     ctx.moveTo(radius, 0);
     ctx.lineTo(canvas.width - radius, 0);
@@ -91,13 +85,22 @@ function redrawButton(button, color) {
   const TEXT_COLOR = "#FFFFFF";
   ctx.fillStyle = TEXT_COLOR;
 
-  const baseFontSize = parseInt(FONT.split(" ")[1]);
+  // --- DITAMBAHKAN: Menggunakan logika font yang SAMA seperti createButton ---
+  const vrFontScale = 1.2;
+  const resolution = getResolution();
   const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
-  const scaledFontSize =
-    baseFontSize *
-    (resolution / (canvas.width / button.geometry.parameters.width / 2)) *
-    (shape === "circle" ? 1.2 : 1.0);
-  ctx.font = `${fontStyle} ${scaledFontSize}px Arial`;
+
+  let baseFontSize = height * resolution * 1;
+
+  if (shape === "circle") {
+    baseFontSize *= 1.2;
+  }
+
+  const finalFontSize = Math.floor(
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize
+  );
+  ctx.font = `${fontStyle} ${finalFontSize}px Arial`;
+  // --- AKHIR PENAMBAHAN ---
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";

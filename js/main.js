@@ -150,6 +150,11 @@ function init() {
 
   setupVR();
   renderer.xr.addEventListener("sessionstart", () => {
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    // 2. Atur ulang Encoding Output
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    // 3. Pastikan exposure konsisten (opsional, tapi bagus)
+    renderer.toneMappingExposure = 1.2;
     changeState(AppState.LANDING);
   });
   renderer.xr.addEventListener("sessionend", () => {
@@ -334,7 +339,8 @@ function changeState(newState) {
     switch (newState) {
       case AppState.MODE_SELECTION:
         controls.enabled = true;
-        camera.position.set(0, 1.6, 5);
+        // Posisikan panel mode seleksi agak di depan kamera
+        camera.position.set(0, 1.6, 2);
         controls.target.set(0, 1.6, 0);
         break;
 
@@ -351,7 +357,8 @@ function changeState(newState) {
       case AppState.MINI_QUIZ_RESULT:
       case AppState.VIEWER:
         controls.enabled = true;
-        controls.target.set(0, 1, 0);
+        // Sesuaikan target agar lebih sejajar dengan pandangan
+        controls.target.set(0, 1.6, 0);
         break;
     }
   }

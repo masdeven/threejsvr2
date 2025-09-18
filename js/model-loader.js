@@ -6,7 +6,7 @@ import { loadingManager } from "./loading-manager.js";
 export const loader = new GLTFLoader(loadingManager);
 let currentModel = null;
 let activeLoad = null;
-const TABLE_HEIGHT = 0.9;
+const TABLE_HEIGHT = 1;
 export let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 export const modelCache = {};
@@ -34,7 +34,7 @@ function setupModel(model) {
 
   // 3. Geser agar pusatnya di (0,0) pada sumbu X,Z
   model.position.x -= center.x;
-  model.position.z -= center.z;
+  model.position.z = -2.0 - center.z;
 
   // 4. Geser Y agar bagian bawah mesh pas di atas meja
   const newMinY = newBox.min.y;
