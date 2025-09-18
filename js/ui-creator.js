@@ -1152,7 +1152,25 @@ export function createQuizReportScreen(score, hasAttempted) {
     0.02 // Sedikit di depan panel
   );
   viewerUIGroup.add(exitButton);
+  loader.load("assets/models/bot.glb", (gltf) => {
+    const model = gltf.scene;
+    currentAvatar = model; // Simpan referensi model
+    model.scale.set(0.5, 0.5, 0.5); // Sedikit lebih besar dari di landing
 
+    // Posisikan avatar di samping kiri panel
+    const avatarX = -panelWidth / 2 - 0.5;
+    const avatarY = -panelHeight / 2 - 0.2;
+    model.position.set(avatarX, avatarY, 0.1);
+
+    // Tambahkan avatar ke grup UI yang sama dengan panel laporan
+    viewerUIGroup.add(model);
+
+    if (gltf.animations && gltf.animations.length) {
+      avatarMixer = new THREE.AnimationMixer(model);
+      const action = avatarMixer.clipAction(gltf.animations[0]);
+      action.play();
+    }
+  });
   // Atur posisi dan orientasi seluruh viewerUIGroup
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);

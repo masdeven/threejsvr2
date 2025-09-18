@@ -303,7 +303,7 @@ function changeState(newState) {
 
   currentState = newState;
 
-  if (newState === AppState.LANDING) {
+  if (newState === AppState.LANDING || newState === AppState.QUIZ_REPORT) {
     toggleAvatarVisibility(true);
   } else {
     toggleAvatarVisibility(false);
