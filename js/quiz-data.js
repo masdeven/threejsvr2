@@ -20,36 +20,19 @@ export const quizData = [
   },
   {
     question: "Papan sirkuit utama yang menghubungkan semua komponen adalah...",
-    answers: ["Motherboard", "Power Supply"],
+    answers: ["Motherboard", "Printer"],
     correctAnswerIndex: 0,
   },
   {
     question:
       "Komponen yang digunakan untuk menampilkan gambar ke layar adalah...",
-    answers: ["Monitor", "Speaker"],
+    answers: ["Monitor", "Flashdisk"],
     correctAnswerIndex: 0,
   },
   {
     question:
       "Perangkat input utama untuk memasukkan huruf dan angka adalah...",
     answers: ["Keyboard", "GPU"],
-    correctAnswerIndex: 0,
-  },
-  {
-    question: "Komponen yang menghasilkan suara dari komputer adalah...",
-    answers: ["Speaker", "Mouse"],
-    correctAnswerIndex: 0,
-  },
-  {
-    question:
-      "Komponen yang berfungsi menjaga suhu agar tidak overheat adalah...",
-    answers: ["Fan", "Storage"],
-    correctAnswerIndex: 0,
-  },
-  {
-    question:
-      "Komponen yang bertugas mengubah arus listrik agar sesuai dengan komponen komputer adalah...",
-    answers: ["Power Supply (PSU)", "Motherboard"],
     correctAnswerIndex: 0,
   },
   {
@@ -65,8 +48,14 @@ export const quizData = [
   },
   {
     question:
-      "Komponen yang melindungi bagian dalam komputer dan membantu sirkulasi udara adalah...",
-    answers: ["Casing", "Monitor"],
+      "Perangkat keras yang berfungsi mencetak dokumen ke bentuk fisik adalah...",
+    answers: ["Monitor", "Printer"],
+    correctAnswerIndex: 1,
+  },
+  {
+    question:
+      "Perangkat penyimpanan portabel yang digunakan untuk memindahkan data adalah...",
+    answers: ["Flashdisk", "Motherboard"],
     correctAnswerIndex: 0,
   },
 ];

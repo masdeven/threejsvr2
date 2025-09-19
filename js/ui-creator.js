@@ -156,7 +156,7 @@ function createButton(
 
 function createTextPanel(text, width, options = {}) {
   const { footerHeight = 0 } = options;
-  const MAX_PANEL_HEIGHT_3D = 0.6;
+  const MAX_PANEL_HEIGHT_3D = 1.2;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
@@ -590,8 +590,8 @@ export function createViewerPage(component, index, descriptionIndex = 0) {
   clearViewerUI();
 
   // --- 1. Panel Latar Belakang Utama ---
-  const totalPanelWidth = 3.0;
-  const totalPanelHeight = 1.7;
+  const totalPanelWidth = 4;
+  const totalPanelHeight = 2.3; // Anda bisa sesuaikan nilai ini
   const backgroundPanel = createUIPanel(
     totalPanelWidth,
     totalPanelHeight,
@@ -603,26 +603,36 @@ export function createViewerPage(component, index, descriptionIndex = 0) {
   backgroundPanel.renderOrder = 0;
   viewerUIGroup.add(backgroundPanel);
 
-  // --- 2. Panel Deskripsi ---
-  const currentDescription = component.description[descriptionIndex];
-  const descPanel = createTextPanel(currentDescription, 2.5);
-  const panelHeight = descPanel.geometry.parameters.height;
-  const panelWidth = descPanel.geometry.parameters.width;
-  const descPanelYOffset = 0.15;
-  descPanel.position.set(0, descPanelYOffset, 0.01);
-  descPanel.renderOrder = 1;
-  viewerUIGroup.add(descPanel);
-
-  // --- 3. Label Judul ---
-  const titleWidth = 2.2;
+  // --- 2. Label Judul (Dipindahkan ke atas & Posisinya Diubah) ---
+  const titleWidth = 2.8; // Sedikit disesuaikan agar pas
   const titleHeight = 0.35;
   const titleLabel = createTitleLabel(component.label, titleWidth, titleHeight);
-  const titleY = descPanelYOffset + panelHeight / 2 + titleHeight / 2 - 0.05;
+
+  // --- PENYESUAIAN KUNCI ---
+  // Posisi Y judul sekarang dihitung dari tepi atas panel utama.
+  const topPadding = 0.1; // Jarak dari tepi atas
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
+
   titleLabel.position.set(0, titleY, 0.02);
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
+  // --- 3. Panel Deskripsi ---
+  const currentDescription = component.description[descriptionIndex];
+  const descPanel = createTextPanel(currentDescription, 2.8); // Lebar disesuaikan
+  const panelHeight = descPanel.geometry.parameters.height;
+  const panelWidth = descPanel.geometry.parameters.width;
+
+  // --- PENYESUAIAN KUNCI ---
+  // Posisi Y panel deskripsi sekarang berada di bawah judul.
+  const descPanelYOffset = titleY - titleHeight / 2 - panelHeight / 2 - 0.05;
+
+  descPanel.position.set(0, descPanelYOffset, 0.01);
+  descPanel.renderOrder = 1;
+  viewerUIGroup.add(descPanel);
+
   // --- 4. Tombol Navigasi Deskripsi ---
+  // Perhitungan posisi tombol ini tidak berubah, karena sudah relatif terhadap panel deskripsi.
   const descNavY = descPanelYOffset - panelHeight / 2 - 0.15;
   if (component.description.length > 1) {
     const rightEdgeX = panelWidth / 2;
@@ -1299,7 +1309,7 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   canvas.width = size * resolution;
   canvas.height = size * resolution;
 
-  const fontSize = Math.floor(size * resolution * 0.8); // Font sangat besar
+  const fontSize = Math.floor(size * resolution * 0.5); // Font sangat besar
   ctx.font = `bold ${fontSize}px "Arial Rounded MT Bold", Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";

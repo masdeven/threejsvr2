@@ -19,7 +19,10 @@ export const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 1.6, 0);
 
 // Renderer
-export const renderer = new THREE.WebGLRenderer({ antialias: true });
+export const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: "high-performance",
+});
 renderer.localClippingEnabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
