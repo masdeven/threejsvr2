@@ -256,7 +256,7 @@ body {
   }
 }
 
-/* ===== LAIN-LAIN (VR Button & Rotate Overlay) ===== */
+/* ===== LAIN-LAIN (VR Button) ===== */
 #VRButton {
   visibility: hidden;
   opacity: 0;
@@ -271,25 +271,4 @@ body {
 #VRButton.visible {
   visibility: visible;
   opacity: 1;
-}
-
-.rotate-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-color);
-  color: var(--text-color);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 1000;
-}
-
-@media screen and (orientation: landscape) {
-  .rotate-overlay {
-    display: none;
-  }
 }

@@ -40,7 +40,7 @@ import { loadingManager } from "./loading-manager.js";
 import { quizData } from "./quiz-data.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import Stats from "stats.js";
+import Stats from "three/addons/libs/stats.module.js";
 import { creditsData } from "./credits-data.js";
 import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 

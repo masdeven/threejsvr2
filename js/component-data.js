@@ -128,7 +128,7 @@ export const components = [
     ],
   },
   {
-    label: "HDD dan SSD",
+    label: "Storage (HDD/SDD",
     modelFile: "assets/models/storage.glb",
     audioFile: "assets/audio/storage.mp3",
     description: [

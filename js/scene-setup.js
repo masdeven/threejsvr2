@@ -35,14 +35,15 @@ document.getElementById("container").appendChild(renderer.domElement);
 export const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.enablePan = false; // Pastikan pan dinonaktifkan
+controls.enableZoom = false; // Nonaktifkan zoom
 
 // KUNCI PERBAIKAN: Atur target ke posisi yang sama dengan kamera
 // Ini akan membuat kamera berputar pada posisinya sendiri (menoleh)
 controls.target.set(0, 1.6, 0);
 
 // Atur jarak zoom agar tidak bisa keluar dari ruangan
-controls.minDistance = 0.1; // Jarak minimal (dari sebelumnya 0.1)
-controls.maxDistance = 0.5; // Jarak maksimal (dari sebelumnya 0.5)
+controls.minDistance = 0.1;
+controls.maxDistance = 0.5;
 
 // Batasi rotasi vertikal agar terasa lebih alami
 controls.minPolarAngle = Math.PI / 4;
