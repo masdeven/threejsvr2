@@ -166,7 +166,7 @@ function createTextPanel(text, width, options = {}) {
 
   // --- AWAL PERBAIKAN: Logika Font Dinamis ---
   const BASE_FONT_SIZE_PX = 26; // Ukuran font dasar untuk browser (dalam piksel)
-  const vrFontScale = 1.6; // Faktor skala khusus VR (sesuaikan jika perlu)
+  const vrFontScale = 2; // Faktor skala khusus VR (sesuaikan jika perlu)
 
   const finalFontSize = Math.round(
     isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX
