@@ -462,6 +462,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     "Materi disusun secara berurutan, dan di setiap bagian kamu akan menemukan mini-kuis untuk menguji pemahaman sebelum melanjutkan ke materi berikutnya.",
     "Setelah menyelesaikan semua materi, kamu dapat mengerjakan tes akhir melalui menu 'Pilih Materi' untuk mengukur pemahamanmu secara keseluruhan.",
     "Setelah tes akhir, cek laporan belajarmu di menu 'Laporan Belajar' untuk melihat pencapaian dan kemajuanmu!",
+    "Oh iyaaa, jangan lupa! Kamu bisa memutar model 3D secara manual untuk mengeksplor setiap detailnya. 😄",
     "Selamat belajar dan semoga menyenangkan!",
   ];
   // --- AKHIR PERUBAHAN ---
