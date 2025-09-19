@@ -17,6 +17,7 @@ import {
   createCompletionScreen,
   createCreditsScreen,
   createModeSelectionPage,
+  createAvatarGreetingPage, // Impor fungsi baru
   updateAvatar,
   toggleAvatarVisibility,
   preloadAvatar, // Impor fungsi preloadAvatar
@@ -65,6 +66,7 @@ let fpsLabel = null;
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
+  AVATAR_GREETING: "AVATAR_GREETING", // State baru
   LANDING: "LANDING",
   MENU: "MENU",
   VIEWER: "VIEWER",
@@ -88,6 +90,9 @@ function refreshUI() {
   switch (currentState) {
     case AppState.MODE_SELECTION:
       createModeSelectionPage();
+      break;
+    case AppState.AVATAR_GREETING:
+      createAvatarGreetingPage(playerName);
       break;
     case AppState.LANDING:
       createLandingPage(playerName);
@@ -164,7 +169,7 @@ async function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMappingExposure = 1.2;
-    changeState(AppState.LANDING);
+    changeState(AppState.AVATAR_GREETING);
   });
   renderer.xr.addEventListener("sessionend", () => {
     changeState(AppState.MENU);
@@ -356,7 +361,11 @@ function changeState(newState) {
   if (newState === AppState.COMPLETION) {
     playCompletionAudio();
   }
-  if (newState === AppState.LANDING || newState === AppState.QUIZ_REPORT) {
+  if (
+    newState === AppState.LANDING ||
+    newState === AppState.QUIZ_REPORT ||
+    newState === AppState.AVATAR_GREETING
+  ) {
     toggleAvatarVisibility(true);
   } else {
     toggleAvatarVisibility(false);
@@ -377,6 +386,7 @@ function changeState(newState) {
       case AppState.COMPLETION:
       case AppState.HELP:
       case AppState.LANDING:
+      case AppState.AVATAR_GREETING:
       case AppState.CREDITS:
       case AppState.MINI_QUIZ:
       case AppState.MINI_QUIZ_RESULT:
@@ -392,7 +402,8 @@ function handleInteraction(action) {
   const confirmActions = [
     "start_browser",
     "start_vr",
-    "start",
+    "continue_to_landing",
+    "start_learning",
     "help",
     "close_help",
     "show_quiz",
@@ -418,14 +429,17 @@ function handleInteraction(action) {
 
   switch (action) {
     case "start_browser":
-      changeState(AppState.LANDING);
+      changeState(AppState.AVATAR_GREETING);
       break;
     case "start_vr":
       startVRSession(() => {
-        changeState(AppState.MENU);
+        changeState(AppState.AVATAR_GREETING);
       });
       break;
-    case "start":
+    case "continue_to_landing":
+      changeState(AppState.LANDING);
+      break;
+    case "start_learning":
       changeState(AppState.MENU);
       break;
     case "help":

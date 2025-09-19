@@ -354,6 +354,54 @@ export function updateAvatar(deltaTime) {
   }
 }
 
+export function createAvatarGreetingPage(playerName) {
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+
+  const panelWidth = 4.0;
+  const panelHeight = 1.3;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(mainPanel);
+
+  if (playerName) {
+    const welcomeText = `Halo, ${playerName}! Senang bertemu denganmu.\nSelamat datang di aplikasi pembelajaran interaktif ini.`;
+    // Menggunakan createBodyText yang mendukung wrapping
+    const welcomeLabel = createBodyText(welcomeText, 3.8, {
+      baseFontSize: 32,
+      vrFontScale: 1.5,
+      lineHeightScale: 1.3,
+    });
+    welcomeLabel.position.set(0, 0.3, 0.01); // Menyesuaikan posisi Y
+    viewerUIGroup.add(welcomeLabel);
+  }
+
+  const primaryButtonWidth = 2.8;
+  const primaryButtonHeight = 0.32;
+
+  const continueButton = createButton(
+    "Lanjutkan",
+    "continue_to_landing",
+    primaryButtonWidth,
+    primaryButtonHeight,
+    ACCENT_COLOR
+  );
+  continueButton.position.set(0, -0.3, 0.01); // Menyesuaikan posisi Y tombol
+  viewerUIGroup.add(continueButton);
+
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(-panelWidth / 2 - 0.2, -panelHeight / 2 - 0.2, 0.05)
+    );
+  }
+
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
+}
+
 export function createLandingPage(playerName) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -382,7 +430,7 @@ export function createLandingPage(playerName) {
   viewerUIGroup.add(logoPanel);
 
   if (playerName) {
-    const welcomeText = `Selamat Datang, ${playerName}!`;
+    const welcomeText = `Pilih Aktivitasmu, ${playerName}!`;
     const welcomeLabel = createTitleLabel(welcomeText, 3.8, 0.35);
     welcomeLabel.position.set(0, 0.45, 0.01);
     viewerUIGroup.add(welcomeLabel);
@@ -394,7 +442,7 @@ export function createLandingPage(playerName) {
   const primaryStartY = 0.1;
 
   const primaryButtons = [
-    { text: "Mulai Belajar", action: "start", color: ACCENT_COLOR },
+    { text: "Mulai Belajar", action: "start_learning", color: ACCENT_COLOR },
     { text: "Laporan Belajar", action: "show_quiz_report", color: BG_COLOR },
   ];
 
