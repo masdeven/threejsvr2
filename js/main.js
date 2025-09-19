@@ -313,7 +313,7 @@ function playCompletionAudio() {
   stopAudio();
   audioLoader.load("assets/audio/completion.mp3", (buffer) => {
     completionSound.setBuffer(buffer);
-    completionSound.setVolume(0.8); // Volume bisa disesuaikan
+    completionSound.setVolume(0.5); // Volume bisa disesuaikan
     completionSound.play();
   });
 }
