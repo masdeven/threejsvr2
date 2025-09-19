@@ -64,9 +64,8 @@ let fps = 0;
 let frameCount = 0;
 let lastFpsUpdate = 0;
 let fpsLabel = null;
-// --- PERUBAHAN BARU ---
 let currentGreetingIndex = 0; // Melacak indeks teks sapaan
-// --- AKHIR PERUBAHAN ---
+const audioCache = {};
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
@@ -160,6 +159,7 @@ async function init() {
   backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
+  sound.userData = {};
   completionSound = new THREE.Audio(audioListener);
 
   const ktx2Loader = new KTX2Loader()
@@ -265,67 +265,118 @@ function preloadAssets() {
     }
   }
 
+  const audioFilesToPreload = [
+    "assets/audio/button_press.mp3",
+    "assets/audio/button_confirm.mp3",
+    "assets/audio/completion.mp3",
+    "assets/audio/background_music.mp3",
+  ];
+
   for (const component of components) {
     if (component.audioFile) {
-      audioLoader.load(component.audioFile, () => {});
+      audioFilesToPreload.push(component.audioFile);
     }
   }
 
-  audioLoader.load("assets/audio/button_press.mp3", () => {});
-  audioLoader.load("assets/audio/button_confirm.mp3", () => {});
-  audioLoader.load("assets/audio/completion.mp3", () => {});
-}
+  const uniqueAudioFiles = [...new Set(audioFilesToPreload)];
 
-function stopAudio() {
-  if (sound && sound.isPlaying) sound.stop();
-}
-
-function playComponentAudio(audioFile) {
-  stopAudio();
-  if (!audioFile) {
-    return;
+  for (const audioFile of uniqueAudioFiles) {
+    audioLoader.load(audioFile, (buffer) => {
+      audioCache[audioFile] = buffer;
+      console.log(`Audio di-cache: ${audioFile}`);
+    });
   }
-  audioLoader.load(audioFile, (buffer) => {
-    sound.setBuffer(buffer);
-    sound.setLoop(false);
-    sound.setVolume(1);
-    sound.play();
-  });
+}
+
+function playSoundFromCache(audioObject, path, options = {}) {
+  const { loop = false, volume = 1 } = options;
+
+  if (audioObject && audioObject.isPlaying) {
+    audioObject.stop();
+  }
+
+  const buffer = audioCache[path];
+  if (buffer) {
+    audioObject.setBuffer(buffer);
+    audioObject.setLoop(loop);
+    audioObject.setVolume(volume);
+    audioObject.play();
+  } else {
+    // Fallback jika audio belum ter-cache
+    audioLoader.load(path, (buf) => {
+      audioCache[path] = buf;
+      audioObject.setBuffer(buf);
+      audioObject.setLoop(loop);
+      audioObject.setVolume(volume);
+      audioObject.play();
+    });
+  }
+}
+function playControlledSound(audioObject, path, options = {}) {
+  const { loop = false, volume = 1 } = options;
+
+  if (audioObject && audioObject.isPlaying) {
+    audioObject.stop();
+  }
+
+  const buffer = audioCache[path];
+  if (buffer) {
+    audioObject.setBuffer(buffer);
+    audioObject.setLoop(loop);
+    audioObject.setVolume(volume);
+    audioObject.play();
+  }
+}
+
+// Fungsi BARU untuk suara pendek (efek tombol)
+function playOneShotSound(path, volume = 1) {
+  const buffer = audioCache[path];
+  if (buffer) {
+    // Buat instance Audio baru setiap kali dipanggil
+    const oneShotSound = new THREE.Audio(audioListener);
+    oneShotSound.setBuffer(buffer);
+    oneShotSound.setVolume(volume);
+    oneShotSound.play();
+  }
+}
+function playComponentAudio(audioFile) {
+  if (!audioFile) return;
+  if (sound.isPlaying && sound.userData.path === audioFile) {
+    sound.stop();
+    sound.userData.path = null;
+  } else {
+    playControlledSound(sound, audioFile, { volume: 1 });
+    sound.userData.path = audioFile;
+  }
 }
 
 function playButtonPressAudio() {
-  stopAudio();
-  audioLoader.load("assets/audio/button_press.mp3", (buffer) => {
-    sound.setBuffer(buffer);
-    sound.setVolume(0.5);
-    sound.play();
-  });
+  playOneShotSound("assets/audio/button_press.mp3", 0.5);
 }
 
 function playButtonConfirmAudio() {
-  stopAudio();
-  audioLoader.load("assets/audio/button_confirm.mp3", (buffer) => {
-    sound.setBuffer(buffer);
-    sound.setVolume(0.5);
-    sound.play();
-  });
+  playOneShotSound("assets/audio/button_confirm.mp3", 0.5);
 }
 function startBackgroundMusic() {
+  if (audioListener.context.state === "suspended") {
+    audioListener.context.resume();
+  }
   if (backgroundSound.isPlaying) return;
-  audioLoader.load("assets/audio/background_music.mp3", (buffer) => {
-    backgroundSound.setBuffer(buffer);
-    backgroundSound.setLoop(true);
-    backgroundSound.setVolume(0.2);
-    backgroundSound.play();
+  playControlledSound(backgroundSound, "assets/audio/background_music.mp3", {
+    loop: true,
+    volume: 0.2,
   });
 }
 function playCompletionAudio() {
-  stopAudio();
-  audioLoader.load("assets/audio/completion.mp3", (buffer) => {
-    completionSound.setBuffer(buffer);
-    completionSound.setVolume(0.5);
-    completionSound.play();
+  playControlledSound(completionSound, "assets/audio/completion.mp3", {
+    volume: 0.5,
   });
+}
+function stopAudio() {
+  if (sound && sound.isPlaying) {
+    sound.stop();
+    sound.userData.path = null;
+  }
 }
 
 function reloadViewer() {
