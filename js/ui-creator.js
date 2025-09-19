@@ -845,26 +845,38 @@ function createSubtitleLabel(text, width, height) {
   return new THREE.Mesh(geometry, material);
 }
 
-function createBodyText(text, width, lineHeight = 40, fontSize = 32) {
+function createBodyText(text, width, options = {}) {
+  const {
+    baseFontSize = 28, // Ukuran font dasar sedikit disesuaikan
+    vrFontScale = 1.5, // Skala VR sedikit diperbesar untuk keterbacaan
+    lineHeightScale = 1.2, // Tinggi baris 120% dari ukuran font
+  } = options;
+
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
 
-  ctx.font = `${fontSize}px Arial`;
-  const textMetrics = wrapText(
-    ctx,
-    text,
-    0,
-    0,
-    width * resolution,
-    lineHeight * (resolution / 256),
-    false
+  // Logika font dinamis yang konsisten
+  const finalFontSize = Math.round(
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
+  const lineHeight = Math.round(finalFontSize * lineHeightScale);
+  ctx.font = `${finalFontSize}px Arial, sans-serif`;
 
-  canvas.width = width * resolution;
-  canvas.height = textMetrics.pixelHeight * 1.2;
+  const padding = 15; // Padding horizontal dalam piksel
+  const canvasWidth = width * resolution;
+  const maxWidth = canvasWidth - padding * 2;
 
-  ctx.font = `${fontSize * (resolution / 256)}px Arial`;
+  // Dapatkan metrik teks (tinggi total)
+  const textMetrics = wrapText(ctx, text, 0, 0, maxWidth, lineHeight, false);
+  const totalTextPixelHeight = textMetrics.pixelHeight;
+
+  // Atur ukuran canvas berdasarkan konten
+  canvas.width = canvasWidth;
+  canvas.height = totalTextPixelHeight + padding; // Sedikit padding vertikal
+
+  // Gambar ulang teks pada canvas yang ukurannya sudah benar
+  ctx.font = `${finalFontSize}px Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillStyle = "#E2E8F0";
@@ -874,13 +886,14 @@ function createBodyText(text, width, lineHeight = 40, fontSize = 32) {
   ctx.shadowOffsetX = 2;
   ctx.shadowOffsetY = 2;
 
+  // Panggil wrapText untuk menggambar teks di tengah
   wrapText(
     ctx,
     text,
     canvas.width / 2,
-    0,
-    canvas.width,
-    lineHeight * (resolution / 256),
+    padding / 2,
+    maxWidth,
+    lineHeight,
     true
   );
 
@@ -889,7 +902,7 @@ function createBodyText(text, width, lineHeight = 40, fontSize = 32) {
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
-    depthWrite: false, // Perbaikan untuk rendering
+    depthWrite: false,
   });
 
   const geometry = new THREE.PlaneGeometry(width, canvas.height / resolution);
@@ -1359,7 +1372,10 @@ export function createQuizReportScreen(score, hasAttempted) {
     // Tampilan jika kuis belum dikerjakan
     const reportText =
       "Anda harus menyelesaikan semua materi dan mengerjakan Tes Akhir terlebih dahulu untuk melihat laporan nilai.";
-    const reportBody = createBodyText(reportText, 4.2);
+    const reportBody = createBodyText(reportText, 4.2, {
+      baseFontSize: 30,
+      vrFontScale: 1.6,
+    });
     reportBody.position.set(0, 0, 0.02);
     viewerUIGroup.add(reportBody);
   } else {
@@ -1379,7 +1395,7 @@ export function createQuizReportScreen(score, hasAttempted) {
 
     // Teks detail
     const detailText = `Anda berhasil menjawab ${score} dari ${totalQuestions} soal dengan benar.`;
-    const reportBody = createBodyText(detailText, 4.2, 35, 28);
+    const reportBody = createBodyText(detailText, 4.2);
     reportBody.position.set(0, -0.6, 0.02);
     viewerUIGroup.add(reportBody);
   }
