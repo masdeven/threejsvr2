@@ -127,7 +127,12 @@ function createButton(
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  // --- PENYESUAIAN UNTUK PUSAT IKON ---
+  // Menambahkan sedikit offset vertikal untuk beberapa ikon/karakter
+  const verticalOffset = shape === "circle" ? finalFontSize * 0.05 : 0;
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2 + verticalOffset);
+  // --- AKHIR PENYESUAIAN ---
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = 16;
@@ -152,7 +157,6 @@ function createButton(
 
   return mesh;
 }
-// ui-creator.js
 
 function createTextPanel(text, width, options = {}) {
   const { footerHeight = 0 } = options;
@@ -211,10 +215,6 @@ function createTextPanel(text, width, options = {}) {
 
   ctx.fillStyle = "rgba(0,0,0,0.85)";
   ctx.fill();
-
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = "#FFFFFF";
-  ctx.stroke();
 
   ctx.font = font;
   ctx.textAlign = "left";

@@ -120,7 +120,12 @@ function redrawButton(button, color) {
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(data.text, canvas.width / 2, canvas.height / 2);
+
+  // --- PENYESUAIAN UNTUK PUSAT IKON ---
+  // Menambahkan sedikit offset vertikal untuk beberapa ikon/karakter
+  const verticalOffset = shape === "circle" ? finalFontSize * 0.05 : 0;
+  ctx.fillText(data.text, canvas.width / 2, canvas.height / 2 + verticalOffset);
+  // --- AKHIR PENYESUAIAN ---
 
   button.material.map.needsUpdate = true;
 }
