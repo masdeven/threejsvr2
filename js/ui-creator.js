@@ -15,7 +15,9 @@ scene.add(viewerUIGroup);
 
 let avatarMixer;
 let currentAvatar = null;
-let avatarModel = null; // Variabel untuk menyimpan model avatar yang sudah dimuat
+let avatarModel = null;
+
+export let activeTypingAnimation = null;
 
 const BG_COLOR = "#2D3748";
 const TEXT_COLOR = "#FFFFFF";
@@ -23,7 +25,7 @@ const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 
-// Fungsi untuk memuat avatar sekali saja
+// ... (kode dari `preloadAvatar` sampai `createTypingText` tetap sama)
 export function preloadAvatar() {
   return new Promise((resolve, reject) => {
     if (avatarModel) {
@@ -90,7 +92,99 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
   }
   return { pixelHeight: totalLines * lineHeight, lineCount: totalLines };
 }
+function createTypingText(text, width, options = {}, onComplete) {
+  const {
+    baseFontSize = 28,
+    vrFontScale = 1.5,
+    lineHeightScale = 1.2,
+  } = options;
 
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const resolution = getResolution();
+
+  const finalFontSize = Math.round(
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize
+  );
+  const lineHeight = Math.round(finalFontSize * lineHeightScale);
+  const font = `${finalFontSize}px Arial, sans-serif`;
+  ctx.font = font;
+
+  const padding = 15;
+  const canvasWidth = width * resolution;
+  const maxWidth = canvasWidth - padding * 2;
+
+  // Hitung tinggi total berdasarkan teks lengkap untuk ukuran kanvas yang benar
+  const textMetrics = wrapText(ctx, text, 0, 0, maxWidth, lineHeight, false);
+  const totalTextPixelHeight = textMetrics.pixelHeight;
+
+  canvas.width = canvasWidth;
+  canvas.height = totalTextPixelHeight + padding;
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = 16;
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+  });
+
+  const geometry = new THREE.PlaneGeometry(width, canvas.height / resolution);
+  const mesh = new THREE.Mesh(geometry, material);
+
+  // Data untuk animasi
+  let currentIndex = 0;
+  let timeAccumulator = 0;
+  const typingSpeed = 40; // karakter per detik
+
+  function update(deltaTime) {
+    if (currentIndex >= text.length) {
+      if (activeTypingAnimation === this) {
+        activeTypingAnimation = null; // Hentikan update setelah selesai
+        if (onComplete) onComplete();
+      }
+      return;
+    }
+
+    timeAccumulator += deltaTime;
+    const interval = 1 / typingSpeed;
+
+    while (timeAccumulator >= interval) {
+      currentIndex++;
+      timeAccumulator -= interval;
+      if (currentIndex > text.length) {
+        currentIndex = text.length;
+        break;
+      }
+    }
+
+    // Gambar ulang kanvas dengan teks yang sudah dianimasikan
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = font;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "#E2E8F0";
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    wrapText(
+      ctx,
+      text.substring(0, currentIndex),
+      canvas.width / 2,
+      padding / 2,
+      maxWidth,
+      lineHeight,
+      true
+    );
+    texture.needsUpdate = true;
+  }
+
+  // Ganti `activeTypingAnimation` dengan objek update yang baru
+  activeTypingAnimation = { update };
+
+  return mesh;
+}
 function createButton(
   text,
   action,
@@ -263,16 +357,14 @@ function createTextPanel(text, width, options = {}) {
 
   return mesh;
 }
-
 export function clearUI() {
+  activeTypingAnimation = null;
   [uiGroup, viewerUIGroup].forEach((group) => {
     for (let i = group.children.length - 1; i >= 0; i--) {
       const child = group.children[i];
-
       child.traverse((object) => {
         if (object.isMesh) {
           object.geometry?.dispose();
-
           if (object.material) {
             if (Array.isArray(object.material)) {
               object.material.forEach((material) => {
@@ -286,12 +378,10 @@ export function clearUI() {
           }
         }
       });
-
       group.remove(child);
     }
   });
 }
-
 function createUIPanel(
   width,
   height,
@@ -319,7 +409,7 @@ function createUIPanel(
     canvas.height
   );
   ctx.lineTo(r, canvas.height);
-  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - r);
+  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
   ctx.lineTo(0, r);
   ctx.quadraticCurveTo(0, 0, r, 0);
   ctx.closePath();
@@ -354,7 +444,8 @@ export function updateAvatar(deltaTime) {
   }
 }
 
-export function createAvatarGreetingPage(playerName) {
+// --- MODIFIKASI FUNGSI INI ---
+export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
@@ -364,30 +455,51 @@ export function createAvatarGreetingPage(playerName) {
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  if (playerName) {
-    const welcomeText = `Halo, ${playerName}! Senang bertemu denganmu.\nSelamat datang di aplikasi pembelajaran interaktif ini.`;
-    // Menggunakan createBodyText yang mendukung wrapping
-    const welcomeLabel = createBodyText(welcomeText, 3.8, {
-      baseFontSize: 32,
-      vrFontScale: 1.5,
-      lineHeightScale: 1.3,
-    });
-    welcomeLabel.position.set(0, 0.3, 0.01); // Menyesuaikan posisi Y
-    viewerUIGroup.add(welcomeLabel);
-  }
+  // --- PERUBAHAN BARU: Daftar teks percakapan ---
+  const greetingTexts = [
+    `Halo, ${playerName}! Senang bertemu denganmu.\nSelamat datang di aplikasi WebXR Computer Lab.`,
+    "Di sini, kamu bisa menjelajahi model 3D perangkat keras komputer, mencoba mini-kuis, dan menguji pengetahuanmu di tes akhir.",
+    "Materi disusun secara berurutan, dan di setiap bagian kamu akan menemukan mini-kuis untuk menguji pemahaman sebelum melanjutkan ke materi berikutnya.",
+    "Setelah menyelesaikan semua materi, kamu dapat mengerjakan tes akhir melalui menu 'Pilih Materi' untuk mengukur pemahamanmu secara keseluruhan.",
+    "Setelah tes akhir, cek laporan belajarmu di menu 'Laporan Belajar' untuk melihat pencapaian dan kemajuanmu!",
+    "Selamat belajar dan semoga menyenangkan!",
+  ];
+  // --- AKHIR PERUBAHAN ---
+
+  const currentText = greetingTexts[greetingIndex];
+  const isLastGreeting = greetingIndex >= greetingTexts.length - 1;
 
   const primaryButtonWidth = 2.8;
   const primaryButtonHeight = 0.32;
-
   const continueButton = createButton(
-    "Lanjutkan",
-    "continue_to_landing",
+    isLastGreeting ? "Mulai Belajar" : "Lanjutkan",
+    isLastGreeting ? "continue_to_landing" : "next_greeting",
     primaryButtonWidth,
     primaryButtonHeight,
     ACCENT_COLOR
   );
-  continueButton.position.set(0, -0.3, 0.01); // Menyesuaikan posisi Y tombol
+  continueButton.position.set(0, -0.3, 0.01);
+  continueButton.visible = false;
   viewerUIGroup.add(continueButton);
+
+  if (currentText) {
+    const welcomeLabel = createTypingText(
+      currentText,
+      3.8,
+      {
+        baseFontSize: 32,
+        vrFontScale: 1.5,
+        lineHeightScale: 1.3,
+      },
+      () => {
+        continueButton.visible = true;
+      }
+    );
+    welcomeLabel.position.set(0, 0.3, 0.01);
+    viewerUIGroup.add(welcomeLabel);
+  } else {
+    continueButton.visible = true;
+  }
 
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();
@@ -401,7 +513,9 @@ export function createAvatarGreetingPage(playerName) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+// --- AKHIR MODIFIKASI ---
 
+// ... (sisa kode sampai akhir file tetap sama)
 export function createLandingPage(playerName) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);

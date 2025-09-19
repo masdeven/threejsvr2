@@ -17,10 +17,11 @@ import {
   createCompletionScreen,
   createCreditsScreen,
   createModeSelectionPage,
-  createAvatarGreetingPage, // Impor fungsi baru
+  createAvatarGreetingPage,
   updateAvatar,
   toggleAvatarVisibility,
-  preloadAvatar, // Impor fungsi preloadAvatar
+  preloadAvatar,
+  activeTypingAnimation,
 } from "./ui-creator.js";
 import {
   loader,
@@ -63,10 +64,13 @@ let fps = 0;
 let frameCount = 0;
 let lastFpsUpdate = 0;
 let fpsLabel = null;
+// --- PERUBAHAN BARU ---
+let currentGreetingIndex = 0; // Melacak indeks teks sapaan
+// --- AKHIR PERUBAHAN ---
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
-  AVATAR_GREETING: "AVATAR_GREETING", // State baru
+  AVATAR_GREETING: "AVATAR_GREETING",
   LANDING: "LANDING",
   MENU: "MENU",
   VIEWER: "VIEWER",
@@ -92,7 +96,9 @@ function refreshUI() {
       createModeSelectionPage();
       break;
     case AppState.AVATAR_GREETING:
-      createAvatarGreetingPage(playerName);
+      // --- PERUBAHAN BARU ---
+      createAvatarGreetingPage(playerName, currentGreetingIndex);
+      // --- AKHIR PERUBAHAN ---
       break;
     case AppState.LANDING:
       createLandingPage(playerName);
@@ -132,6 +138,7 @@ function refreshUI() {
       break;
   }
 }
+// ... (kode dari `showViewer` sampai `changeState` tetap sama)
 function showViewer(index) {
   const component = components[index];
   if (!component) return;
@@ -358,6 +365,13 @@ function changeState(newState) {
 
   currentState = newState;
 
+  // --- PERUBAHAN BARU ---
+  // Reset indeks sapaan saat masuk ke state AVATAR_GREETING
+  if (newState === AppState.AVATAR_GREETING) {
+    currentGreetingIndex = 0;
+  }
+  // --- AKHIR PERUBAHAN ---
+
   if (newState === AppState.COMPLETION) {
     playCompletionAudio();
   }
@@ -403,6 +417,7 @@ function handleInteraction(action) {
     "start_browser",
     "start_vr",
     "continue_to_landing",
+    "next_greeting", // Aksi baru
     "start_learning",
     "help",
     "close_help",
@@ -436,6 +451,12 @@ function handleInteraction(action) {
         changeState(AppState.AVATAR_GREETING);
       });
       break;
+    // --- PERUBAHAN BARU ---
+    case "next_greeting":
+      currentGreetingIndex++;
+      refreshUI();
+      break;
+    // --- AKHIR PERUBAHAN ---
     case "continue_to_landing":
       changeState(AppState.LANDING);
       break;
@@ -585,6 +606,8 @@ function handleInteraction(action) {
       break;
   }
 }
+
+// ... (kode dari `stopConfettiEffect` sampai `render` tetap sama)
 function stopConfettiEffect() {
   if (confettiEffect) {
     confettiEffect.destroy();
@@ -594,7 +617,6 @@ function stopConfettiEffect() {
 function animate() {
   renderer.setAnimationLoop(render);
 }
-
 function render() {
   stats.update();
   const deltaTime = clock.getDelta();
@@ -604,6 +626,10 @@ function render() {
     fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
     frameCount = 0;
     lastFpsUpdate = now;
+  }
+
+  if (activeTypingAnimation) {
+    activeTypingAnimation.update(deltaTime);
   }
 
   if (isVRMode()) {
