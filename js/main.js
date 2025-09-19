@@ -30,7 +30,11 @@ import {
   isDragging,
   modelCache,
 } from "./model-loader.js";
-import { setupInteraction, handleVRHover } from "./interaction-manager.js";
+import {
+  setupInteraction,
+  handleVRHover,
+  handleVRDrag,
+} from "./interaction-manager.js";
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
 import { quizData } from "./quiz-data.js";
@@ -591,6 +595,7 @@ function render() {
     debugGroup.quaternion.copy(camera.quaternion);
     updateFpsLabel(fpsLabel, fps);
     handleVRHover();
+    handleVRDrag();
     // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
     if (currentState !== AppState.MENU) {
       updateUIGroupPosition();

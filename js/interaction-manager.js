@@ -1,13 +1,18 @@
 import * as THREE from "three";
 import { scene, camera, renderer, controls } from "./scene-setup.js";
-import { getVRControllers } from "./vr-manager.js";
+// --- MODIFIKASI ---
+import { getVRControllers, vrInteractionState } from "./vr-manager.js";
 import { uiGroup, viewerUIGroup, FONT, getResolution } from "./ui-creator.js";
 import {
   startDragging,
   stopDragging,
   dragModel,
   getCurrentModel,
+  // --- BARU ---
+  rotateModelWithVR,
+  // --- AKHIR BARU ---
 } from "./model-loader.js";
+// --- MODIFIKASI ---
 import { isVRMode } from "./vr-manager.js";
 
 const raycaster = new THREE.Raycaster();
@@ -40,6 +45,17 @@ function getVRIntersectedObject(controller) {
   }
   return null;
 }
+
+// --- BARU ---
+function getVRIntersectedModel(controller) {
+  const currentModel = getCurrentModel();
+  if (!currentModel) return null;
+
+  raycaster.setFromXRController(controller);
+  const intersects = raycaster.intersectObject(currentModel, true);
+  return intersects.length > 0 ? intersects[0].object : null;
+}
+// --- AKHIR BARU ---
 
 function redrawButton(button, color) {
   const data = button.userData;
@@ -232,8 +248,23 @@ export function setupInteraction(callback) {
   });
 
   const controllers = getVRControllers();
-  controllers.forEach((controller) => {
+  controllers.forEach((controller, index) => {
+    // --- MODIFIKASI ---
     controller.addEventListener("selectstart", () => {
+      // --- AWAL MODIFIKASI VR DRAG ---
+      const state =
+        index === 0
+          ? vrInteractionState.controller1
+          : vrInteractionState.controller2;
+      const intersectedModel = getVRIntersectedModel(controller);
+
+      if (intersectedModel) {
+        state.isGrabbing = true;
+        state.startPosition.copy(controller.position);
+        return; // Hentikan eksekusi agar tidak memproses klik UI
+      }
+      // --- AKHIR MODIFIKASI VR DRAG ---
+
       const intersectedObject = getVRIntersectedObject(controller);
 
       if (intersectedObject && intersectedObject.userData.isButton) {
@@ -249,16 +280,31 @@ export function setupInteraction(callback) {
       }
     });
 
-    // selectend listener remains the same
+    // --- MODIFIKASI selectend ---
     controller.addEventListener("selectend", () => {
-      /* ... */
+      const state =
+        index === 0
+          ? vrInteractionState.controller1
+          : vrInteractionState.controller2;
+      if (state.isGrabbing) {
+        state.isGrabbing = false;
+      }
     });
+    // --- AKHIR MODIFIKASI selectend ---
   });
 }
 
 export function handleVRHover() {
   const controllers = getVRControllers();
   let intersectedInFrame = null;
+  // Jangan proses hover jika sedang grabbing
+  if (
+    vrInteractionState.controller1.isGrabbing ||
+    vrInteractionState.controller2.isGrabbing
+  ) {
+    handleHover(null); // Kosongkan hover
+    return;
+  }
   for (const controller of controllers) {
     const intersectedObject = getVRIntersectedObject(controller);
     if (intersectedObject) {
@@ -268,3 +314,26 @@ export function handleVRHover() {
   }
   handleHover(intersectedInFrame);
 }
+
+// --- BARU ---
+export function handleVRDrag() {
+  const controllers = getVRControllers();
+
+  controllers.forEach((controller, index) => {
+    const state =
+      index === 0
+        ? vrInteractionState.controller1
+        : vrInteractionState.controller2;
+    if (state.isGrabbing) {
+      const currentPosition = controller.position;
+      const deltaX = currentPosition.x - state.startPosition.x;
+      const deltaY = currentPosition.y - state.startPosition.y;
+
+      rotateModelWithVR(deltaX, deltaY);
+
+      // Perbarui posisi awal untuk frame berikutnya
+      state.startPosition.copy(currentPosition);
+    }
+  });
+}
+// --- AKHIR BARU ---

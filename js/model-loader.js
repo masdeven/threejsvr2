@@ -103,8 +103,13 @@ export function unloadComponentModel() {
   }
 }
 export function startDragging(event) {
+  const currentModel = getCurrentModel();
+  if (!currentModel) return;
   isDragging = true;
-  previousMousePosition.x = event.clientX;
+  previousMousePosition = {
+    x: event.clientX,
+    y: event.clientY,
+  };
 }
 
 // Fungsi untuk menghentikan interaksi drag
@@ -112,16 +117,35 @@ export function stopDragging() {
   isDragging = false;
 }
 
-// Fungsi untuk menangani pergerakan saat drag
 export function dragModel(event) {
-  if (!isDragging || !currentModel) return;
+  if (!isDragging) return;
+
+  const currentModel = getCurrentModel();
+  if (!currentModel) return;
 
   const deltaX = event.clientX - previousMousePosition.x;
-  // Kecepatan rotasi bisa disesuaikan dengan mengubah nilai 0.01
-  currentModel.rotation.y += deltaX * 0.01;
-  previousMousePosition.x = event.clientX;
+  const deltaY = event.clientY - previousMousePosition.y;
+
+  // Rotasi berdasarkan pergerakan mouse
+  currentModel.rotation.y += deltaX * 0.005;
+  currentModel.rotation.x += deltaY * 0.005;
+
+  previousMousePosition = {
+    x: event.clientX,
+    y: event.clientY,
+  };
 }
 
+export function rotateModelWithVR(deltaX, deltaY) {
+  const currentModel = getCurrentModel();
+  if (!currentModel) return;
+
+  const rotationSpeed = 2.0; // Sesuaikan kecepatan rotasi jika perlu
+
+  // Terapkan rotasi. Sumbu mungkin perlu disesuaikan tergantung orientasi model/controller
+  currentModel.rotation.y += deltaX * rotationSpeed;
+  currentModel.rotation.x += deltaY * rotationSpeed;
+}
 // Fungsi untuk mengambil model yang sedang aktif
 export function getCurrentModel() {
   return currentModel;

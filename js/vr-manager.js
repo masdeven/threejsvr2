@@ -6,6 +6,14 @@ import { renderer, scene } from "./scene-setup.js";
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 
+// --- BARU ---
+// Objek untuk melacak status interaksi VR
+export const vrInteractionState = {
+  controller1: { isGrabbing: false, startPosition: new THREE.Vector3() },
+  controller2: { isGrabbing: false, startPosition: new THREE.Vector3() },
+};
+// --- AKHIR BARU ---
+
 export function setupVR() {
   renderer.xr.enabled = true;
 
