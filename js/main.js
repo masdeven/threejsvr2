@@ -276,7 +276,7 @@ function playComponentAudio(audioFile) {
   audioLoader.load(audioFile, (buffer) => {
     sound.setBuffer(buffer);
     sound.setLoop(false);
-    sound.setVolume(0.5);
+    sound.setVolume(1);
     sound.play();
   });
 }
@@ -305,7 +305,7 @@ function startBackgroundMusic() {
   audioLoader.load("assets/audio/background_music.mp3", (buffer) => {
     backgroundSound.setBuffer(buffer);
     backgroundSound.setLoop(true);
-    backgroundSound.setVolume(0.15); // Atur volume sesuai keinginan
+    backgroundSound.setVolume(0.2); // Atur volume sesuai keinginan
     backgroundSound.play();
   });
 }
@@ -313,7 +313,7 @@ function playCompletionAudio() {
   stopAudio();
   audioLoader.load("assets/audio/completion.mp3", (buffer) => {
     completionSound.setBuffer(buffer);
-    completionSound.setVolume(1); // Volume bisa disesuaikan
+    completionSound.setVolume(0.8); // Volume bisa disesuaikan
     completionSound.play();
   });
 }
