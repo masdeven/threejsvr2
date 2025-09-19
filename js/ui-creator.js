@@ -545,7 +545,7 @@ export function createLandingPage(playerName) {
   viewerUIGroup.add(logoPanel);
 
   if (playerName) {
-    const welcomeText = `Pilih Aktivitasmu, ${playerName}!`;
+    const welcomeText = `Pilih Aktivitasmu, ${playerName}`;
     const welcomeLabel = createTitleLabel(welcomeText, 3.8, 0.35);
     welcomeLabel.position.set(0, 0.45, 0.01);
     viewerUIGroup.add(welcomeLabel);
