@@ -44,7 +44,7 @@ import Stats from "stats.js";
 import { creditsData } from "./credits-data.js";
 import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 
-let audioListener, sound, backgroundSound;
+let audioListener, sound, backgroundSound, completionSound;
 const audioLoader = new THREE.AudioLoader(loadingManager);
 let playerName = "";
 let currentQuestionIndex = 0;
@@ -147,6 +147,7 @@ function init() {
   backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
+  completionSound = new THREE.Audio(audioListener);
 
   const ktx2Loader = new KTX2Loader()
     .setTranscoderPath("assets/basis/")
@@ -260,6 +261,7 @@ function preloadAssets() {
   // Preload audio untuk interaksi tombol
   audioLoader.load("assets/audio/button_press.mp3", () => {});
   audioLoader.load("assets/audio/button_confirm.mp3", () => {});
+  audioLoader.load("assets/audio/completion.mp3", () => {});
 }
 
 function stopAudio() {
@@ -307,6 +309,14 @@ function startBackgroundMusic() {
     backgroundSound.play();
   });
 }
+function playCompletionAudio() {
+  stopAudio();
+  audioLoader.load("assets/audio/completion.mp3", (buffer) => {
+    completionSound.setBuffer(buffer);
+    completionSound.setVolume(1); // Volume bisa disesuaikan
+    completionSound.play();
+  });
+}
 
 function reloadViewer() {
   const component = components[currentComponentIndex];
@@ -324,6 +334,9 @@ function changeState(newState) {
   if (currentState === newState) return;
   if (currentState === AppState.COMPLETION) {
     stopConfettiEffect();
+    if (completionSound && completionSound.isPlaying) {
+      completionSound.stop();
+    }
   }
   stopAudio();
 
@@ -343,6 +356,9 @@ function changeState(newState) {
 
   currentState = newState;
 
+  if (newState === AppState.COMPLETION) {
+    playCompletionAudio();
+  }
   if (newState === AppState.LANDING || newState === AppState.QUIZ_REPORT) {
     toggleAvatarVisibility(true);
   } else {
