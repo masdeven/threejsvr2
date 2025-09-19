@@ -17,8 +17,9 @@ import {
   createCompletionScreen,
   createCreditsScreen,
   createModeSelectionPage,
-  updateAvatar, // Tambahkan ini
+  updateAvatar,
   toggleAvatarVisibility,
+  preloadAvatar, // Impor fungsi preloadAvatar
 } from "./ui-creator.js";
 import {
   loader,
@@ -55,7 +56,7 @@ let currentCreditIndex = 0;
 let isChangingComponent = false;
 let stats;
 const CHANGE_DEBOUNCE_TIME = 500;
-const clock = new THREE.Clock(); // Tambahkan ini
+const clock = new THREE.Clock();
 let confettiEffect = null;
 let fps = 0;
 let frameCount = 0;
@@ -131,17 +132,17 @@ function showViewer(index) {
   if (!component) return;
 
   currentComponentIndex = index;
-  currentDescriptionIndex = 0; // Selalu reset ke halaman pertama saat ganti komponen
+  currentDescriptionIndex = 0;
 
-  clearUI(); // Bersihkan UI dari state sebelumnya (misal: menu)
+  clearUI();
   if (component.modelFile) {
     loadComponentModel(component.modelFile);
   }
   createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
 }
-function init() {
+async function init() {
   stats = new Stats();
-  stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+  stats.showPanel(0);
   document.body.appendChild(stats.dom);
   audioListener = new THREE.AudioListener();
   backgroundSound = new THREE.Audio(audioListener);
@@ -161,9 +162,7 @@ function init() {
   setupVR();
   renderer.xr.addEventListener("sessionstart", () => {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    // 2. Atur ulang Encoding Output
     renderer.outputEncoding = THREE.sRGBEncoding;
-    // 3. Pastikan exposure konsisten (opsional, tapi bagus)
     renderer.toneMappingExposure = 1.2;
     changeState(AppState.LANDING);
   });
@@ -173,6 +172,8 @@ function init() {
   setupInteraction(handleInteraction);
 
   setupHTMLEvents();
+
+  await preloadAvatar(); // Panggil preloadAvatar dan tunggu selesai
 
   loadingManager.onLoad = function () {
     console.log("Loading complete! Starting the app.");
@@ -200,7 +201,7 @@ function init() {
     loadingManager.onLoad = () => {};
   };
   fpsLabel = createFpsLabel();
-  fpsLabel.position.set(0.7, 0.5, -1); // Posisi relatif terhadap kamera
+  fpsLabel.position.set(0.7, 0.5, -1);
   debugGroup.add(fpsLabel);
   debugGroup.visible = false;
   scene.add(debugGroup);
@@ -258,7 +259,6 @@ function preloadAssets() {
     }
   }
 
-  // Preload audio untuk interaksi tombol
   audioLoader.load("assets/audio/button_press.mp3", () => {});
   audioLoader.load("assets/audio/button_confirm.mp3", () => {});
   audioLoader.load("assets/audio/completion.mp3", () => {});
@@ -281,7 +281,6 @@ function playComponentAudio(audioFile) {
   });
 }
 
-// Fungsi untuk memainkan audio tombol navigasi/kembali
 function playButtonPressAudio() {
   stopAudio();
   audioLoader.load("assets/audio/button_press.mp3", (buffer) => {
@@ -291,7 +290,6 @@ function playButtonPressAudio() {
   });
 }
 
-// Fungsi untuk memainkan audio tombol konfirmasi/lanjut
 function playButtonConfirmAudio() {
   stopAudio();
   audioLoader.load("assets/audio/button_confirm.mp3", (buffer) => {
@@ -305,7 +303,7 @@ function startBackgroundMusic() {
   audioLoader.load("assets/audio/background_music.mp3", (buffer) => {
     backgroundSound.setBuffer(buffer);
     backgroundSound.setLoop(true);
-    backgroundSound.setVolume(0.2); // Atur volume sesuai keinginan
+    backgroundSound.setVolume(0.2);
     backgroundSound.play();
   });
 }
@@ -313,7 +311,7 @@ function playCompletionAudio() {
   stopAudio();
   audioLoader.load("assets/audio/completion.mp3", (buffer) => {
     completionSound.setBuffer(buffer);
-    completionSound.setVolume(0.5); // Volume bisa disesuaikan
+    completionSound.setVolume(0.5);
     completionSound.play();
   });
 }
@@ -322,12 +320,12 @@ function reloadViewer() {
   const component = components[currentComponentIndex];
   if (!component) return;
 
-  clearViewerUI(); // Hanya bersihkan UI di viewer group, bukan semuanya
+  clearViewerUI();
   createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
 }
 
 function reloadCreditsScreen() {
-  clearViewerUI(); // Kita gunakan UI group yang sama agar posisinya tetap
+  clearViewerUI();
   createCreditsScreen(creditsData, currentCreditIndex);
 }
 function changeState(newState) {
@@ -340,7 +338,6 @@ function changeState(newState) {
   }
   stopAudio();
 
-  // Cegah model hilang saat transisi antara viewer, mini quiz, dan hasilnya
   const isTransitioningWithinViewer =
     (currentState === AppState.VIEWER &&
       (newState === AppState.MINI_QUIZ ||
@@ -369,12 +366,10 @@ function changeState(newState) {
     switch (newState) {
       case AppState.MODE_SELECTION:
         controls.enabled = true;
-        // Posisikan panel mode seleksi agak di depan kamera
         camera.position.set(0, 1.6, 2);
         controls.target.set(0, 1.6, 0);
         break;
 
-      // SEMUA STATE LAINNYA DIJADIKAN SATU DENGAN KONTROL VIEWER
       case AppState.MENU:
       case AppState.QUIZ:
       case AppState.QUIZ_RESULT:
@@ -387,7 +382,6 @@ function changeState(newState) {
       case AppState.MINI_QUIZ_RESULT:
       case AppState.VIEWER:
         controls.enabled = true;
-        // Sesuaikan target agar lebih sejajar dengan pandangan
         controls.target.set(0, 1.6, 0);
         break;
     }
@@ -395,7 +389,6 @@ function changeState(newState) {
 }
 
 function handleInteraction(action) {
-  // Panggil fungsi audio yang sesuai berdasarkan aksi
   const confirmActions = [
     "start_browser",
     "start_vr",
@@ -429,7 +422,6 @@ function handleInteraction(action) {
       break;
     case "start_vr":
       startVRSession(() => {
-        // Callback ini dijalankan saat sesi VR berakhir.
         changeState(AppState.MENU);
       });
       break;
@@ -475,7 +467,7 @@ function handleInteraction(action) {
       }
       break;
     case "show_credits":
-      currentCreditIndex = 0; // Selalu mulai dari halaman pertama
+      currentCreditIndex = 0;
       changeState(AppState.CREDITS);
       break;
     case "prev_credit":
@@ -511,15 +503,11 @@ function handleInteraction(action) {
       if (isChangingComponent) return;
       isChangingComponent = true;
 
-      // Jika komponen saat ini adalah yang terakhir belum terbuka
       if (currentComponentIndex === highestComponentUnlocked) {
-        // Lanjut ke kuis singkat sebelum membuka komponen berikutnya
         changeState(AppState.MINI_QUIZ);
       } else if (currentComponentIndex < components.length - 1) {
-        // Jika komponen berikutnya sudah terbuka, langsung pindah
         showViewer(currentComponentIndex + 1);
       } else {
-        // Jika ini adalah komponen terakhir
         changeState(AppState.COMPLETION);
       }
       setTimeout(() => {
@@ -576,9 +564,8 @@ function handleInteraction(action) {
       if (action.startsWith("select_")) {
         const index = parseInt(action.split("_")[1], 10);
         if (!isNaN(index) && index >= 0 && index < components.length) {
-          // --- MODIFIKASI --- Memanggil showViewer saat memilih komponen
           showViewer(index);
-          currentState = AppState.VIEWER; // Set state secara manual
+          currentState = AppState.VIEWER;
         }
       }
       break;
@@ -586,8 +573,8 @@ function handleInteraction(action) {
 }
 function stopConfettiEffect() {
   if (confettiEffect) {
-    confettiEffect.destroy(); // Panggil metode destroy yang akan kita buat
-    confettiEffect = null; // Reset variabel
+    confettiEffect.destroy();
+    confettiEffect = null;
   }
 }
 function animate() {
@@ -596,7 +583,7 @@ function animate() {
 
 function render() {
   stats.update();
-  const deltaTime = clock.getDelta(); // Tambahkan ini
+  const deltaTime = clock.getDelta();
   frameCount++;
   const now = performance.now();
   if (now - lastFpsUpdate >= 1000) {
@@ -612,17 +599,13 @@ function render() {
     updateFpsLabel(fpsLabel, fps);
     handleVRHover();
     handleVRDrag();
-    // PERBAIKAN: UI tidak akan mengikuti headset saat berada di menu utama
     if (currentState !== AppState.MENU) {
       updateUIGroupPosition();
     }
-    // updateViewerUIPosition(); // Komentar ini tetap ada
   } else {
     debugGroup.visible = false;
     controls.update();
-    // Dalam mode non-VR, hanya UI viewer yang perlu mengikuti pergerakan kamera
     if (currentState === AppState.VIEWER || currentState === AppState.HELP) {
-      // updateViewerUIPosition();
     }
   }
 
@@ -633,7 +616,7 @@ function render() {
   if (confettiEffect) {
     confettiEffect.update(deltaTime);
   }
-  updateAvatar(deltaTime); // Tambahkan ini
+  updateAvatar(deltaTime);
 
   renderer.render(scene, camera);
 }
