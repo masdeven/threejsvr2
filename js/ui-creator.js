@@ -1360,7 +1360,7 @@ export function createQuizReportScreen(score, hasAttempted) {
     const reportText =
       "Anda harus menyelesaikan semua materi dan mengerjakan Tes Akhir terlebih dahulu untuk melihat laporan nilai.";
     const reportBody = createBodyText(reportText, 4.2);
-    reportBody.position.set(0, 0, 0.01);
+    reportBody.position.set(0, 0, 0.02);
     viewerUIGroup.add(reportBody);
   } else {
     // Tampilan jika kuis sudah dikerjakan
@@ -1380,7 +1380,7 @@ export function createQuizReportScreen(score, hasAttempted) {
     // Teks detail
     const detailText = `Anda berhasil menjawab ${score} dari ${totalQuestions} soal dengan benar.`;
     const reportBody = createBodyText(detailText, 4.2, 35, 28);
-    reportBody.position.set(0, -0.6, 0.01);
+    reportBody.position.set(0, -0.6, 0.02);
     viewerUIGroup.add(reportBody);
   }
 
