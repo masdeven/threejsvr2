@@ -185,40 +185,29 @@ async function init() {
 
   setupHTMLEvents();
 
-  await preloadAvatar(); // Panggil preloadAvatar dan tunggu selesai
+  const assetPromises = [
+    preloadAvatar(), // avatar juga sudah mengembalikan promise
+    preloadAssets(), // versi baru yang menunggu semua model & audio
+  ];
 
-  loadingManager.onLoad = function () {
-    console.log("Loading complete! Starting the app.");
-    const splashScreen = document.getElementById("splash-screen");
+  await Promise.all(assetPromises);
 
-    if (splashScreen) {
-      splashScreen.classList.add("fade-out");
+  // Setelah preload selesai, splash screen bisa fade out
+  const splashScreen = document.getElementById("splash-screen");
+  if (splashScreen) {
+    splashScreen.classList.add("fade-out");
+    const vrButton = document.getElementById("VRButton");
+    if (vrButton) vrButton.classList.add("visible");
+    setTimeout(() => splashScreen.remove(), 500);
+  }
 
-      const vrButton = document.getElementById("VRButton");
-      if (vrButton) {
-        vrButton.classList.add("visible");
-      }
+  if (currentState === null) {
+    showWelcomeScreen();
+  }
 
-      setTimeout(() => {
-        if (splashScreen.parentNode) {
-          splashScreen.parentNode.removeChild(splashScreen);
-        }
-      }, 500);
-    }
-
-    if (currentState === null) {
-      showWelcomeScreen();
-    }
-
-    loadingManager.onLoad = () => {};
-  };
   fpsLabel = createFpsLabel();
-  fpsLabel.position.set(0.7, 0.5, -1);
   debugGroup.add(fpsLabel);
-  debugGroup.visible = false;
   scene.add(debugGroup);
-
-  preloadAssets();
 
   animate();
 }
@@ -255,37 +244,66 @@ function showNameInputScreen() {
   nameInput.focus();
 }
 function preloadAssets() {
-  console.log("Preloading assets...");
-  for (const component of components) {
-    if (component.modelFile && !modelCache[component.modelFile]) {
-      loader.load(component.modelFile, (gltf) => {
-        console.log(`Model di-cache saat pre-loading: ${component.modelFile}`);
-        modelCache[component.modelFile] = gltf.scene;
-      });
-    }
-  }
+  return new Promise((resolve, reject) => {
+    console.log("Preloading assets...");
 
-  const audioFilesToPreload = [
-    "assets/audio/button_press.mp3",
-    "assets/audio/button_confirm.mp3",
-    "assets/audio/completion.mp3",
-    "assets/audio/background_music.mp3",
-  ];
+    // --- Preload model ---
+    const modelPromises = components
+      .filter((c) => c.modelFile && !modelCache[c.modelFile])
+      .map(
+        (c) =>
+          new Promise((res, rej) => {
+            loader.load(
+              c.modelFile,
+              (gltf) => {
+                modelCache[c.modelFile] = gltf.scene;
+                console.log(`Model di-cache: ${c.modelFile}`);
+                res();
+              },
+              undefined,
+              (err) => {
+                console.error(`Failed to load model: ${c.modelFile}`, err);
+                res(); // tetap resolve agar tidak stuck
+              }
+            );
+          })
+      );
 
-  for (const component of components) {
-    if (component.audioFile) {
-      audioFilesToPreload.push(component.audioFile);
-    }
-  }
+    // --- Preload audio ---
+    const audioFilesToPreload = [
+      "assets/audio/button_press.mp3",
+      "assets/audio/button_confirm.mp3",
+      "assets/audio/completion.mp3",
+      "assets/audio/background_music.mp3",
+      ...components.filter((c) => c.audioFile).map((c) => c.audioFile),
+    ];
+    const uniqueAudioFiles = [...new Set(audioFilesToPreload)];
 
-  const uniqueAudioFiles = [...new Set(audioFilesToPreload)];
+    const audioPromises = uniqueAudioFiles.map(
+      (file) =>
+        new Promise((res, rej) => {
+          audioLoader.load(
+            file,
+            (buffer) => {
+              audioCache[file] = buffer;
+              console.log(`Audio di-cache: ${file}`);
+              res();
+            },
+            undefined,
+            (err) => {
+              console.error(`Failed to load audio: ${file}`, err);
+              res(); // tetap resolve agar tidak stuck
+            }
+          );
+        })
+    );
 
-  for (const audioFile of uniqueAudioFiles) {
-    audioLoader.load(audioFile, (buffer) => {
-      audioCache[audioFile] = buffer;
-      console.log(`Audio di-cache: ${audioFile}`);
+    // Tunggu semua model + audio selesai
+    Promise.all([...modelPromises, ...audioPromises]).then(() => {
+      console.log("All assets including audio are loaded and cached!");
+      resolve();
     });
-  }
+  });
 }
 
 function playSoundFromCache(audioObject, path, options = {}) {
