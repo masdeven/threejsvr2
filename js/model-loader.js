@@ -28,6 +28,21 @@ function setupModel(model) {
   const scaleFactor = 0.8 / maxDim;
   model.scale.setScalar(scaleFactor);
 
+  // --- TAMBAHAN BARU: Ganti material menjadi Toon Material ---
+  model.traverse((child) => {
+    if (child.isMesh) {
+      const oldMaterial = child.material;
+      const toonMaterial = new THREE.MeshToonMaterial({
+        color: oldMaterial.color, // Ambil warna dasar dari material lama
+        map: oldMaterial.map, // Ambil tekstur dari material lama (jika ada)
+      });
+      child.material = toonMaterial;
+      child.castShadow = true; // Agar model menghasilkan bayangan
+      child.receiveShadow = true;
+    }
+  });
+  // --- AKHIR TAMBAHAN ---
+
   // 2. Hitung ulang bounding box setelah scaling
   const newBox = new THREE.Box3().setFromObject(model);
   const center = newBox.getCenter(new THREE.Vector3());

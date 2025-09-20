@@ -28,7 +28,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.3;
+renderer.toneMappingExposure = 1.6;
 document.getElementById("container").appendChild(renderer.domElement);
 
 // Controls
@@ -52,7 +52,7 @@ controls.maxPolarAngle = (3 * Math.PI) / 4;
 controls.update();
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 scene.add(ambientLight);
 
 // Environment
