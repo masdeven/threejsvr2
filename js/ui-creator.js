@@ -469,18 +469,19 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 
   const currentText = greetingTexts[greetingIndex];
   const isLastGreeting = greetingIndex >= greetingTexts.length - 1;
+  const buttonAction = isLastGreeting ? "continue_to_landing" : "next_greeting";
 
   const primaryButtonWidth = 2.8;
   const primaryButtonHeight = 0.32;
   const continueButton = createButton(
     isLastGreeting ? "Mulai Belajar" : "Lanjutkan",
-    isLastGreeting ? "continue_to_landing" : "next_greeting",
+    null, // <-- [PERBAIKAN] Aksi diatur null saat tombol dibuat
     primaryButtonWidth,
     primaryButtonHeight,
     ACCENT_COLOR
   );
   continueButton.position.set(0, -0.3, 0.01);
-  continueButton.visible = false;
+  continueButton.visible = false; // Tombol disembunyikan awalnya
   viewerUIGroup.add(continueButton);
 
   if (currentText) {
@@ -493,13 +494,17 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
         lineHeightScale: 1.3,
       },
       () => {
-        continueButton.visible = true;
+        // Callback ini dijalankan setelah animasi teks selesai
+        continueButton.visible = true; // Tampilkan tombol
+        continueButton.userData.action = buttonAction; // <-- [PERBAIKAN] Aktifkan aksi tombol di sini
       }
     );
     welcomeLabel.position.set(0, 0.3, 0.01);
     viewerUIGroup.add(welcomeLabel);
   } else {
+    // Fallback jika tidak ada teks
     continueButton.visible = true;
+    continueButton.userData.action = buttonAction;
   }
 
   if (avatarModel) {
@@ -515,8 +520,6 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 // --- AKHIR MODIFIKASI ---
-
-// ... (sisa kode sampai akhir file tetap sama)
 export function createLandingPage(playerName) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -1173,7 +1176,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
   const descPanel = createTextPanel(currentCreditText, 2.5);
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
-  descPanel.position.set(0, 0.15, 0.01);
+  descPanel.position.set(0, 0.15, 0.02);
   viewerUIGroup.add(descPanel);
 
   const titleWidth = 2.2;
@@ -1184,7 +1187,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
     titleHeight
   );
   const titleY = 0.15 + panelHeight / 2 + titleHeight / 2 - 0.05;
-  titleLabel.position.set(0, titleY, 0.02);
+  titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
   const descNavY = 0.15 - panelHeight / 2 - 0.15;
