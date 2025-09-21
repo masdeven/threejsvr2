@@ -206,6 +206,8 @@ async function init() {
   }
 
   fpsLabel = createFpsLabel();
+  fpsLabel.position.set(0, -0.3, -0.5);
+  // fpsLabel.scale.set(1.5, 1.5, 1.5);
   debugGroup.add(fpsLabel);
   scene.add(debugGroup);
 

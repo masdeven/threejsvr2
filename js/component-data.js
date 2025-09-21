@@ -128,7 +128,24 @@ export const components = [
     ],
   },
   {
-    label: "Storage (HDD/SDD",
+    label: "Kartu Jaringan",
+    modelFile: "assets/models/kartu_jaringan.glb",
+    audioFile: "assets/audio/kartu_jaringan.mp3",
+    description: [
+      "Kartu jaringan adalah perangkat keras yang memungkinkan komputer terhubung ke jaringan, baik lokal (LAN) maupun internet. Kartu ini dapat berupa Ethernet untuk koneksi kabel atau Wi-Fi untuk koneksi nirkabel. Fungsinya adalah mengirim dan menerima data melalui jaringan.",
+    ],
+    unlocked: false,
+    quiz: [
+      {
+        question:
+          "Kartu jaringan memungkinkan komputer terhubung ke internet maupun LAN.",
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 0,
+      },
+    ],
+  },
+  {
+    label: "Storage (HDD/SDD)",
     modelFile: "assets/models/storage.glb",
     audioFile: "assets/audio/storage.mp3",
     description: [
