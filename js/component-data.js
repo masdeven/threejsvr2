@@ -12,6 +12,8 @@ export const components = [
         question: "Perangkat keras adalah bagian fisik dari komputer.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
+        explanation:
+          "Catatan: perangkat keras adalah bagian fisik komputer seperti CPU, GPU, dan monitor.",
       },
     ],
   },
@@ -28,6 +30,8 @@ export const components = [
         question: "Monitor adalah perangkat input.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: monitor adalah perangkat output untuk menampilkan informasi visual.",
       },
     ],
   },
@@ -44,6 +48,8 @@ export const components = [
         question: "Keyboard digunakan untuk menampilkan gambar.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: keyboard digunakan untuk memasukkan data dan perintah, bukan menampilkan gambar.",
       },
     ],
   },
@@ -60,6 +66,8 @@ export const components = [
         question: "Mouse adalah perangkat output.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: mouse adalah perangkat input untuk mengendalikan kursor.",
       },
     ],
   },
@@ -76,6 +84,8 @@ export const components = [
         question: "Motherboard berfungsi menghubungkan komponen komputer.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
+        explanation:
+          "Catatan: motherboard adalah pusat penghubung antar komponen komputer.",
       },
     ],
   },
@@ -92,6 +102,8 @@ export const components = [
         question: "CPU sering disebut otak komputer.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
+        explanation:
+          "Catatan: CPU adalah otak komputer yang mengendalikan operasi sistem.",
       },
     ],
   },
@@ -108,6 +120,7 @@ export const components = [
         question: "RAM menyimpan data secara permanen.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation: "Catatan: RAM menyimpan data sementara, bukan permanen.",
       },
     ],
   },
@@ -124,6 +137,8 @@ export const components = [
         question: "GPU adalah nama lain dari prosesor utama.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: GPU adalah prosesor grafis khusus, berbeda dengan CPU.",
       },
     ],
   },
@@ -141,6 +156,8 @@ export const components = [
           "Kartu jaringan memungkinkan komputer terhubung ke internet maupun LAN.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
+        explanation:
+          "Catatan: kartu jaringan digunakan untuk koneksi LAN maupun internet.",
       },
     ],
   },
@@ -157,6 +174,8 @@ export const components = [
         question: "SSD dan HDD adalah memori jangka pendek.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: HDD dan SSD adalah media penyimpanan permanen, bukan memori jangka pendek.",
       },
     ],
   },
@@ -173,6 +192,8 @@ export const components = [
         question: "Printer digunakan untuk memindai dokumen.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: printer berfungsi mencetak dokumen, bukan memindai.",
       },
     ],
   },
@@ -189,6 +210,8 @@ export const components = [
         question: "Flashdisk adalah komponen internal komputer.",
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 1,
+        explanation:
+          "Catatan: flashdisk adalah media penyimpanan eksternal dan portabel.",
       },
     ],
   },

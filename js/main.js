@@ -115,7 +115,13 @@ function refreshUI() {
       createMiniQuizPage(components[currentComponentIndex]);
       break;
     case AppState.MINI_QUIZ_RESULT:
-      createMiniQuizResultPage(wasMiniQuizCorrect);
+      // --- MODIFIKASI DI SINI ---
+      // Teruskan seluruh objek komponen ke fungsi `createMiniQuizResultPage`
+      createMiniQuizResultPage(
+        components[currentComponentIndex],
+        wasMiniQuizCorrect
+      );
+      // --- AKHIR MODIFIKASI ---
       break;
     case AppState.HELP:
       createHelpPanel();
@@ -137,7 +143,7 @@ function refreshUI() {
       break;
   }
 }
-// ... (kode dari `showViewer` sampai `changeState` tetap sama)
+// ... (sisa kode dari `showViewer` sampai akhir file tidak berubah)
 function showViewer(index) {
   const component = components[index];
   if (!component) return;

@@ -25,7 +25,7 @@ const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 
-// ... (kode dari `preloadAvatar` sampai `createTypingText` tetap sama)
+// ... (kode dari `preloadAvatar` sampai `createMiniQuizPage` tidak berubah)
 export function preloadAvatar() {
   return new Promise((resolve, reject) => {
     if (avatarModel) {
@@ -1519,14 +1519,23 @@ export function createMiniQuizPage(component) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-export function createMiniQuizResultPage(isCorrect) {
+// --- MODIFIKASI DIMULAI DI SINI ---
+export function createMiniQuizResultPage(component, isCorrect) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
   const curveIntensity = 0.05;
 
-  const messageText = isCorrect
-    ? "Bagus! Kamu sudah memahami materi ini. Ayo lanjut ke materi berikutnya."
-    : "Jangan khawatir, coba pelajari lagi materinya untuk lebih paham.";
+  // Ambil teks penjelasan dari data komponen
+  const explanation = component.quiz[0].explanation;
+
+  // Buat pesan berdasarkan hasil jawaban dan tambahkan penjelasan
+  const resultMessage = isCorrect
+    ? "Bagus! Kamu sudah memahami materi ini."
+    : "Jawabanmu kurang tepat. Coba pelajari lagi penjelasannya ya!";
+
+  const messageText = `${resultMessage}\n\n${explanation}`;
+  // --- AKHIR PERUBAHAN TEKS ---
+
   const messagePanel = createTextPanel(messageText, 2.5);
   const panelHeight = messagePanel.geometry.parameters.height;
   messagePanel.position.set(0, 0, 0);
@@ -1562,6 +1571,7 @@ export function createMiniQuizResultPage(isCorrect) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+// --- AKHIR MODIFIKASI ---
 
 export function createModeSelectionPage() {
   clearUI();
@@ -1594,7 +1604,7 @@ export function createModeSelectionPage() {
   vrButton.position.set(0, startY - spacing, -3);
   uiGroup.add(vrButton);
 }
-
+// ... (sisa kode dari `updateUIGroupPosition` sampai akhir file tidak berubah)
 export function updateUIGroupPosition() {
   if (uiGroup.children.length > 0) {
     const distance = UI_DISTANCE;
