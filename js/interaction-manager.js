@@ -279,7 +279,7 @@ export function setupInteraction(callback) {
         // --- PERBAIKAN DI SINI JUGA ---
         if (action === "scroll_up" || action === "scroll_down") {
           handleScrollClick(action, scrollParent); // Panggil fungsi scroll untuk VR
-        } else if (interactionCallback) {
+        } else if (interactionCallback && action) {
           interactionCallback(action); // Kirim aksi lain ke main.js
         }
       }
