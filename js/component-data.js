@@ -25,9 +25,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Monitor adalah perangkat output.",
+        question: "Monitor adalah perangkat input.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -41,9 +41,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Keyboard digunakan untuk memasukkan teks ke komputer.",
+        question: "Keyboard digunakan untuk menampilkan gambar.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -57,9 +57,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Mouse digunakan untuk mengendalikan kursor.",
+        question: "Mouse adalah perangkat output.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -105,9 +105,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "RAM menyimpan data sementara.",
+        question: "RAM menyimpan data secara permanen.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -121,9 +121,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "GPU digunakan untuk mempercepat pemrosesan grafis.",
+        question: "GPU adalah nama lain dari prosesor utama.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -154,9 +154,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "SSD dan HDD termasuk media penyimpanan jangka panjang.",
+        question: "SSD dan HDD adalah memori jangka pendek.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -170,9 +170,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Printer berfungsi mencetak dokumen ke bentuk fisik.",
+        question: "Printer digunakan untuk memindai dokumen.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
@@ -186,9 +186,9 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "Flashdisk adalah media penyimpanan portabel.",
+        question: "Flashdisk adalah komponen internal komputer.",
         answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        correctAnswerIndex: 1,
       },
     ],
   },
