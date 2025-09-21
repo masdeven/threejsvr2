@@ -115,13 +115,10 @@ function refreshUI() {
       createMiniQuizPage(components[currentComponentIndex]);
       break;
     case AppState.MINI_QUIZ_RESULT:
-      // --- MODIFIKASI DI SINI ---
-      // Teruskan seluruh objek komponen ke fungsi `createMiniQuizResultPage`
       createMiniQuizResultPage(
         components[currentComponentIndex],
         wasMiniQuizCorrect
       );
-      // --- AKHIR MODIFIKASI ---
       break;
     case AppState.HELP:
       createHelpPanel();
@@ -143,7 +140,7 @@ function refreshUI() {
       break;
   }
 }
-// ... (sisa kode dari `showViewer` sampai akhir file tidak berubah)
+// --- MODIFIKASI DIMULAI DI SINI ---
 function showViewer(index) {
   const component = components[index];
   if (!component) return;
@@ -155,8 +152,16 @@ function showViewer(index) {
   if (component.modelFile) {
     loadComponentModel(component.modelFile);
   }
-  createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
+  // Teruskan `highestComponentUnlocked` ke `createViewerPage`
+  createViewerPage(
+    component,
+    currentComponentIndex,
+    currentDescriptionIndex,
+    highestComponentUnlocked
+  );
 }
+// --- AKHIR MODIFIKASI ---
+
 async function init() {
   stats = new Stats();
   stats.showPanel(0);
@@ -410,7 +415,12 @@ function reloadViewer() {
   if (!component) return;
 
   clearViewerUI();
-  createViewerPage(component, currentComponentIndex, currentDescriptionIndex);
+  createViewerPage(
+    component,
+    currentComponentIndex,
+    currentDescriptionIndex,
+    highestComponentUnlocked
+  );
 }
 
 function reloadCreditsScreen() {
@@ -611,21 +621,31 @@ function handleInteraction(action) {
       }
       break;
 
+    // --- MODIFIKASI DIMULAI DI SINI ---
     case "next_component":
       if (isChangingComponent) return;
       isChangingComponent = true;
 
+      // Jika ini adalah komponen terbaru yang dibuka (atau yang terakhir),
+      // pengguna harus menyelesaikan mini kuis untuk membuka yang berikutnya.
       if (currentComponentIndex === highestComponentUnlocked) {
         changeState(AppState.MINI_QUIZ);
-      } else if (currentComponentIndex < components.length - 1) {
-        showViewer(currentComponentIndex + 1);
-      } else {
-        changeState(AppState.COMPLETION);
       }
+      // Jika pengguna meninjau komponen lama, langsung ke komponen berikutnya.
+      else if (currentComponentIndex < components.length - 1) {
+        showViewer(currentComponentIndex + 1);
+      }
+      // Fallback (seharusnya tidak terjadi dalam alur normal jika UI benar)
+      else {
+        changeState(AppState.MENU);
+      }
+
       setTimeout(() => {
         isChangingComponent = false;
       }, CHANGE_DEBOUNCE_TIME);
       break;
+    // --- AKHIR MODIFIKASI ---
+
     case "mini_quiz_correct":
       wasMiniQuizCorrect = true;
       changeState(AppState.MINI_QUIZ_RESULT);
@@ -636,16 +656,23 @@ function handleInteraction(action) {
       break;
     case "continue_after_mini_quiz":
       if (wasMiniQuizCorrect) {
-        const unlockedIndex = currentComponentIndex + 1;
-        if (unlockedIndex < components.length) {
-          components[unlockedIndex].unlocked = true;
-          if (unlockedIndex > highestComponentUnlocked) {
-            highestComponentUnlocked = unlockedIndex;
-          }
-        }
+        // Cek apakah ini adalah komponen terakhir
         if (currentComponentIndex >= components.length - 1) {
+          // Tandai bahwa semua materi telah selesai
+          if (highestComponentUnlocked < components.length) {
+            highestComponentUnlocked = components.length;
+          }
           changeState(AppState.COMPLETION);
         } else {
+          // Buka komponen berikutnya
+          const unlockedIndex = currentComponentIndex + 1;
+          if (unlockedIndex < components.length) {
+            components[unlockedIndex].unlocked = true;
+            if (unlockedIndex > highestComponentUnlocked) {
+              highestComponentUnlocked = unlockedIndex;
+            }
+          }
+          // Lanjutkan ke viewer komponen berikutnya
           isChangingComponent = true;
           currentComponentIndex++;
           changeState(AppState.VIEWER);
@@ -654,6 +681,7 @@ function handleInteraction(action) {
           }, CHANGE_DEBOUNCE_TIME);
         }
       } else {
+        // Jika salah, kembali ke viewer untuk mencoba lagi
         changeState(AppState.VIEWER);
       }
       break;
@@ -684,7 +712,7 @@ function handleInteraction(action) {
   }
 }
 
-// ... (kode dari `stopConfettiEffect` sampai `render` tetap sama)
+// ... (sisa kode dari `stopConfettiEffect` sampai `render` tetap sama)
 function stopConfettiEffect() {
   if (confettiEffect) {
     confettiEffect.destroy();

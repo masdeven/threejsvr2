@@ -25,7 +25,7 @@ const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 
-// ... (kode dari `preloadAvatar` sampai `createMiniQuizPage` tidak berubah)
+// ... (kode dari `preloadAvatar` sampai `createMenuPage` tidak berubah)
 export function preloadAvatar() {
   return new Promise((resolve, reject) => {
     if (avatarModel) {
@@ -723,7 +723,13 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-export function createViewerPage(component, index, descriptionIndex = 0) {
+// --- MODIFIKASI DIMULAI DI SINI ---
+export function createViewerPage(
+  component,
+  index,
+  descriptionIndex = 0,
+  highestComponentUnlocked = 0 // Tambahkan parameter baru
+) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
 
@@ -838,19 +844,26 @@ export function createViewerPage(component, index, descriptionIndex = 0) {
     viewerUIGroup.add(prevButton);
   }
 
-  const nextButton = createButton(
-    "Berikutnya >",
-    "next_component",
-    navButtonWidth,
-    navButtonHeight
-  );
-  nextButton.position.set(
-    totalPanelWidth / 2 - navButtonWidth / 2 - 0.1,
-    navY,
-    navZ
-  );
-  nextButton.renderOrder = 1;
-  viewerUIGroup.add(nextButton);
+  // --- Logika untuk menyembunyikan tombol 'Berikutnya' ---
+  const isLastComponent = index >= components.length - 1;
+  const allMaterialsUnlocked = highestComponentUnlocked >= components.length;
+
+  if (!isLastComponent || !allMaterialsUnlocked) {
+    const nextButton = createButton(
+      "Berikutnya >",
+      "next_component",
+      navButtonWidth,
+      navButtonHeight
+    );
+    nextButton.position.set(
+      totalPanelWidth / 2 - navButtonWidth / 2 - 0.1,
+      navY,
+      navZ
+    );
+    nextButton.renderOrder = 1;
+    viewerUIGroup.add(nextButton);
+  }
+  // --- Akhir logika ---
 
   const actionButtonSize = 0.25;
   const buttonSpacing = 0.1;
@@ -885,6 +898,7 @@ export function createViewerPage(component, index, descriptionIndex = 0) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+// --- AKHIR MODIFIKASI ---
 
 export function clearViewerUI() {
   viewerUIGroup.children.forEach((child) => {
@@ -1519,7 +1533,6 @@ export function createMiniQuizPage(component) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-// --- MODIFIKASI DIMULAI DI SINI ---
 export function createMiniQuizResultPage(component, isCorrect) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
@@ -1571,7 +1584,6 @@ export function createMiniQuizResultPage(component, isCorrect) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-// --- AKHIR MODIFIKASI ---
 
 export function createModeSelectionPage() {
   clearUI();
