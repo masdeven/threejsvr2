@@ -1129,7 +1129,7 @@ export function createCompletionScreen(playerName) {
   viewerUIGroup.add(messageBody);
 
   const quizButton = createButton(
-    "Lanjutkan ke Menu",
+    "Lanjutkan ke Tes Akhir",
     "back_to_menu",
     3.0,
     0.3,
