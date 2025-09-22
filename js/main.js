@@ -531,7 +531,7 @@ function handleInteraction(action) {
 
   switch (action) {
     case "start_browser":
-      changeState(AppState.AVATAR_GREETING);
+      changeState(AppState.LANDING);
       break;
     case "start_vr":
       startVRSession(() => {

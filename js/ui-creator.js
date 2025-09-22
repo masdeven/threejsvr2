@@ -278,7 +278,7 @@ function createButton(
 }
 
 function createTextPanel(text, width, options = {}) {
-  const { footerHeight = 0 } = options;
+  const { footerHeight = 0, fixedHeight = null } = options;
   const MAX_PANEL_HEIGHT_3D = 1.2;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -303,10 +303,15 @@ function createTextPanel(text, width, options = {}) {
   const totalTextPixelHeight = textMetrics.pixelHeight;
   const footerPixelHeight = footerHeight * resolution;
 
-  let finalPanelHeight3D =
-    (totalTextPixelHeight + padding * 2 + footerPixelHeight) / resolution;
+  let finalPanelHeight3D;
 
-  finalPanelHeight3D = Math.min(finalPanelHeight3D, MAX_PANEL_HEIGHT_3D);
+  if (fixedHeight !== null) {
+    finalPanelHeight3D = fixedHeight;
+  } else {
+    finalPanelHeight3D =
+      (totalTextPixelHeight + padding * 2 + footerPixelHeight) / resolution;
+    finalPanelHeight3D = Math.min(finalPanelHeight3D, MAX_PANEL_HEIGHT_3D);
+  }
 
   canvas.width = canvasWidth;
   canvas.height = finalPanelHeight3D * resolution;
@@ -444,7 +449,6 @@ export function updateAvatar(deltaTime) {
   }
 }
 
-// --- MODIFIKASI FUNGSI INI ---
 export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -455,7 +459,6 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  // --- PERUBAHAN BARU: Daftar teks percakapan ---
   const greetingTexts = [
     `Halo, ${playerName}! Senang bertemu denganmu.\nSelamat datang di aplikasi WebXR Computer Lab.`,
     "Di sini, kamu bisa menjelajahi model 3D perangkat keras komputer, mencoba mini-kuis, dan menguji pengetahuanmu di tes akhir.",
@@ -465,7 +468,6 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     "Oh iyaaa, jangan lupa! Kamu bisa memutar model 3D secara manual untuk mengeksplor setiap detailnya. 😄",
     "Selamat belajar dan semoga menyenangkan!",
   ];
-  // --- AKHIR PERUBAHAN ---
 
   const currentText = greetingTexts[greetingIndex];
   const isLastGreeting = greetingIndex >= greetingTexts.length - 1;
@@ -475,13 +477,13 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   const primaryButtonHeight = 0.32;
   const continueButton = createButton(
     isLastGreeting ? "Mulai Belajar" : "Lanjutkan",
-    null, // <-- [PERBAIKAN] Aksi diatur null saat tombol dibuat
+    null,
     primaryButtonWidth,
     primaryButtonHeight,
     ACCENT_COLOR
   );
   continueButton.position.set(0, -0.3, 0.01);
-  continueButton.visible = false; // Tombol disembunyikan awalnya
+  continueButton.visible = false;
   viewerUIGroup.add(continueButton);
 
   if (currentText) {
@@ -494,15 +496,13 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
         lineHeightScale: 1.3,
       },
       () => {
-        // Callback ini dijalankan setelah animasi teks selesai
-        continueButton.visible = true; // Tampilkan tombol
-        continueButton.userData.action = buttonAction; // <-- [PERBAIKAN] Aktifkan aksi tombol di sini
+        continueButton.visible = true;
+        continueButton.userData.action = buttonAction;
       }
     );
     welcomeLabel.position.set(0, 0.3, 0.01);
     viewerUIGroup.add(welcomeLabel);
   } else {
-    // Fallback jika tidak ada teks
     continueButton.visible = true;
     continueButton.userData.action = buttonAction;
   }
@@ -519,7 +519,6 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-// --- AKHIR MODIFIKASI ---
 export function createLandingPage(playerName) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -723,12 +722,11 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-// --- MODIFIKASI DIMULAI DI SINI ---
 export function createViewerPage(
   component,
   index,
   descriptionIndex = 0,
-  highestComponentUnlocked = 0 // Tambahkan parameter baru
+  highestComponentUnlocked = 0
 ) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
@@ -759,8 +757,12 @@ export function createViewerPage(
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
+  const DESC_PANEL_FIXED_HEIGHT = 1.2;
   const currentDescription = component.description[descriptionIndex];
-  const descPanel = createTextPanel(currentDescription, 2.8);
+  const descPanel = createTextPanel(currentDescription, 2.8, {
+    fixedHeight: DESC_PANEL_FIXED_HEIGHT,
+  });
+
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
 
@@ -825,7 +827,7 @@ export function createViewerPage(
 
   const navButtonWidth = 1.2;
   const navButtonHeight = 0.25;
-  const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
+  const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.05;
   const navZ = 0.01;
 
   if (index > 0) {
@@ -844,7 +846,6 @@ export function createViewerPage(
     viewerUIGroup.add(prevButton);
   }
 
-  // --- Logika untuk menyembunyikan tombol 'Berikutnya' ---
   const isLastComponent = index >= components.length - 1;
   const allMaterialsUnlocked = highestComponentUnlocked >= components.length;
 
@@ -863,7 +864,6 @@ export function createViewerPage(
     nextButton.renderOrder = 1;
     viewerUIGroup.add(nextButton);
   }
-  // --- Akhir logika ---
 
   const actionButtonSize = 0.25;
   const buttonSpacing = 0.1;
@@ -898,7 +898,6 @@ export function createViewerPage(
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-// --- AKHIR MODIFIKASI ---
 
 export function clearViewerUI() {
   viewerUIGroup.children.forEach((child) => {
@@ -1497,35 +1496,63 @@ export function createQuizReportScreen(score, hasAttempted) {
 export function createMiniQuizPage(component) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
-  const curveIntensity = 0.05;
+
+  const totalPanelWidth = 4;
+  const totalPanelHeight = 2.3;
+  const backgroundPanel = createUIPanel(
+    totalPanelWidth,
+    totalPanelHeight,
+    0.05,
+    "#1A202C",
+    0.9
+  );
+  backgroundPanel.position.set(0, 0, 0);
+  backgroundPanel.renderOrder = 0;
+  viewerUIGroup.add(backgroundPanel);
+
+  const titleWidth = 2.8;
+  const titleHeight = 0.35;
+  const titleLabel = createTitleLabel("Mini Kuis", titleWidth, titleHeight);
+  const topPadding = 0.1;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
+  titleLabel.position.set(0, titleY, 0.02);
+  titleLabel.renderOrder = 2;
+  viewerUIGroup.add(titleLabel);
 
   const currentQuestion = component.quiz[0];
-
-  const questionPanel = createTextPanel(currentQuestion.question, 2.5);
+  const QUESTION_PANEL_FIXED_HEIGHT = 1.2;
+  const questionPanel = createTextPanel(currentQuestion.question, 2.8, {
+    fixedHeight: QUESTION_PANEL_FIXED_HEIGHT,
+  });
   const panelHeight = questionPanel.geometry.parameters.height;
-  questionPanel.position.set(0, 0, 0);
+  const descPanelYOffset = titleY - titleHeight / 2 - panelHeight / 2 - 0.05;
+  questionPanel.position.set(0, descPanelYOffset, 0.01);
+  questionPanel.renderOrder = 1;
   viewerUIGroup.add(questionPanel);
-
-  const titleWidth = 2.0;
-  const titleHeight = 0.3;
-  const titleLabel = createTitleLabel("Mini Kuis", titleWidth, titleHeight);
-  const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
-  const titleZ = -titleY * curveIntensity;
-  titleLabel.position.set(0, titleY, titleZ);
-  viewerUIGroup.add(titleLabel);
 
   const buttonWidth = 1.2;
   const buttonHeight = 0.25;
-  const buttonY = -panelHeight / 2 - buttonHeight / 2 - 0.1;
-  const buttonZ = -buttonY * curveIntensity;
+  const buttonY = descPanelYOffset - panelHeight / 2 - 0.2;
+  const buttonZ = 0.01;
   const positions = [-0.8, 0.8];
 
   currentQuestion.answers.forEach((answer, index) => {
     const isCorrect = index === currentQuestion.correctAnswerIndex;
     const action = isCorrect ? "mini_quiz_correct" : "mini_quiz_incorrect";
-    const button = createButton(answer, action, buttonWidth, buttonHeight);
+
+    const colors = ["#28a745", "#dc3545"];
+    const buttonColor = colors[index] || ACCENT_COLOR;
+
+    const button = createButton(
+      answer,
+      action,
+      buttonWidth,
+      buttonHeight,
+      buttonColor
+    );
 
     button.position.set(positions[index], buttonY, buttonZ);
+    button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
 
@@ -1533,52 +1560,71 @@ export function createMiniQuizPage(component) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
+// --- FUNGSI INI DIUBAH ---
 export function createMiniQuizResultPage(component, isCorrect) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
-  const curveIntensity = 0.05;
 
-  // Ambil teks penjelasan dari data komponen
-  const explanation = component.quiz[0].explanation;
-
-  // Buat pesan berdasarkan hasil jawaban dan tambahkan penjelasan
-  const resultMessage = isCorrect
-    ? "Bagus! Kamu sudah memahami materi ini."
-    : "Jawabanmu kurang tepat. Coba pelajari lagi penjelasannya ya!";
-
-  const messageText = `${resultMessage}\n\n${explanation}`;
-  // --- AKHIR PERUBAHAN TEKS ---
-
-  const messagePanel = createTextPanel(messageText, 2.5);
-  const panelHeight = messagePanel.geometry.parameters.height;
-  messagePanel.position.set(0, 0, 0);
-  viewerUIGroup.add(messagePanel);
+  const totalPanelWidth = 4;
+  const totalPanelHeight = 2.3;
+  const backgroundPanel = createUIPanel(
+    totalPanelWidth,
+    totalPanelHeight,
+    0.05,
+    "#1A202C",
+    0.9
+  );
+  backgroundPanel.position.set(0, 0, 0);
+  backgroundPanel.renderOrder = 0;
+  viewerUIGroup.add(backgroundPanel);
 
   const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
   const titleColor = isCorrect ? "#28a745" : "#dc3545";
-  const titleWidth = 2.0;
-  const titleHeight = 0.3;
-
+  const titleWidth = 2.8;
+  const titleHeight = 0.35;
   const titleLabel = createTitleLabel(
     titleText,
     titleWidth,
     titleHeight,
     titleColor
   );
-  const titleY = panelHeight / 2 + titleHeight / 2 + 0.05;
-  const titleZ = -titleY * curveIntensity;
-  titleLabel.position.set(0, titleY, titleZ);
+  const topPadding = 0.1;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
+  titleLabel.position.set(0, titleY, 0.02);
+  titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
+  const explanation = component.quiz[0].explanation;
+  const resultMessage = isCorrect
+    ? "Bagus! Kamu sudah memahami materi ini."
+    : "Jawabanmu kurang tepat. Coba pelajari lagi penjelasannya ya!";
+  const messageText = `${resultMessage}\n\n${explanation}`;
+  const RESULT_PANEL_FIXED_HEIGHT = 1.2;
+  const messagePanel = createTextPanel(messageText, 2.8, {
+    fixedHeight: RESULT_PANEL_FIXED_HEIGHT,
+  });
+  const panelHeight = messagePanel.geometry.parameters.height;
+  const descPanelYOffset = titleY - titleHeight / 2 - panelHeight / 2 - 0.05;
+  messagePanel.position.set(0, descPanelYOffset, 0.01);
+  messagePanel.renderOrder = 1;
+  viewerUIGroup.add(messagePanel);
+
+  const navButtonWidth = 2.0;
+  const navButtonHeight = 0.25;
+  const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
+
+  // --- LOGIKA TEKS TOMBOL BARU ---
+  const buttonText = isCorrect ? "Lanjutkan" : "Coba Lagi";
+  // --- AKHIR LOGIKA TEKS TOMBOL ---
+
   const continueButton = createButton(
-    "Lanjutkan",
+    buttonText, // Menggunakan teks yang sudah ditentukan
     "continue_after_mini_quiz",
-    2.0,
-    0.25
+    navButtonWidth,
+    navButtonHeight
   );
-  const buttonY = -panelHeight / 2 - 0.25 / 2 - 0.1;
-  const buttonZ = -buttonY * curveIntensity;
-  continueButton.position.set(0, buttonY, buttonZ);
+  continueButton.position.set(0, navY, 0.01);
+  continueButton.renderOrder = 1;
   viewerUIGroup.add(continueButton);
 
   viewerUIGroup.position.copy(uiBasePosition);
