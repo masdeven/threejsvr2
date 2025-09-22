@@ -683,7 +683,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const actionZ = -(radius - 1.5);
   const actionSpacingX = 2.4;
 
-  const exitButton = createButton("Kembali", "back_to_landing", 2.2, 0.3);
+  const exitButton = createButton("Menu Utama", "back_to_landing", 2.2, 0.3);
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(localLookAtTarget);
   viewerUIGroup.add(exitButton);

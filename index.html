@@ -2,9 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Computer Component Viewer</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>WebXR Computer Lab</title>
     <link rel="stylesheet" href="css/style.css" />
     <script type="importmap">
       {
@@ -17,23 +19,30 @@
     </script>
   </head>
   <body>
-    <div id="splash-screen">
+    <!-- Scene Three.js -->
+    <div id="container"></div>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="screen-overlay">
       <div class="spinner"></div>
-      <div id="loading-text">Memuat Aset...</div>
       <div class="progress-bar-container">
         <div id="progress-bar"></div>
       </div>
+      <p id="loading-text">Memuat Aset...</p>
     </div>
 
+    <!-- Overlay Selamat Datang -->
     <div id="welcome-overlay" class="screen-overlay hidden">
       <h1>WebXR Computer Lab.</h1>
       <p>
-        Visualisasi Interaktif Perangkat Keras Komputer melalui Pengembangan
-        Aplikasi VR Lintas Platform berbasis Three.js dan WebXR
+        Visualisasi Interaktif Perangkat Keras Komputer melalui web 3D dan VR.
       </p>
-      <button id="welcome-next-button">Yuk Mulai Sekarang</button>
+      <button id="welcome-next-button" class="overlay-button">
+        Yuk Mulai Sekarang
+      </button>
     </div>
 
+    <!-- Overlay Input Nama -->
     <div id="name-input-overlay" class="screen-overlay hidden">
       <div class="input-container">
         <input
@@ -43,13 +52,11 @@
           autocomplete="off"
           required
         />
-        <label for="player-name-input" class="label">Siapa nama kamu?*</label>
-        <div class="underline"></div>
+        <label for="player-name-input" class="label">Siapa namu kamu?*</label>
       </div>
-      <button id="continue-button">OK</button>
+      <button id="continue-button" class="overlay-button">OK</button>
     </div>
 
-    <div id="container"></div>
     <script type="module" src="js/main.js"></script>
   </body>
 </html>

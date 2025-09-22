@@ -1,4 +1,4 @@
-/* ===== PALET & FONT BARU ===== */
+/* ===== FONT & PALET WARNA ===== */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
 
 :root {
@@ -7,13 +7,12 @@
   --accent-glow: rgba(122, 205, 227, 0.4);
   --text-color: #f0f0f0;
   --bg-color: #121212;
-  --surface-color: #1e1e1e; /* Warna untuk panel, sedikit lebih terang dari bg */
   --progress-bg: #2a2a2a;
   --shadow-color: rgba(0, 0, 0, 0.25);
   --font-main: "Poppins", sans-serif;
 }
 
-/* ===== GAYA DASAR & TIPOGRAFI ===== */
+/* ===== DASAR ===== */
 body {
   margin: 0;
   overflow: hidden;
@@ -33,21 +32,20 @@ body {
   display: none !important;
 }
 
-/* ===== OVERLAY & PANEL UTAMA ===== */
+/* ===== OVERLAY UTAMA ===== */
 .screen-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   color: var(--text-color);
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Biar konten bisa berurutan vertikal */
   justify-content: center;
   align-items: center;
   text-align: center;
   z-index: 999;
-  /* Efek gradien & glassmorphism halus */
   background: radial-gradient(
     circle,
     rgba(26, 26, 26, 0.8) 0%,
@@ -56,6 +54,7 @@ body {
   backdrop-filter: blur(5px);
   transition: opacity 0.5s ease-out;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .screen-overlay.fade-out {
@@ -64,33 +63,31 @@ body {
 }
 
 .screen-overlay h1 {
-  font-size: 2.5em; /* Sedikit lebih besar */
+  font-size: clamp(1.5rem, 5vw, 2.2rem);
   font-weight: 700;
   margin-bottom: 15px;
   color: var(--main-color-light);
-  /* Bayangan teks agar lebih menonjol */
   text-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .screen-overlay p {
-  font-size: 1.2em;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   max-width: 600px;
-  margin-bottom: 30px; /* Jarak lebih besar */
+  margin-bottom: 30px;
   line-height: 1.6;
   color: var(--text-color);
-  opacity: 0.9; /* Teks deskripsi sedikit transparan */
+  opacity: 0.9;
 }
 
-/* ===== GAYA TOMBOL (BUTTON) PROFESIONAL ===== */
-.screen-overlay button {
+/* ===== TOMBOL ===== */
+.overlay-button {
   padding: 14px 30px;
   font-size: 1.1em;
   font-weight: 600;
-  border-radius: 12px; /* Lebih rounded */
+  border-radius: 12px;
   border: none;
   color: white;
   cursor: pointer;
-  /* Gradien halus & bayangan untuk efek 3D */
   background-image: linear-gradient(
     145deg,
     var(--main-color-light),
@@ -101,30 +98,24 @@ body {
   letter-spacing: 0.5px;
 }
 
-.screen-overlay button:hover {
-  /* Efek mengangkat saat di-hover */
+.overlay-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px var(--shadow-color);
-  filter: brightness(1.1); /* Sedikit lebih cerah */
+  filter: brightness(1.1);
 }
 
-.screen-overlay button:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px var(--shadow-color);
-}
-
-/* ===== INPUT FIELD MODERN ===== */
+/* ===== INPUT FIELD ===== */
 .input-container {
   position: relative;
   margin: 20px auto 40px auto;
-  width: 280px; /* Sedikit lebih lebar */
+  width: 280px;
 }
 
 .input-container input[type="text"] {
   font-size: 18px;
   width: 100%;
   border: none;
-  border-bottom: 2px solid rgba(240, 240, 240, 0.5); /* Garis bawah lebih soft */
+  border-bottom: 2px solid rgba(240, 240, 240, 0.5);
   padding: 10px 0;
   background-color: transparent;
   outline: none;
@@ -145,7 +136,7 @@ body {
 }
 
 .input-container input[type="text"]:focus {
-  border-color: var(--main-color-light); /* Ganti warna border saat fokus */
+  border-color: var(--main-color-light);
 }
 
 .input-container input[type="text"]:focus ~ .label,
@@ -155,34 +146,7 @@ body {
   color: var(--main-color-light);
 }
 
-/* Hapus .underline, karena sudah digantikan oleh border-bottom input */
-.input-container .underline {
-  display: none;
-}
-
-/* ===== SPLASH SCREEN & LOADING BAR ===== */
-#splash-screen {
-  background: var(--bg-color); /* Samakan dengan background body */
-  /* (sisa properti sama) */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  color: var(--text-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-  transition: opacity 0.5s ease-out;
-}
-
-#splash-screen.fade-out {
-  opacity: 0;
-  pointer-events: none;
-}
-
+/* ===== LOADING SCREEN ===== */
 #loading-text {
   margin-top: 20px;
   font-size: 1.2em;
@@ -192,7 +156,7 @@ body {
 
 .progress-bar-container {
   width: 300px;
-  height: 12px; /* Lebih ramping */
+  height: 12px;
   background-color: var(--progress-bg);
   border-radius: 12px;
   margin-top: 15px;
@@ -205,13 +169,11 @@ body {
   height: 100%;
   border-radius: 12px;
   transition: width 0.3s ease-out;
-  /* Gradien pada progress bar */
   background-image: linear-gradient(
     90deg,
     var(--main-color-dark),
     var(--main-color-light)
   );
-  /* Efek kilau (sheen) animasi */
   position: relative;
   overflow: hidden;
 }
@@ -244,7 +206,7 @@ body {
 .spinner {
   border: 4px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  border-top-color: var(--main-color-light); /* Hanya warnai bagian atas */
+  border-top-color: var(--main-color-light);
   width: 50px;
   height: 50px;
   animation: spin 1s linear infinite;
@@ -256,7 +218,7 @@ body {
   }
 }
 
-/* ===== LAIN-LAIN (VR Button) ===== */
+/* ===== VR BUTTON ===== */
 #VRButton {
   visibility: hidden;
   opacity: 0;
