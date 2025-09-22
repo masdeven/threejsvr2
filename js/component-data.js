@@ -14,8 +14,8 @@ export const components = [
       {
         question:
           "Komputer pertama seperti ENIAC menggunakan mikroprosesor modern.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "ENIAC menggunakan tabung vakum, bukan mikroprosesor yang baru ditemukan pada 1970-an.",
       },
@@ -35,8 +35,8 @@ export const components = [
     quiz: [
       {
         question: "Teknologi monitor pertama adalah Layar Kristal Cair (LCD).",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "Teknologi monitor pertama adalah tabung sinar katoda (CRT); LCD baru muncul kemudian.",
       },
@@ -99,8 +99,8 @@ export const components = [
     quiz: [
       {
         question: "Motherboard adalah komponen opsional dalam sebuah komputer.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "Motherboard wajib ada untuk menghubungkan semua komponen penting komputer.",
       },
@@ -129,7 +129,7 @@ export const components = [
     ],
   },
   {
-    label: "Memori",
+    label: "Memori (RAM)",
     modelFile: "assets/models/ram.glb",
     audioFile: "assets/audio/ram.mp3",
     description: [
@@ -143,8 +143,8 @@ export const components = [
       {
         question:
           "Data yang tersimpan di RAM akan tetap ada meskipun komputer dimatikan.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "RAM bersifat volatil, sehingga data hilang tanpa aliran listrik.",
       },
@@ -165,14 +165,14 @@ export const components = [
       {
         question:
           "GPU hanya berfungsi untuk menampilkan teks dan tidak bisa memproses grafis 3D.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation: "GPU merender grafis 2D dan 3D dengan cepat dan efisien.",
       },
     ],
   },
   {
-    label: "Kartu Jaringan",
+    label: "Kartu Jaringan (NIC)",
     modelFile: "assets/models/kartu_jaringan.glb",
     audioFile: "assets/audio/kartu_jaringan.mp3",
     description: [
@@ -206,8 +206,8 @@ export const components = [
       {
         question:
           "SSD menyimpan data menggunakan piringan magnetik yang berputar.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "SSD memakai memori flash tanpa bagian bergerak; HDD yang memakai piringan magnetik.",
       },
@@ -226,8 +226,8 @@ export const components = [
       {
         question:
           "Fungsi utama printer adalah mengubah dokumen fisik menjadi data digital.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "Printer mengubah data digital menjadi salinan fisik, sedangkan scanner fungsi sebaliknya.",
       },
@@ -246,8 +246,8 @@ export const components = [
       {
         question:
           "Flashdisk memerlukan daya listrik eksternal untuk menyimpan data secara permanen.",
-        answers: ["Salah", "Benar"],
-        correctAnswerIndex: 0,
+        answers: ["Benar", "Salah"],
+        correctAnswerIndex: 1,
         explanation:
           "Flashdisk menggunakan memori flash non-volatil yang menyimpan data tanpa perlu daya listrik.",
       },
