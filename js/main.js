@@ -22,6 +22,7 @@ import {
   toggleAvatarVisibility,
   preloadAvatar,
   activeTypingAnimation,
+  uiGroup,
 } from "./ui-creator.js";
 import {
   loader,
@@ -61,6 +62,7 @@ const CHANGE_DEBOUNCE_TIME = 500;
 const clock = new THREE.Clock();
 let confettiEffect = null;
 let fps = 0;
+let isFadingInUI = false;
 let frameCount = 0;
 let lastFpsUpdate = 0;
 let fpsLabel = null;
@@ -224,6 +226,8 @@ async function init() {
 
   animate();
 }
+// File: main.js
+
 function setupHTMLEvents() {
   const welcomeNextBtn = document.getElementById("welcome-next-button");
   const nameContinueBtn = document.getElementById("continue-button");
@@ -234,18 +238,36 @@ function setupHTMLEvents() {
     startBackgroundMusic();
   });
 
+  // --- AWAL MODIFIKASI ---
+  // Logika diubah untuk menambahkan efek fade-out
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
     playerName = nameInput.value.trim() || "Tamu";
-    document.getElementById("name-input-overlay").classList.add("hidden");
+    const nameOverlay = document.getElementById("name-input-overlay");
+    const fadeOutDuration = 500; // Durasi dalam milidetik (0.5s)
 
-    const vrButton = document.getElementById("VRButton");
-    if (vrButton) {
-      vrButton.remove();
+    // 1. Tambahkan class fade-out untuk memulai animasi
+    if (nameOverlay) {
+      nameOverlay.classList.add("fade-out");
     }
 
-    changeState(AppState.MODE_SELECTION);
+    // 2. Tunggu animasi selesai sebelum mengubah state aplikasi
+    setTimeout(() => {
+      if (nameOverlay) {
+        // 3. Sembunyikan elemen sepenuhnya setelah transisi
+        nameOverlay.classList.add("hidden");
+      }
+
+      const vrButton = document.getElementById("VRButton");
+      if (vrButton) {
+        vrButton.remove();
+      }
+
+      // 4. Ubah state ke pemilihan mode setelah overlay tidak terlihat
+      changeState(AppState.MODE_SELECTION);
+    }, fadeOutDuration);
   });
+  // --- AKHIR MODIFIKASI ---
 }
 function showWelcomeScreen() {
   document.getElementById("welcome-overlay").classList.remove("hidden");
@@ -436,7 +458,10 @@ function changeState(newState) {
     }
   }
   stopAudio();
-
+  isFadingInUI = false;
+  if (newState === AppState.MODE_SELECTION) {
+    isFadingInUI = true;
+  }
   const isTransitioningWithinViewer =
     (currentState === AppState.VIEWER &&
       (newState === AppState.MINI_QUIZ ||
@@ -731,6 +756,25 @@ function render() {
     fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
     frameCount = 0;
     lastFpsUpdate = now;
+  }
+  if (isFadingInUI) {
+    let allFadedIn = true;
+    // Elemen mode selection ada di 'uiGroup'
+    uiGroup.children.forEach((child) => {
+      if (child.material && child.material.opacity < 1) {
+        // Kecepatan fade-in (misal: selesai dalam 0.5 detik)
+        child.material.opacity += deltaTime * 2.0;
+        allFadedIn = false;
+      } else if (child.material && child.material.opacity > 1) {
+        // Pastikan tidak melebihi 1
+        child.material.opacity = 1;
+      }
+    });
+
+    // Jika semua elemen sudah muncul, hentikan animasi
+    if (allFadedIn) {
+      isFadingInUI = false;
+    }
   }
 
   if (activeTypingAnimation) {

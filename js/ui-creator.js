@@ -1646,7 +1646,6 @@ export function createMiniQuizResultPage(component, isCorrect) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
 export function createModeSelectionPage() {
   clearUI();
 
@@ -1677,8 +1676,18 @@ export function createModeSelectionPage() {
   );
   vrButton.position.set(0, startY - spacing, -3);
   uiGroup.add(vrButton);
+
+  // --- AWAL TAMBAHAN ---
+  // Atur semua elemen agar transparan untuk persiapan fade-in
+  uiGroup.children.forEach((child) => {
+    if (child.material) {
+      // Pastikan material diatur untuk bisa transparan
+      child.material.transparent = true;
+      child.material.opacity = 0;
+    }
+  });
+  // --- AKHIR TAMBAHAN ---
 }
-// ... (sisa kode dari `updateUIGroupPosition` sampai akhir file tidak berubah)
 export function updateUIGroupPosition() {
   if (uiGroup.children.length > 0) {
     const distance = UI_DISTANCE;

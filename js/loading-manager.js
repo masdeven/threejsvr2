@@ -31,7 +31,7 @@ loadingManager.onLoad = function () {
 loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
   const progress = (itemsLoaded / itemsTotal) * 100;
   progressBar.style.width = progress + "%";
-  loadingText.textContent = `Memuat ${itemsLoaded} / ${itemsTotal}...`;
+  loadingText.textContent = `Initializing ${itemsLoaded} / ${itemsTotal}...`;
 };
 
 loadingManager.onError = function (url) {
