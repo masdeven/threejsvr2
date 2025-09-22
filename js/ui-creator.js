@@ -683,7 +683,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const actionZ = -(radius - 1.5);
   const actionSpacingX = 2.4;
 
-  const exitButton = createButton("Menu Utama", "back_to_landing", 2.2, 0.3);
+  const exitButton = createButton("Kembali", "back_to_landing", 2.2, 0.3);
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(localLookAtTarget);
   viewerUIGroup.add(exitButton);
@@ -1288,6 +1288,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
+// --- FUNGSI INI DIUBAH TOTAL ---
 export function createQuizScreen(questionIndex) {
   clearUI();
 
@@ -1296,39 +1297,36 @@ export function createQuizScreen(questionIndex) {
 
   const currentQuestion = quizData[questionIndex];
 
-  const questionPanel = createTextPanel(currentQuestion.question, 4.4);
-  const questionPanelHeight = questionPanel.geometry.parameters.height;
-
-  const titleHeight = 0.3;
-  const buttonHeight = 0.35;
-  const verticalPadding = 0.15;
-
-  const totalPanelHeight =
-    titleHeight + questionPanelHeight + buttonHeight + verticalPadding * 4;
-
-  const panelWidth = 4.8;
-  const mainPanel = createUIPanel(panelWidth, totalPanelHeight, 0.1);
+  const totalPanelWidth = 4.8;
+  const totalPanelHeight = 2.0;
+  const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
+  mainPanel.renderOrder = 0;
   viewerUIGroup.add(mainPanel);
 
-  const titleY = totalPanelHeight / 2 - verticalPadding - titleHeight / 2;
+  const titleHeight = 0.3;
+  const topPadding = 0.1;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   const titleText = `Uji Pemahaman (Soal ${questionIndex + 1}/${
     quizData.length
   })`;
   const titleLabel = createTitleLabel(titleText, 4.5, titleHeight);
   titleLabel.position.set(0, titleY, 0.01);
+  titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  const questionPanelY =
-    titleY - titleHeight / 2 - verticalPadding - questionPanelHeight / 2;
+  const QUESTION_PANEL_FIXED_HEIGHT = 0.9;
+  const questionPanel = createTextPanel(currentQuestion.question, 4.4, {
+    fixedHeight: QUESTION_PANEL_FIXED_HEIGHT,
+  });
+  const panelHeight = questionPanel.geometry.parameters.height;
+  const questionPanelY = titleY - titleHeight / 2 - panelHeight / 2 - 0.1;
   questionPanel.position.set(0, questionPanelY, 0.01);
+  questionPanel.renderOrder = 1;
   viewerUIGroup.add(questionPanel);
 
-  const buttonY =
-    questionPanelY -
-    questionPanelHeight / 2 -
-    verticalPadding -
-    buttonHeight / 2;
+  const buttonHeight = 0.35;
+  const buttonY = questionPanelY - panelHeight / 2 - buttonHeight / 2 - 0.1;
   const buttonWidth = 2.1;
   const buttonSpacingX = 2.3;
   const positions = [-buttonSpacingX / 2, buttonSpacingX / 2];
@@ -1339,6 +1337,7 @@ export function createQuizScreen(questionIndex) {
     const action = isCorrect ? "answer_correct" : "answer_incorrect";
     const button = createButton(answer, action, buttonWidth, buttonHeight);
     button.position.set(shuffledPositions[index], buttonY, 0.01);
+    button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
 
@@ -1346,6 +1345,7 @@ export function createQuizScreen(questionIndex) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
+// --- FUNGSI INI DIUBAH TOTAL ---
 export function createQuizResultScreen(isCorrect, questionIndex) {
   clearUI();
 
@@ -1354,41 +1354,38 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
 
   const currentQuestion = quizData[questionIndex];
 
-  const explanationText = `**Jawaban yang benar adalah:**\n${
-    currentQuestion.answers[currentQuestion.correctAnswerIndex]
-  }`;
-  const explanationPanel = createTextPanel(explanationText, 4.4);
-  const explanationPanelHeight = explanationPanel.geometry.parameters.height;
-
-  const titleHeight = 0.45;
-  const buttonHeight = 0.35;
-  const verticalPadding = 0.15;
-
-  const totalPanelHeight =
-    titleHeight + explanationPanelHeight + buttonHeight + verticalPadding * 4;
-
-  const panelWidth = 4.8;
-  const mainPanel = createUIPanel(panelWidth, totalPanelHeight, 0.1);
+  const totalPanelWidth = 4.8;
+  const totalPanelHeight = 2.0;
+  const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
+  mainPanel.renderOrder = 0;
   viewerUIGroup.add(mainPanel);
 
-  const titleY = totalPanelHeight / 2 - verticalPadding - titleHeight / 2;
+  const titleHeight = 0.4;
+  const topPadding = 0.1;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
   const titleColor = isCorrect ? "#28a745" : "#dc3545";
   const titleLabel = createTitleLabel(titleText, 3.5, titleHeight, titleColor);
   titleLabel.position.set(0, titleY, 0.01);
+  titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  const explanationPanelY =
-    titleY - titleHeight / 2 - verticalPadding - explanationPanelHeight / 2;
+  const EXPLANATION_PANEL_FIXED_HEIGHT = 0.9;
+  const explanationText = `Jawaban yang benar adalah:\n${
+    currentQuestion.answers[currentQuestion.correctAnswerIndex]
+  }`;
+  const explanationPanel = createTextPanel(explanationText, 4.4, {
+    fixedHeight: EXPLANATION_PANEL_FIXED_HEIGHT,
+  });
+  const panelHeight = explanationPanel.geometry.parameters.height;
+  const explanationPanelY = titleY - titleHeight / 2 - panelHeight / 2 - 0.1;
   explanationPanel.position.set(0, explanationPanelY, 0.01);
+  explanationPanel.renderOrder = 1;
   viewerUIGroup.add(explanationPanel);
 
-  const buttonY =
-    explanationPanelY -
-    explanationPanelHeight / 2 -
-    verticalPadding -
-    buttonHeight / 2;
+  const buttonHeight = 0.35;
+  const buttonY = explanationPanelY - panelHeight / 2 - buttonHeight / 2 - 0.1;
   const isLastQuestion = questionIndex >= quizData.length - 1;
   const buttonText = isLastQuestion
     ? "Lihat Hasil"
@@ -1401,12 +1398,12 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
     ACCENT_COLOR
   );
   continueButton.position.set(0, buttonY, 0.01);
+  continueButton.renderOrder = 1;
   viewerUIGroup.add(continueButton);
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -1437,7 +1434,6 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const geometry = new THREE.PlaneGeometry(size, size);
   return new THREE.Mesh(geometry, material);
 }
-
 export function createQuizReportScreen(score, hasAttempted) {
   clearUI();
 

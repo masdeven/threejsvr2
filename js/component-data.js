@@ -23,7 +23,6 @@ export const components = [
     audioFile: "assets/audio/monitor.mp3",
     description: [
       "Monitor merupakan perangkat output yang digunakan untuk menampilkan hasil pemrosesan komputer dalam bentuk teks maupun gambar. Fungsinya adalah menyajikan informasi visual kepada pengguna.",
-      "Monitor merupakan perangkat output yang digunakan untuk menampilkan hasil pemrosesan komputer dalam bentuk teks maupun gambar. Fungsinya adalah menyajikan informasi visual kepada pengguna.",
     ],
     unlocked: false,
     quiz: [
