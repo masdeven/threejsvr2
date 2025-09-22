@@ -482,7 +482,9 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     primaryButtonHeight,
     ACCENT_COLOR
   );
-  continueButton.position.set(0, -0.3, 0.01);
+  // --- PERUBAHAN DI BAWAH ---
+  continueButton.position.set(0, -0.35, 0.01); // <-- Y diubah dari -0.3 menjadi -0.35
+  // --- AKHIR PERUBAHAN ---
   continueButton.visible = false;
   viewerUIGroup.add(continueButton);
 
@@ -500,7 +502,9 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
         continueButton.userData.action = buttonAction;
       }
     );
-    welcomeLabel.position.set(0, 0.3, 0.01);
+    // --- PERUBAHAN DI BAWAH ---
+    welcomeLabel.position.set(0, 0.25, 0.01); // <-- Y diubah dari 0.3 menjadi 0.25
+    // --- AKHIR PERUBAHAN ---
     viewerUIGroup.add(welcomeLabel);
   } else {
     continueButton.visible = true;
