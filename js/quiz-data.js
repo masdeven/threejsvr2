@@ -2,60 +2,64 @@
 
 export const quizData = [
   {
-    question: "Komponen manakah yang disebut sebagai 'otak' komputer?",
-    answers: ["Processor (CPU)", "RAM"],
+    question:
+      "Teknologi apa yang digunakan oleh komputer generasi awal seperti ENIAC sebelum adanya mikroprosesor?",
+    answers: ["Tabung Vakum", "Sirkuit Terpadu (IC)"],
     correctAnswerIndex: 0,
   },
   {
     question:
-      "Perangkat apa yang digunakan untuk input grafis dan menggerakkan kursor?",
-    answers: ["Keyboard", "Mouse"],
-    correctAnswerIndex: 1,
+      "Teknologi monitor yang menggantikan CRT (tabung sinar katoda) dengan desain lebih tipis adalah...",
+    answers: ["LCD dan LED", "Plasma"],
+    correctAnswerIndex: 0,
   },
   {
-    question:
-      "Komponen manakah yang berfungsi sebagai memori jangka pendek saat komputer menyala?",
-    answers: ["Storage (SSD/HDD)", "RAM"],
-    correctAnswerIndex: 1,
-  },
-  {
-    question: "Papan sirkuit utama yang menghubungkan semua komponen adalah...",
-    answers: ["Motherboard", "Printer"],
+    question: "Siapakah penemu mouse komputer pada tahun 1964?",
+    answers: ["Douglas Engelbart", "Christopher Sholes"],
     correctAnswerIndex: 0,
   },
   {
     question:
-      "Komponen yang digunakan untuk menampilkan gambar ke layar adalah...",
-    answers: ["Monitor", "Flashdisk"],
+      "Memori yang datanya akan hilang saat komputer dimatikan disebut juga sebagai memori...",
+    answers: ["Volatil", "Non-volatil"],
     correctAnswerIndex: 0,
   },
   {
     question:
-      "Perangkat input utama untuk memasukkan huruf dan angka adalah...",
-    answers: ["Keyboard", "GPU"],
+      "Komponen yang dirancang khusus untuk komputasi paralel guna memproses ribuan data grafis sekaligus adalah...",
+    answers: ["Kartu Grafis (GPU)", "Processor (CPU)"],
+    correctAnswerIndex: 0,
+  },
+  {
+    question: "Fungsi utama dari motherboard adalah...",
+    answers: [
+      "Menghubungkan semua komponen perangkat keras",
+      "Menyimpan sistem operasi",
+    ],
     correctAnswerIndex: 0,
   },
   {
     question:
-      "Komponen yang digunakan untuk mempercepat pemrosesan grafis adalah...",
-    answers: ["GPU", "CPU"],
+      "Manakah media penyimpanan yang tidak memiliki bagian bergerak dan menggunakan chip memori flash?",
+    answers: ["Solid State Drive (SSD)", "Hard Disk Drive (HDD)"],
     correctAnswerIndex: 0,
   },
   {
-    question: "Media penyimpanan jangka panjang komputer adalah...",
-    answers: ["RAM", "Storage (SSD/HDD)"],
-    correctAnswerIndex: 1,
+    question:
+      "Setiap kartu jaringan memiliki alamat fisik unik untuk identifikasi di jaringan, yang disebut...",
+    answers: ["MAC Address", "IP Address"],
+    correctAnswerIndex: 0,
   },
   {
     question:
-      "Perangkat keras yang berfungsi mencetak dokumen ke bentuk fisik adalah...",
-    answers: ["Monitor", "Printer"],
-    correctAnswerIndex: 1,
+      "Hasil cetak fisik dari sebuah printer, seperti dokumen di atas kertas, disebut sebagai...",
+    answers: ["Hardcopy", "Softcopy"],
+    correctAnswerIndex: 0,
   },
   {
     question:
-      "Perangkat penyimpanan portabel yang digunakan untuk memindahkan data adalah...",
-    answers: ["Flashdisk", "Motherboard"],
+      "Perangkat keras yang menjadi inspirasi utama bagi desain keyboard modern adalah...",
+    answers: ["Mesin Ketik", "Kalkulator"],
     correctAnswerIndex: 0,
   },
 ];
