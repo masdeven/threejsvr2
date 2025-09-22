@@ -4,9 +4,10 @@ export const components = [
     modelFile: null,
     audioFile: "assets/audio/intro.mp3",
     description: [
-      "Perangkat keras (hardware) adalah komponen fisik komputer yang dapat dilihat dan disentuh. Fungsinya meliputi empat tugas utama: menerima input (seperti keyboard), memproses data (dengan CPU), menyimpan data (pada SSD/HDD), dan memberikan output (melalui monitor). Komponen ini bekerja sama untuk menjalankan sistem.",
-      "Sejarah hardware dimulai pada 1940-an dengan komputer seperti ENIAC yang menggunakan tabung vakum besar. Era transistor pada 1960-an membuat perangkat menyusut, hingga penemuan mikroprosesor pada 1970-an yang menjadi dasar komputer pribadi modern saat ini.",
-      "Era modern sejak 1990-an ditandai inovasi pesat: CPU lebih cepat, RAM berkapasitas besar, dan penyimpanan SSD yang efisien. Perkembangan ini meningkatkan kekuatan komputer desktop serta memicu revolusi perangkat mobile yang ringkas dan bertenaga.",
+      "Hardware merupakan komponen fisik komputer yang bisa dilihat dan disentuh. Fungsinya meliputi menerima input (keyboard, mouse), memproses data (CPU), menyimpan data (SSD/HDD), serta memberikan output (monitor, printer). Semua komponen bekerja sama dalam sistem komputer.",
+      "Sejarah hardware dimulai dari komputer awal 1940-an seperti ENIAC yang menggunakan tabung vakum besar. Teknologi transistor dan sirkuit terpadu pada 1960-an hingga 1970-an membuat perangkat menjadi lebih kecil dan efisien.",
+      "Penemuan mikroprosesor pada 1970-an memungkinkan lahirnya komputer pribadi yang lebih kecil dan terjangkau. Sejak 1990-an, CPU semakin cepat, RAM bertambah besar, serta penyimpanan SSD mempercepat dan memudahkan akses data.",
+      "Perkembangan perangkat mobile pun kian pesat, menjadikan komputer lebih cepat, efisien, dan mudah dibawa atau diakses di mana saja.",
     ],
     unlocked: true,
     quiz: [
@@ -16,7 +17,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "Komputer awal seperti ENIAC menggunakan tabung vakum, bukan mikroprosesor yang ditemukan pada 1970-an.",
+          "ENIAC menggunakan tabung vakum, bukan mikroprosesor yang baru ditemukan pada 1970-an.",
       },
     ],
   },
@@ -25,8 +26,10 @@ export const components = [
     modelFile: "assets/models/monitor.glb",
     audioFile: "assets/audio/monitor.mp3",
     description: [
-      "Monitor adalah perangkat output utama yang menampilkan informasi visual dari komputer, seperti teks dan gambar. Sejarahnya dimulai dari teknologi tabung sinar katoda (CRT) yang besar dan berat, menjadi komponen penting untuk interaksi dengan sistem operasi dan aplikasi.",
-      "Perkembangan monitor melahirkan teknologi Liquid Crystal Display (LCD) dan Light Emitting Diode (LED) yang menawarkan desain lebih ramping, konsumsi daya lebih rendah, dan kualitas gambar lebih tinggi. Fitur modern seperti layar sentuh dan HDR memperkaya pengalaman visual pengguna.",
+      "Monitor adalah perangkat output yang menampilkan data visual dari komputer, seperti teks dan gambar. Sejarahnya dimulai dari tabung sinar katoda (CRT) yang besar dan berat, teknologi awal dalam teknologi tampilan visual komputer.",
+      "Perkembangan layar LCD dan LED kemudian menghadirkan monitor yang lebih tipis, hemat energi, dan berkualitas tinggi. Fitur modern seperti layar sentuh dan HDR kini menyempurnakan pengalaman pengguna.",
+      "Monitor memproses sinyal digital menjadi tampilan visual yang dapat dilihat, memungkinkan pengguna berinteraksi dengan sistem operasi dan aplikasi.",
+      "Selain menampilkan data, monitor juga membantu memantau status sistem seperti penggunaan CPU dan RAM serta mendukung multitasking dengan menampilkan banyak informasi sekaligus.",
     ],
     unlocked: false,
     quiz: [
@@ -35,7 +38,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "Sejarah monitor dimulai dari penemuan tabung sinar katoda (CRT); teknologi LCD muncul kemudian.",
+          "Teknologi monitor pertama adalah tabung sinar katoda (CRT); LCD baru muncul kemudian.",
       },
     ],
   },
@@ -44,8 +47,10 @@ export const components = [
     modelFile: "assets/models/keyboard.glb",
     audioFile: "assets/audio/keyboard.mp3",
     description: [
-      "Keyboard adalah perangkat input utama yang memungkinkan memasukkan teks, angka, dan perintah ke komputer. Desainnya terinspirasi dari mesin ketik mekanis abad ke-19. Saat tombol ditekan, keyboard mengirimkan sinyal spesifik ke komputer untuk diproses.",
-      "Selain mengetik, keyboard berfungsi untuk kontrol sistem lewat tombol fungsi (F1-F12) dan shortcut seperti Ctrl+C. Penggunaan shortcut mempercepat alur kerja dan meningkatkan produktivitas dalam bernavigasi aplikasi.",
+      "Keyboard adalah perangkat input utama untuk memasukkan teks, angka, dan perintah ke komputer melalui tombol. Desainnya terinspirasi dari mesin ketik mekanik abad ke-19.",
+      "Saat tombol ditekan, keyboard mengirim sinyal ke komputer untuk diolah menjadi perintah atau data digital. Keyboard menjadi alat penting dalam interaksi pengguna dengan komputer.",
+      "Selain mengetik, keyboard juga digunakan untuk kontrol sistem dengan tombol fungsi dan shortcut yang memudahkan pekerjaan dan meningkatkan produktivitas.",
+      "Keyboard juga mengontrol navigasi seperti menggulir layar dan menggerakkan kursor, bahkan mengoperasikan aplikasi dan permainan.",
     ],
     unlocked: false,
     quiz: [
@@ -54,7 +59,7 @@ export const components = [
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
         explanation:
-          "Keyboard modern terinspirasi dari mesin ketik mekanis populer abad ke-19.",
+          "Keyboard modern terinspirasi dari mesin ketik mekanik abad ke-19.",
       },
     ],
   },
@@ -63,8 +68,10 @@ export const components = [
     modelFile: "assets/models/mouse.glb",
     audioFile: "assets/audio/mouse.mp3",
     description: [
-      "Mouse adalah perangkat input penunjuk yang mengontrol pergerakan kursor di layar. Diciptakan Douglas Engelbart pada 1964, model pertama terbuat dari kayu. Mouse menyederhanakan navigasi dalam antarmuka grafis (GUI).",
-      "Fungsi utama meliputi memilih objek (klik kiri), membuka menu konteks (klik kanan), dan menggulir halaman (scroll wheel). Fitur 'drag and drop' sangat bergantung pada mouse. Kini mouse berkembang dari model mekanis menjadi optik dan nirkabel untuk kenyamanan lebih baik.",
+      "Mouse adalah perangkat input penunjuk yang mengendalikan kursor pada layar. Diciptakan pada 1964 oleh Douglas Engelbart, model awal berupa kotak kayu dengan tombol dan roda metal.",
+      "Mouse berfungsi untuk memilih objek, membuka menu konteks, menggulir halaman, dan drag and drop, memudahkan navigasi antarmuka grafis.",
+      "Saat ini, mouse berkembang menjadi optik dan nirkabel dengan desain ergonomis untuk kenyamanan dan akurasi lebih baik.",
+      "Perkembangan teknologi mouse juga meningkatkan fungsi dan memenuhi kebutuhan interaksi pengguna yang beragam dalam komputer modern.",
     ],
     unlocked: false,
     quiz: [
@@ -74,7 +81,7 @@ export const components = [
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
         explanation:
-          "Mouse pertama diciptakan Douglas Engelbart pada 1964, awalnya terbuat dari kayu.",
+          "Mouse pertama diciptakan Douglas Engelbart pada 1964, awalnya berbahan kayu.",
       },
     ],
   },
@@ -83,9 +90,10 @@ export const components = [
     modelFile: "assets/models/motherboard.glb",
     audioFile: "assets/audio/motherboard.mp3",
     description: [
-      "Motherboard atau mainboard adalah papan sirkuit utama yang menjadi fondasi komputer. Komponen ini mengintegrasikan semua perangkat keras penting seperti CPU, RAM, kartu grafis, dan penyimpanan agar dapat berkomunikasi.",
-      "Motherboard menyediakan slot dan port untuk komponen, mendistribusikan daya, serta mengatur aliran data lewat jalur sirkuit yang disebut 'bus'. Tanpa motherboard, komputer tidak dapat berfungsi sebagai satu sistem utuh.",
-      "Motherboard dilengkapi chip BIOS atau UEFI yang menjalankan inisialisasi perangkat keras saat komputer dinyalakan. Slot ekspansi seperti PCI Express memungkinkan penambahan kartu suara atau jaringan.",
+      "Motherboard adalah papan sirkuit utama yang menghubungkan komponen seperti CPU, RAM, penyimpanan, dan kartu video agar dapat bekerja bersama secara harmonis.",
+      "Fungsinya menyediakan jalur komunikasi serta distribusi daya bagi semua perangkat yang terhubung, menjadikannya fondasi utama komputer.",
+      "Motherboard juga memiliki chip BIOS yang mengendalikan proses inisialisasi perangkat keras dan slot ekspansi untuk menambah komponen seperti kartu suara atau jaringan.",
+      "Sejarah motherboard dimulai pada 1981 dengan IBM 'Planar Breadboard' yang menjadi dasar komputer pribadi pertama.",
     ],
     unlocked: false,
     quiz: [
@@ -94,7 +102,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "Motherboard adalah papan sirkuit utama yang wajib menghubungkan semua komponen penting komputer.",
+          "Motherboard wajib ada untuk menghubungkan semua komponen penting komputer.",
       },
     ],
   },
@@ -103,8 +111,10 @@ export const components = [
     modelFile: "assets/models/cpu.glb",
     audioFile: "assets/audio/cpu.mp3",
     description: [
-      "CPU (Central Processing Unit) dikenal sebagai 'otak' komputer. Komponen inti ini bertugas mengeksekusi instruksi perangkat lunak serta memproses data. Kecepatan CPU, diukur dalam Gigahertz (GHz), memengaruhi kinerja sistem secara keseluruhan.",
-      "Di dalam CPU terdapat Arithmetic Logic Unit (ALU) yang mengelola operasi matematika dan logika, serta Control Unit (CU) yang mengatur seluruh aktivitas prosesor. Sejarah CPU dimulai dari Intel 4004 pada 1971, mikroprosesor pertama di dunia.",
+      "CPU adalah otak komputer yang mengeksekusi instruksi dan memproses data dengan bantuan unit kontrol dan unit logika aritmatika (ALU).",
+      "CPU mengatur pengambilan instruksi, proses perhitungan, serta menyimpan data sementara pada cache untuk mempercepat kerja.",
+      "Awalnya, CPU menggunakan tabung vakum besar, lalu bertransformasi dengan transistor dan mikroprosesor Intel 4004 tahun 1971 menjadi lebih kecil dan efisien.",
+      "Produsen seperti Intel, AMD, dan ARM terus mengembangkan CPU lebih cepat dan hemat energi hingga era modern saat ini.",
     ],
     unlocked: false,
     quiz: [
@@ -114,7 +124,7 @@ export const components = [
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
         explanation:
-          "Mikroprosesor pertama, Intel 4004, dirilis pada 1971 dan menjadi tonggak dalam evolusi CPU.",
+          "Intel 4004 adalah mikroprosesor pertama yang dirilis tahun 1971.",
       },
     ],
   },
@@ -123,8 +133,10 @@ export const components = [
     modelFile: "assets/models/ram.glb",
     audioFile: "assets/audio/ram.mp3",
     description: [
-      "RAM (Random Access Memory) adalah memori berkecepatan tinggi yang menyimpan data sementara untuk CPU. Kapasitas RAM yang besar memungkinkan multitasking yang lancar dengan menjalankan banyak aplikasi sekaligus.",
-      "RAM bersifat volatil, artinya data di dalamnya akan hilang saat komputer dimatikan, berbeda dengan penyimpanan jangka panjang seperti SSD atau HDD yang non-volatil.",
+      "RAM (Random Access Memory) adalah memori sementara yang menyimpan data aktif agar CPU dapat mengakses dengan cepat. Semakin besar RAM, semakin lancar multitasking dan performa aplikasi.",
+      "RAM bersifat volatil, data hilang saat komputer mati, berbeda dengan penyimpanan permanen seperti HDD atau SSD.",
+      "Sejarah RAM dimulai dari tabung Williams 1947, berkembang ke memori inti magnetik dan DRAM yang ditemukan oleh Robert Dennard pada 1970-an.",
+      "RAM sangat penting sebagai ruang kerja aktif untuk mempercepat proses dan menjalankan banyak aplikasi simultan.",
     ],
     unlocked: false,
     quiz: [
@@ -134,7 +146,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "RAM bersifat volatil; data hilang ketika tidak ada daya listrik.",
+          "RAM bersifat volatil, sehingga data hilang tanpa aliran listrik.",
       },
     ],
   },
@@ -143,9 +155,10 @@ export const components = [
     modelFile: "assets/models/gpu.glb",
     audioFile: "assets/audio/gpu.mp3",
     description: [
-      "GPU (Graphics Processing Unit) adalah prosesor khusus untuk mempercepat rendering gambar, video, dan animasi di monitor. GPU mengurangi beban kerja CPU, penting untuk gaming dan desain grafis.",
-      "Keunggulan GPU adalah komputasi paralel dengan ribuan inti prosesor yang memproses banyak tugas kecil sekaligus. Istilah GPU dipopulerkan NVIDIA pada 1999 dengan GeForce 256.",
-      "Selain gaming, GPU sangat berguna dalam AI dan machine learning karena efisiensi proses paralel dalam melatih model kompleks jauh lebih cepat dari CPU.",
+      "GPU adalah prosesor khusus yang mempercepat rendering gambar, video, dan animasi menggunakan ribuan inti yang bekerja paralel.",
+      "GPU membantu melepaskan beban CPU, sangat penting untuk gaming, desain grafis, dan machine learning.",
+      "Istilah GPU dipopulerkan NVIDIA tahun 1999 lewat GeForce 256 sebagai GPU pertama di dunia.",
+      "GPU juga memainkan peran vital dalam AI dan deep learning dengan mempercepat pelatihan model kompleks.",
     ],
     unlocked: false,
     quiz: [
@@ -154,8 +167,7 @@ export const components = [
           "GPU hanya berfungsi untuk menampilkan teks dan tidak bisa memproses grafis 3D.",
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
-        explanation:
-          "GPU utama untuk merender grafis dua dan tiga dimensi secara efisien.",
+        explanation: "GPU merender grafis 2D dan 3D dengan cepat dan efisien.",
       },
     ],
   },
@@ -164,8 +176,9 @@ export const components = [
     modelFile: "assets/models/kartu_jaringan.glb",
     audioFile: "assets/audio/kartu_jaringan.mp3",
     description: [
-      "Kartu Jaringan atau NIC adalah perangkat keras yang menghubungkan komputer ke jaringan seperti internet atau LAN, tersedia dalam Ethernet untuk kabel dan Wi-Fi untuk nirkabel.",
-      "Fungsi utama NIC adalah mengonversi data komputer menjadi sinyal untuk jaringan dan sebaliknya. Setiap NIC memiliki alamat unik bernama MAC address untuk identifikasi di jaringan.",
+      "Kartu Jaringan (NIC) menghubungkan komputer ke jaringan seperti internet atau LAN, melalui kabel (Ethernet) atau nirkabel (Wi-Fi).",
+      "NIC mengonversi data komputer ke sinyal jaringan dan sebaliknya, serta memiliki alamat fisik unik (MAC address) untuk identifikasi perangkat di jaringan.",
+      "Sejarah NIC berkembang dari pengembangan Ethernet pada 1960-an hingga teknologi nirkabel saat ini, mendukung kecepatan data yang terus meningkat.",
     ],
     unlocked: false,
     quiz: [
@@ -175,7 +188,7 @@ export const components = [
         answers: ["Benar", "Salah"],
         correctAnswerIndex: 0,
         explanation:
-          "MAC address adalah identitas unik NIC untuk komunikasi data di jaringan.",
+          "MAC address adalah identitas unik kartu jaringan untuk komunikasi data.",
       },
     ],
   },
@@ -184,9 +197,9 @@ export const components = [
     modelFile: "assets/models/storage.glb",
     audioFile: "assets/audio/storage.mp3",
     description: [
-      "Storage atau perangkat penyimpanan menyimpan data secara permanen walau komputer mati, menyimpan sistem operasi, aplikasi, dan file pribadi. Dua jenis utama adalah HDD dan SSD.",
-      "HDD menggunakan piringan magnetik berputar dan lengan mekanis untuk baca/tulis data. Kapasitas besar dan harga terjangkau, tapi lebih lambat dan rentan guncangan.",
-      "SSD adalah teknologi modern tanpa bagian bergerak, memakai chip memori flash, membuatnya jauh lebih cepat, senyap, dan tahan lama, mempercepat booting dan loading aplikasi.",
+      "HDD adalah media penyimpanan mekanis menggunakan piringan magnetik berputar untuk simpan data permanen, ditemukan IBM 1956.",
+      "SSD menggunakan chip memori flash tanpa bagian bergerak, lebih cepat, senyap, dan tahan goresan dibanding HDD.",
+      "Keduanya menyimpan sistem operasi, aplikasi, dan file pribadi. SSD mempercepat booting dan loading, sementara HDD menawarkan kapasitas besar dengan harga terjangkau.",
     ],
     unlocked: false,
     quiz: [
@@ -196,7 +209,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "SSD memakai memori flash tanpa bagian bergerak, HDD yang menggunakan piringan magnetik.",
+          "SSD memakai memori flash tanpa bagian bergerak; HDD yang memakai piringan magnetik.",
       },
     ],
   },
@@ -205,8 +218,8 @@ export const components = [
     modelFile: "assets/models/printer.glb",
     audioFile: "assets/audio/printer.mp3",
     description: [
-      "Printer adalah perangkat output yang mencetak data digital dari komputer ke media fisik, biasanya kertas. Hasil cetak disebut hardcopy. Teknologi umum adalah inkjet yang menyemprot tinta dan laser yang menggunakan toner bubuk.",
-      "Printer modern banyak yang multifungsi (All-in-One), bisa mencetak, memindai dokumen jadi file digital, menyalin dokumen, dan mengirim/receiving faks.",
+      "Printer adalah perangkat output yang mengubah data digital menjadi salinan fisik (hardcopy) pada kertas, seperti teks dan gambar. Awal mula cetak dari mesin cetak Gutenberg abad ke-15, kemudian berkembang ke printer elektronik dan laser modern.",
+      "Printer modern multifungsi dapat mencetak, memindai dokumen menjadi digital, menyalin, dan mengirim faks. Printer 3D kini bisa mencetak objek tiga dimensi dari desain digital, membuka banyak kemungkinan baru.",
     ],
     unlocked: false,
     quiz: [
@@ -216,7 +229,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "Printer mengubah data digital menjadi hardcopy; scanner mengubah dokumen fisik menjadi digital.",
+          "Printer mengubah data digital menjadi salinan fisik, sedangkan scanner fungsi sebaliknya.",
       },
     ],
   },
@@ -225,8 +238,8 @@ export const components = [
     modelFile: "assets/models/flashdisk.glb",
     audioFile: "assets/audio/flashdisk.mp3",
     description: [
-      "Flashdisk atau USB flash drive adalah perangkat penyimpanan portabel yang menggunakan memori flash non-volatil. Ukurannya kecil, ringan, dan tidak butuh daya eksternal, memudahkan pemindahan file antar komputer.",
-      "Terhubung ke komputer melalui port USB, flashdisk tak hanya untuk transfer file, tapi juga untuk backup data, menjalankan aplikasi portabel, dan media instalasi sistem operasi.",
+      "Flashdisk adalah perangkat penyimpanan data portabel dengan memori flash NAND yang non-volatil dan terhubung lewat USB. Ukurannya kecil, ringan, dan mudah dibawa, populer untuk transfer data dan backup cepat.",
+      "Sejarah flashdisk dimulai dengan DiskOnKey M-Systems 1999. Kini kapasitas dan kecepatan flashdisk terus meningkat, memungkinkan penyimpanan file, menjalankan aplikasi portabel, dan instalasi sistem operasi.",
     ],
     unlocked: false,
     quiz: [
@@ -236,7 +249,7 @@ export const components = [
         answers: ["Salah", "Benar"],
         correctAnswerIndex: 0,
         explanation:
-          "Memori flash non-volatil menyimpan data tanpa memerlukan daya listrik.",
+          "Flashdisk menggunakan memori flash non-volatil yang menyimpan data tanpa perlu daya listrik.",
       },
     ],
   },
