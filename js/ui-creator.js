@@ -683,7 +683,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const actionZ = -(radius - 1.5);
   const actionSpacingX = 2.4;
 
-  const exitButton = createButton("Kembali", "back_to_landing", 2.2, 0.3);
+  const exitButton = createButton("Menu Utama", "back_to_landing", 2.2, 0.3);
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(localLookAtTarget);
   viewerUIGroup.add(exitButton);
@@ -1167,14 +1167,15 @@ export function createCompletionScreen(playerName) {
   return confetti;
 }
 
+// --- FUNGSI INI DIUBAH TOTAL ---
 export function createCreditsScreen(creditPages, pageIndex) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   clearViewerUI();
 
-  const totalPanelWidth = 3.0;
-  const totalPanelHeight = 1.7;
+  const totalPanelWidth = 3.2;
+  const totalPanelHeight = 1.8;
   const backgroundPanel = createUIPanel(
     totalPanelWidth,
     totalPanelHeight,
@@ -1183,83 +1184,105 @@ export function createCreditsScreen(creditPages, pageIndex) {
     0.9
   );
   backgroundPanel.position.set(0, 0, 0);
+  backgroundPanel.renderOrder = 0;
   viewerUIGroup.add(backgroundPanel);
 
-  const currentCreditText = creditPages[pageIndex];
-  const descPanel = createTextPanel(currentCreditText, 2.5);
-  const panelHeight = descPanel.geometry.parameters.height;
-  const panelWidth = descPanel.geometry.parameters.width;
-  descPanel.position.set(0, 0.15, 0.02);
-  viewerUIGroup.add(descPanel);
-
-  const titleWidth = 2.2;
-  const titleHeight = 0.35;
+  const titleWidth = 2.8;
+  const titleHeight = 0.3;
   const titleLabel = createTitleLabel(
     "Tentang Aplikasi",
     titleWidth,
     titleHeight
   );
-  const titleY = 0.15 + panelHeight / 2 + titleHeight / 2 - 0.05;
+  const topPadding = 0.1;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   titleLabel.position.set(0, titleY, 0.01);
+  titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  const descNavY = 0.15 - panelHeight / 2 - 0.15;
-  const rightEdgeX = panelWidth / 2;
-  const buttonWidth = 0.25;
-  const indicatorWidth = 0.6;
-  const padding = 0.05;
-  let currentX = rightEdgeX;
+  const DESC_PANEL_FIXED_HEIGHT = 1.1;
+  const currentCreditText = creditPages[pageIndex];
+  const descPanel = createTextPanel(currentCreditText, 2.8, {
+    fixedHeight: DESC_PANEL_FIXED_HEIGHT,
+  });
 
-  const isLastPage = pageIndex >= creditPages.length - 1;
-  const nextDescButton = createButton(
-    ">",
-    isLastPage ? "locked" : "next_credit",
-    buttonWidth,
-    0.2,
-    isLastPage ? "#4A5568" : BG_COLOR
-  );
-  if (isLastPage) nextDescButton.userData.colors = null;
-  const nextButtonX = currentX - buttonWidth / 2;
-  nextDescButton.position.set(nextButtonX, descNavY, 0.01);
-  viewerUIGroup.add(nextDescButton);
-  currentX = nextButtonX - buttonWidth / 2 - padding;
+  const panelHeight = descPanel.geometry.parameters.height;
+  const panelWidth = descPanel.geometry.parameters.width;
 
-  const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
-  const pageIndicator = createTitleLabel(
-    pageIndicatorText,
-    indicatorWidth,
-    0.15
-  );
-  pageIndicator.material.depthWrite = false;
-  const indicatorX = currentX - indicatorWidth / 2;
-  pageIndicator.position.set(indicatorX, descNavY, 0.02);
-  viewerUIGroup.add(pageIndicator);
-  currentX = indicatorX - indicatorWidth / 2 - padding;
+  const descPanelYOffset = titleY - titleHeight / 2 - panelHeight / 2 - 0.05;
 
-  const isFirstPage = pageIndex <= 0;
-  const prevDescButton = createButton(
-    "<",
-    isFirstPage ? "locked" : "prev_credit",
-    buttonWidth,
-    0.2,
-    isFirstPage ? "#4A5568" : BG_COLOR
-  );
-  if (isFirstPage) prevDescButton.userData.colors = null;
-  const prevButtonX = currentX - buttonWidth / 2;
-  prevDescButton.position.set(prevButtonX, descNavY, 0.01);
-  viewerUIGroup.add(prevDescButton);
+  descPanel.position.set(0, descPanelYOffset, 0.01);
+  descPanel.renderOrder = 1;
+  viewerUIGroup.add(descPanel);
 
-  const navButtonWidth = 2.0;
-  const navButtonHeight = 0.25;
-  const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
-  const backButton = createButton(
-    "Kembali ke Menu Utama",
+  const descNavY = descPanelYOffset - panelHeight / 2 - 0.12;
+  if (creditPages.length > 1) {
+    const rightEdgeX = panelWidth / 2;
+    const buttonWidth = 0.25;
+    const indicatorWidth = 0.6;
+    const padding = 0.05;
+    let currentX = rightEdgeX;
+
+    const isLastPage = pageIndex >= creditPages.length - 1;
+    const nextDescButton = createButton(
+      ">",
+      isLastPage ? "locked" : "next_credit",
+      buttonWidth,
+      0.2,
+      isLastPage ? "#4A5568" : BG_COLOR
+    );
+    if (isLastPage) nextDescButton.userData.colors = null;
+    const nextButtonX = currentX - buttonWidth / 2;
+    nextDescButton.position.set(nextButtonX, descNavY, 0.01);
+    nextDescButton.renderOrder = 1;
+    viewerUIGroup.add(nextDescButton);
+    currentX = nextButtonX - buttonWidth / 2 - padding;
+
+    const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
+    const pageIndicator = createTitleLabel(
+      pageIndicatorText,
+      indicatorWidth,
+      0.15
+    );
+    pageIndicator.material.depthWrite = false;
+    const indicatorX = currentX - indicatorWidth / 2;
+    pageIndicator.position.set(indicatorX, descNavY, 0.02);
+    pageIndicator.renderOrder = 2;
+    viewerUIGroup.add(pageIndicator);
+    currentX = indicatorX - indicatorWidth / 2 - padding;
+
+    const isFirstPage = pageIndex <= 0;
+    const prevDescButton = createButton(
+      "<",
+      isFirstPage ? "locked" : "prev_credit",
+      buttonWidth,
+      0.2,
+      isFirstPage ? "#4A5568" : BG_COLOR
+    );
+    if (isFirstPage) prevDescButton.userData.colors = null;
+    const prevButtonX = currentX - buttonWidth / 2;
+    prevDescButton.position.set(prevButtonX, descNavY, 0.01);
+    prevDescButton.renderOrder = 1;
+    viewerUIGroup.add(prevDescButton);
+  }
+
+  const exitButtonSize = 0.22;
+  const padding = 0.1;
+  const exitButton = createButton(
+    "X",
     "back_to_landing",
-    navButtonWidth,
-    navButtonHeight
+    exitButtonSize,
+    exitButtonSize,
+    "rgba(45, 55, 72, 0.7)",
+    "circle"
   );
-  backButton.position.set(0, navY, 0.01);
-  viewerUIGroup.add(backButton);
+  exitButton.position.set(
+    totalPanelWidth / 2 - padding - exitButtonSize / 2,
+    totalPanelHeight / 2 - padding - exitButtonSize / 2,
+    0.02
+  );
+  exitButton.renderOrder = 2;
+  viewerUIGroup.add(exitButton);
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
@@ -1560,7 +1583,6 @@ export function createMiniQuizPage(component) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-// --- FUNGSI INI DIUBAH ---
 export function createMiniQuizResultPage(component, isCorrect) {
   const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
@@ -1612,16 +1634,14 @@ export function createMiniQuizResultPage(component, isCorrect) {
   const navButtonWidth = 2.0;
   const navButtonHeight = 0.25;
   const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
-
-  // --- LOGIKA TEKS TOMBOL BARU ---
   const buttonText = isCorrect ? "Lanjutkan" : "Coba Lagi";
-  // --- AKHIR LOGIKA TEKS TOMBOL ---
 
   const continueButton = createButton(
-    buttonText, // Menggunakan teks yang sudah ditentukan
+    buttonText,
     "continue_after_mini_quiz",
     navButtonWidth,
-    navButtonHeight
+    navButtonHeight,
+    ACCENT_COLOR
   );
   continueButton.position.set(0, navY, 0.01);
   continueButton.renderOrder = 1;
