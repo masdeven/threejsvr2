@@ -291,6 +291,26 @@ function preloadAssets() {
   return new Promise((resolve, reject) => {
     console.log("Preloading assets...");
 
+    const tempTextureLoader = new THREE.TextureLoader(loadingManager);
+
+    // 2. Buat promise untuk memuat tekstur logo
+    const texturePromise = new Promise((res) => {
+      // Cukup panggil .load(). Three.js akan otomatis menyimpan hasilnya di cache internal.
+      // Ketika UI nanti meminta gambar yang sama, gambar akan diambil dari cache.
+      tempTextureLoader.load(
+        "assets/images/logo-kampus.png",
+        () => {
+          console.log("Logo texture preloaded and cached.");
+          res(); // Selesaikan promise setelah gambar dimuat
+        },
+        undefined,
+        (err) => {
+          console.error("Failed to preload logo texture:", err);
+          res(); // Tetap selesaikan promise agar aplikasi tidak macet jika logo gagal dimuat
+        }
+      );
+    });
+
     // --- Preload model ---
     const modelPromises = components
       .filter((c) => c.modelFile && !modelCache[c.modelFile])
@@ -343,10 +363,12 @@ function preloadAssets() {
     );
 
     // Tunggu semua model + audio selesai
-    Promise.all([...modelPromises, ...audioPromises]).then(() => {
-      console.log("All assets including audio are loaded and cached!");
-      resolve();
-    });
+    Promise.all([...modelPromises, ...audioPromises, texturePromise]).then(
+      () => {
+        console.log("All assets including audio are loaded and cached!");
+        resolve();
+      }
+    );
   });
 }
 
@@ -534,7 +556,7 @@ function changeState(newState) {
       case AppState.MINI_QUIZ_RESULT:
         controls.enabled = true;
         camera.position.set(0, 1.6, 0.5);
-        controls.target.set(-0.3, 1.6, 0);
+        controls.target.set(-0.2, 1.6, 0);
         break;
     }
   }
