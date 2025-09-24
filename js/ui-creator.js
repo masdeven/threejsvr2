@@ -51,6 +51,8 @@ function setupAvatar(model, scale, position) {
   currentAvatar = model;
   model.scale.set(scale.x, scale.y, scale.z);
   model.position.set(position.x, position.y, position.z);
+  model.rotation.y = 0.4;
+  model.userData.initialY = position.y;
   viewerUIGroup.add(model);
 
   if (avatarModel.animations && avatarModel.animations.length) {
@@ -443,9 +445,18 @@ export function toggleAvatarVisibility(visible) {
   }
 }
 
-export function updateAvatar(deltaTime) {
+export function updateAvatar(deltaTime, elapsedTime) {
   if (avatarMixer) {
     avatarMixer.update(deltaTime);
+  }
+  if (currentAvatar && currentAvatar.userData.initialY !== undefined) {
+    const hoverAmplitude = 0.04; // Seberapa tinggi/rendah gerakannya
+    const hoverSpeed = 1.5; // Seberapa cepat gerakannya
+
+    // Hitung posisi Y baru menggunakan sinus untuk gerakan naik-turun yang mulus
+    currentAvatar.position.y =
+      currentAvatar.userData.initialY +
+      Math.sin(elapsedTime * hoverSpeed) * hoverAmplitude;
   }
 }
 
@@ -533,7 +544,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
-      new THREE.Vector3(-panelWidth / 2 - 0.2, -panelHeight / 2 - 0.2, 0.05)
+      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
     );
   }
 
@@ -618,7 +629,7 @@ export function createLandingPage(playerName) {
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
-      new THREE.Vector3(-panelWidth / 2 - 0.2, -panelHeight / 2 - 0.2, 0.05)
+      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
     );
   }
 
@@ -1181,7 +1192,7 @@ export function createCompletionScreen(playerName) {
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.5, 0.5, 0.5),
-      new THREE.Vector3(-panelWidth / 2 - 0.5, -panelHeight / 2 - 0.2, 0.1)
+      new THREE.Vector3(-panelWidth / 2 - 0.5, panelHeight / 2 - 0.2, 0.1)
     );
   }
 
@@ -1558,7 +1569,7 @@ export function createQuizReportScreen(
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.5, 0.5, 0.5),
-      new THREE.Vector3(-panelWidth / 2 - 0.5, -panelHeight / 2 - 0.2, 0.1)
+      new THREE.Vector3(-panelWidth / 2 - 0.5, panelHeight / 2 - 0.2, 0.1)
     );
   }
 
@@ -1734,7 +1745,7 @@ export function createPostQuizChoiceScreen() {
   viewerUIGroup.add(learnAgainButton);
 
   const mainMenuButton = createButton(
-    "Menu Utama",
+    "Kembali ke Menu Utama",
     "back_to_landing",
     buttonWidth,
     buttonHeight,

@@ -827,7 +827,7 @@ function render() {
   if (confettiEffect) {
     confettiEffect.update(deltaTime);
   }
-  updateAvatar(deltaTime);
+  updateAvatar(deltaTime, clock.getElapsedTime());
 
   renderer.render(scene, camera);
 }
