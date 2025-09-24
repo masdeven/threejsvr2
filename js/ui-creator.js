@@ -459,6 +459,27 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
+  // --- AWAL PENAMBAHAN TOMBOL "X" ---
+  const exitButtonSize = 0.22;
+  const padding = 0.15; // Jarak dari tepi panel
+  const exitButton = createButton(
+    "X",
+    "back_to_landing", // Aksi untuk langsung ke menu utama (landing page)
+    exitButtonSize,
+    exitButtonSize,
+    "rgba(45, 55, 72, 0.7)", // Warna tombol yang subtle
+    "circle"
+  );
+  // Posisikan di sudut kanan atas panel
+  exitButton.position.set(
+    panelWidth / 2 - padding - exitButtonSize / 2,
+    panelHeight / 2 - padding - exitButtonSize / 2,
+    0.02 // Sedikit di depan panel agar tidak tumpang tindih
+  );
+  exitButton.renderOrder = 2; // Pastikan tombol render di atas panel
+  viewerUIGroup.add(exitButton);
+  // --- AKHIR PENAMBAHAN TOMBOL "X" ---
+
   const greetingTexts = [
     `Halo, ${playerName}! Senang bertemu denganmu.\nSelamat datang di aplikasi WebXR Computer Lab.`,
     "Di sini, kamu bisa menjelajahi model 3D perangkat keras komputer, mencoba mini-kuis, dan menguji pengetahuanmu di tes akhir.",
@@ -482,16 +503,14 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     primaryButtonHeight,
     ACCENT_COLOR
   );
-  // --- PERUBAHAN DI BAWAH ---
-  continueButton.position.set(0, -0.35, 0.01); // <-- Y diubah dari -0.3 menjadi -0.35
-  // --- AKHIR PERUBAHAN ---
+  continueButton.position.set(0, -0.35, 0.01);
   continueButton.visible = false;
   viewerUIGroup.add(continueButton);
 
   if (currentText) {
     const welcomeLabel = createTypingText(
       currentText,
-      3.8,
+      3.2,
       {
         baseFontSize: 32,
         vrFontScale: 1.5,
@@ -502,9 +521,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
         continueButton.userData.action = buttonAction;
       }
     );
-    // --- PERUBAHAN DI BAWAH ---
-    welcomeLabel.position.set(0, 0.25, 0.01); // <-- Y diubah dari 0.3 menjadi 0.25
-    // --- AKHIR PERUBAHAN ---
+    welcomeLabel.position.set(0, 0.25, 0.01);
     viewerUIGroup.add(welcomeLabel);
   } else {
     continueButton.visible = true;
@@ -621,12 +638,16 @@ function createImagePanel(imageUrl, width, height) {
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -2);
+  // --- AWAL PERBAIKAN ---
+
+  // 1. Pindahkan posisi UI lebih jauh dari kamera agar cakupan pandang lebih luas
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2.5); // Nilai Z diubah dari -2
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const localCenterY = 0;
-  const radius = 3.5;
-  const angleSpan = Math.PI * 0.8;
+  // 2. Perkecil radius dan rentang sudut untuk membuat kurva lebih ramping
+  const radius = 3.2; // Nilai diubah dari 3.5
+  const angleSpan = Math.PI * 0.75; // Nilai diubah dari 0.8
   const itemsPerRow = 5;
   const rowHeight = 0.5;
   const localLookAtTarget = new THREE.Vector3(0, localCenterY, 5);
@@ -763,7 +784,7 @@ export function createViewerPage(
 
   const DESC_PANEL_FIXED_HEIGHT = 1.2;
   const currentDescription = component.description[descriptionIndex];
-  const descPanel = createTextPanel(currentDescription, 2.8, {
+  const descPanel = createTextPanel(currentDescription, 3.5, {
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
 
@@ -1292,7 +1313,6 @@ export function createCreditsScreen(creditPages, pageIndex) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-// --- FUNGSI INI DIUBAH TOTAL ---
 export function createQuizScreen(questionIndex) {
   clearUI();
 
@@ -1302,15 +1322,14 @@ export function createQuizScreen(questionIndex) {
   const currentQuestion = quizData[questionIndex];
 
   const totalPanelWidth = 4.8;
-  const totalPanelHeight = 2.0;
+  const totalPanelHeight = 2.4;
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   mainPanel.renderOrder = 0;
   viewerUIGroup.add(mainPanel);
 
   const titleHeight = 0.3;
-  const topPadding = 0.1;
-  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - 0.1;
   const titleText = `Uji Pemahaman (Soal ${questionIndex + 1}/${
     quizData.length
   })`;
@@ -1319,7 +1338,10 @@ export function createQuizScreen(questionIndex) {
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  const QUESTION_PANEL_FIXED_HEIGHT = 0.9;
+  // --- AWAL PENYESUAIAN ---
+
+  // 1. Tinggi panel soal dikurangi untuk memberi lebih banyak ruang di bawah
+  const QUESTION_PANEL_FIXED_HEIGHT = 0.8; // Diubah dari 0.9
   const questionPanel = createTextPanel(currentQuestion.question, 4.4, {
     fixedHeight: QUESTION_PANEL_FIXED_HEIGHT,
   });
@@ -1329,18 +1351,41 @@ export function createQuizScreen(questionIndex) {
   questionPanel.renderOrder = 1;
   viewerUIGroup.add(questionPanel);
 
-  const buttonHeight = 0.35;
-  const buttonY = questionPanelY - panelHeight / 2 - buttonHeight / 2 - 0.1;
+  // 2. Tombol dan jarak vertikal diperkecil
   const buttonWidth = 2.1;
-  const buttonSpacingX = 2.3;
-  const positions = [-buttonSpacingX / 2, buttonSpacingX / 2];
-  const shuffledPositions = positions.sort(() => Math.random() - 0.5);
+  const buttonHeight = 0.28; // Diubah dari 0.3
+  const gapX = 0.2;
+  const gapY = 0.15; // Diubah dari 0.2
 
-  currentQuestion.answers.forEach((answer, index) => {
-    const isCorrect = index === currentQuestion.correctAnswerIndex;
+  // Kalkulasi posisi akan otomatis menyesuaikan berdasarkan nilai baru di atas
+  const startX = -(buttonWidth + gapX) / 2;
+  const startY = questionPanelY - panelHeight / 2 - gapY - buttonHeight / 2;
+
+  // --- AKHIR PENYESUAIAN ---
+
+  const shuffledAnswers = currentQuestion.answers
+    .map((answer, index) => ({ text: answer, originalIndex: index }))
+    .sort(() => Math.random() - 0.5);
+
+  shuffledAnswers.forEach((answerData, i) => {
+    const row = Math.floor(i / 2);
+    const col = i % 2;
+
+    const isCorrect =
+      answerData.originalIndex === currentQuestion.correctAnswerIndex;
     const action = isCorrect ? "answer_correct" : "answer_incorrect";
-    const button = createButton(answer, action, buttonWidth, buttonHeight);
-    button.position.set(shuffledPositions[index], buttonY, 0.01);
+
+    const button = createButton(
+      answerData.text,
+      action,
+      buttonWidth,
+      buttonHeight
+    );
+
+    const buttonX = startX + col * (buttonWidth + gapX);
+    const buttonY = startY - row * (buttonHeight + gapY);
+
+    button.position.set(buttonX, buttonY, 0.01);
     button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
@@ -1348,8 +1393,6 @@ export function createQuizScreen(questionIndex) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
-// --- FUNGSI INI DIUBAH TOTAL ---
 export function createQuizResultScreen(isCorrect, questionIndex) {
   clearUI();
 
@@ -1438,7 +1481,11 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const geometry = new THREE.PlaneGeometry(size, size);
   return new THREE.Mesh(geometry, material);
 }
-export function createQuizReportScreen(score, hasAttempted) {
+export function createQuizReportScreen(
+  score,
+  hasAttempted,
+  isPostCompletion = false
+) {
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
@@ -1483,13 +1530,16 @@ export function createQuizReportScreen(score, hasAttempted) {
     reportBody.position.set(0, -0.6, 0.02);
     viewerUIGroup.add(reportBody);
   }
+  const exitButtonAction = isPostCompletion
+    ? "show_post_quiz_choice"
+    : "back_to_landing";
 
   const exitButtonSize = 0.25;
   const padding = 0.15;
 
   const exitButton = createButton(
     "X",
-    "back_to_landing",
+    exitButtonAction, // Gunakan variabel aksi dinamis di sini
     exitButtonSize,
     exitButtonSize,
     "rgba(45, 55, 72, 0.7)",
@@ -1646,6 +1696,54 @@ export function createMiniQuizResultPage(component, isCorrect) {
   continueButton.position.set(0, navY, 0.01);
   continueButton.renderOrder = 1;
   viewerUIGroup.add(continueButton);
+
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
+}
+export function createPostQuizChoiceScreen() {
+  clearUI();
+
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+
+  // --- PERUBAIKAN DIMULAI DI SINI ---
+
+  // 1. Tingkatkan tinggi panel agar cukup untuk semua elemen
+  const panelWidth = 4.0;
+  const panelHeight = 1.4; // Diperbesar dari 1.2
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(mainPanel);
+
+  // 2. Atur ulang posisi vertikal elemen agar rapi dan simetris
+  const titleLabel = createTitleLabel("Sesi Belajar Selesai", 3.5, 0.3);
+  titleLabel.position.set(0, 0.45, 0.01); // Digeser ke atas
+  viewerUIGroup.add(titleLabel);
+
+  const buttonWidth = 3.2;
+  const buttonHeight = 0.32;
+
+  const learnAgainButton = createButton(
+    "Kembali Belajar",
+    "back_to_menu",
+    buttonWidth,
+    buttonHeight,
+    BG_COLOR
+  );
+  learnAgainButton.position.set(0, 0.04, 0.01); // Posisi disesuaikan
+  viewerUIGroup.add(learnAgainButton);
+
+  const mainMenuButton = createButton(
+    "Menu Utama",
+    "back_to_landing",
+    buttonWidth,
+    buttonHeight,
+    ACCENT_COLOR
+  );
+  mainMenuButton.position.set(0, -0.38, 0.01); // Posisi disesuaikan
+  viewerUIGroup.add(mainMenuButton);
+
+  // --- PERUBAIKAN SELESAI ---
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);

@@ -15,6 +15,7 @@ import {
   createMiniQuizResultPage,
   createQuizReportScreen,
   createCompletionScreen,
+  createPostQuizChoiceScreen,
   createCreditsScreen,
   createModeSelectionPage,
   createAvatarGreetingPage,
@@ -81,6 +82,8 @@ const AppState = {
   QUIZ: "QUIZ",
   QUIZ_RESULT: "QUIZ_RESULT",
   QUIZ_REPORT: "QUIZ_REPORT",
+  QUIZ_POST_COMPLETION_REPORT: "QUIZ_POST_COMPLETION_REPORT",
+  POST_QUIZ_CHOICE: "POST_QUIZ_CHOICE",
   COMPLETION: "COMPLETION",
   CREDITS: "CREDITS",
 };
@@ -133,6 +136,12 @@ function refreshUI() {
       break;
     case AppState.QUIZ_REPORT:
       createQuizReportScreen(quizScore, hasAttemptedQuiz);
+      break;
+    case AppState.QUIZ_POST_COMPLETION_REPORT:
+      createQuizReportScreen(quizScore, hasAttemptedQuiz, true);
+      break;
+    case AppState.POST_QUIZ_CHOICE:
+      createPostQuizChoiceScreen();
       break;
     case AppState.COMPLETION:
       confettiEffect = createCompletionScreen(playerName);
@@ -450,7 +459,9 @@ function reloadCreditsScreen() {
   createCreditsScreen(creditsData, currentCreditIndex);
 }
 function changeState(newState) {
-  if (currentState === newState) return;
+  if (currentState === newState && newState !== AppState.VIEWER) {
+    return;
+  }
   if (currentState === AppState.COMPLETION) {
     stopConfettiEffect();
     if (completionSound && completionSound.isPlaying) {
@@ -462,15 +473,17 @@ function changeState(newState) {
   if (newState === AppState.MODE_SELECTION) {
     isFadingInUI = true;
   }
-  const isTransitioningWithinViewer =
-    (currentState === AppState.VIEWER &&
-      (newState === AppState.MINI_QUIZ ||
-        newState === AppState.MINI_QUIZ_RESULT)) ||
-    (currentState === AppState.MINI_QUIZ &&
-      newState === AppState.MINI_QUIZ_RESULT) ||
-    (currentState === AppState.MINI_QUIZ_RESULT &&
-      newState === AppState.VIEWER);
+  const viewerContextStates = new Set([
+    AppState.VIEWER,
+    AppState.MINI_QUIZ,
+    AppState.MINI_QUIZ_RESULT,
+  ]);
 
+  // Cek apakah kita berpindah antar state dalam konteks yang sama
+  const isTransitioningWithinViewer =
+    viewerContextStates.has(currentState) && viewerContextStates.has(newState);
+
+  // Hapus model hanya jika kita keluar dari konteks viewer
   if (!isTransitioningWithinViewer) {
     unloadComponentModel();
   }
@@ -497,28 +510,31 @@ function changeState(newState) {
     toggleAvatarVisibility(false);
   }
   refreshUI();
-  if (!isDragging) {
+  if (!isDragging && !isTransitioningWithinViewer) {
     switch (newState) {
       case AppState.MODE_SELECTION:
-        controls.enabled = true;
-        camera.position.set(0, 1.6, 2);
-        controls.target.set(0, 1.6, 0);
-        break;
-
+      case AppState.AVATAR_GREETING:
+      case AppState.LANDING:
       case AppState.MENU:
+      case AppState.HELP:
       case AppState.QUIZ:
       case AppState.QUIZ_RESULT:
       case AppState.QUIZ_REPORT:
+      case AppState.QUIZ_POST_COMPLETION_REPORT:
+      case AppState.POST_QUIZ_CHOICE:
       case AppState.COMPLETION:
-      case AppState.HELP:
-      case AppState.LANDING:
-      case AppState.AVATAR_GREETING:
       case AppState.CREDITS:
+        controls.enabled = true;
+        camera.position.set(0, 1.6, 0.5);
+        controls.target.set(0, 1.6, 0);
+        break;
+
+      case AppState.VIEWER:
       case AppState.MINI_QUIZ:
       case AppState.MINI_QUIZ_RESULT:
-      case AppState.VIEWER:
         controls.enabled = true;
-        controls.target.set(0, 1.6, 0);
+        camera.position.set(0, 1.6, 0.5);
+        controls.target.set(-0.3, 1.6, 0);
         break;
     }
   }
@@ -608,10 +624,13 @@ function handleInteraction(action) {
       currentQuestionIndex++;
       if (currentQuestionIndex >= quizData.length) {
         hasAttemptedQuiz = true;
-        changeState(AppState.QUIZ_REPORT);
+        changeState(AppState.QUIZ_POST_COMPLETION_REPORT);
       } else {
         changeState(AppState.QUIZ);
       }
+      break;
+    case "show_post_quiz_choice":
+      changeState(AppState.POST_QUIZ_CHOICE);
       break;
     case "show_credits":
       currentCreditIndex = 0;
@@ -658,7 +677,8 @@ function handleInteraction(action) {
       }
       // Jika pengguna meninjau komponen lama, langsung ke komponen berikutnya.
       else if (currentComponentIndex < components.length - 1) {
-        showViewer(currentComponentIndex + 1);
+        currentComponentIndex++;
+        changeState(AppState.VIEWER);
       }
       // Fallback (seharusnya tidak terjadi dalam alur normal jika UI benar)
       else {
@@ -715,7 +735,7 @@ function handleInteraction(action) {
       isChangingComponent = true;
 
       currentComponentIndex--;
-      showViewer(currentComponentIndex);
+      changeState(AppState.VIEWER);
       setTimeout(() => {
         isChangingComponent = false;
       }, CHANGE_DEBOUNCE_TIME);
@@ -729,8 +749,10 @@ function handleInteraction(action) {
       if (action.startsWith("select_")) {
         const index = parseInt(action.split("_")[1], 10);
         if (!isNaN(index) && index >= 0 && index < components.length) {
-          showViewer(index);
-          currentState = AppState.VIEWER;
+          // 1. Atur materi mana yang akan ditampilkan
+          currentComponentIndex = index;
+          // 2. Panggil fungsi changeState agar logika kamera ikut dijalankan
+          changeState(AppState.VIEWER);
         }
       }
       break;
