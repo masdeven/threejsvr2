@@ -428,8 +428,6 @@ function playControlledSound(audioObject, path, options = {}) {
   }
 }
 
-// ... (Fungsi playOneShotSound sampai playButtonConfirmAudio tidak berubah)
-// Fungsi BARU untuk suara pendek (efek tombol)
 function playOneShotSound(path, volume = 1) {
   const buffer = audioCache[path];
   if (buffer) {
@@ -446,7 +444,7 @@ function playComponentAudio(audioFile) {
     sound.stop();
     sound.userData.path = null;
   } else {
-    playControlledSound(sound, audioFile, { volume: 1 });
+    playControlledSound(sound, audioFile, { volume: 0.5 });
     sound.userData.path = audioFile;
   }
 }

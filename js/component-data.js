@@ -11,11 +11,12 @@ export const components = [
     unlocked: true,
     quiz: [
       {
-        question: "The first computers like ENIAC used modern microprocessors.",
+        question:
+          "The era of personal computers, marked by devices like the Apple II and IBM PC, began in the 1970s.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The text states that early computers like ENIAC used thousands of vacuum tubes, not microprocessors.",
+          "The text confirms that 'The era of personal computers began in the 1970s with the emergence of the Apple II and IBM PC'.",
       },
     ],
   },
@@ -31,11 +32,11 @@ export const components = [
     quiz: [
       {
         question:
-          "According to the description, LED monitors offer higher contrast and more vivid colors than OLEDs.",
+          "A monitor functions as a visual window, displaying information and program interfaces to the user.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The text states that OLED monitors have high contrast and more vivid colors.",
+          "The description states that a monitor 'functions as a visual window' and 'displays all information, images, videos, and program interfaces'.",
       },
     ],
   },
@@ -51,11 +52,11 @@ export const components = [
     quiz: [
       {
         question:
-          "Membrane keyboards are known for providing better tactile response and durability than mechanical keyboards.",
+          "A keyboard is a primary input device used for entering text, numbers, and commands into a computer.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The description states that mechanical keyboards provide better tactile response and durability.",
+          "The text clearly identifies the keyboard as 'the main input device that allows users to enter text, numbers, and commands'.",
       },
     ],
   },
@@ -72,9 +73,9 @@ export const components = [
       {
         question: "A mouse is primarily considered an output device.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 1, // Answer is False
         explanation:
-          "The description identifies the mouse as a 'pointing device' for user interaction, which are input functions.",
+          "The description identifies the mouse as a 'pointing device' for user interaction, which is an input function, not an output function.",
       },
     ],
   },
@@ -91,9 +92,9 @@ export const components = [
       {
         question: "The motherboard is an optional component in a computer.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 1, // Answer is False
         explanation:
-          "The text states the motherboard is the main component that connects all parts and is essential for them to communicate.",
+          "The text states the motherboard is the 'main component' and is essential for other parts to communicate, making it mandatory.",
       },
     ],
   },
@@ -109,11 +110,11 @@ export const components = [
     quiz: [
       {
         question:
-          "The CPU's main role is to permanently store files like photos and documents.",
+          "The CPU acts as the 'brain' of the computer, processing instructions and performing calculations.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The text describes the CPU as the 'brain' responsible for executing instructions and calculations, not for permanent storage.",
+          "The description explicitly states that the CPU 'is the brain of the computer that is responsible for executing all instructions and calculations'.",
       },
     ],
   },
@@ -131,9 +132,9 @@ export const components = [
         question:
           "A larger RAM capacity allows a computer to store more files permanently.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 1, // Answer is False
         explanation:
-          "According to the text, a larger RAM capacity allows more programs to run simultaneously, not for permanent file storage.",
+          "According to the text, RAM is the computer's temporary workspace. Permanent file storage is the role of devices like HDDs or SSDs.",
       },
     ],
   },
@@ -149,11 +150,11 @@ export const components = [
     quiz: [
       {
         question:
-          "A GPU's only function is to display text; it cannot process 3D graphics.",
+          "Dedicated graphics cards are separate components that offer much higher performance than integrated graphics.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The description clearly states the GPU is responsible for processing and displaying images, videos, and animations.",
+          "The text distinguishes between integrated graphics and 'dedicated graphics cards, which are separate cards with much higher performance'.",
       },
     ],
   },
@@ -171,7 +172,7 @@ export const components = [
         question:
           "Ethernet cards are used for wireless connections to provide mobility.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 1, // Answer is False
         explanation:
           "The description specifies that Ethernet cards are for wired connections, while WiFi cards are for wireless ones.",
       },
@@ -188,11 +189,12 @@ export const components = [
     unlocked: false,
     quiz: [
       {
-        question: "An SSD stores data using rotating magnetic disks.",
+        question:
+          "Unlike RAM, data in a storage device remains saved even when the computer is turned off.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The text states that SSDs use flash memory chips, while HDDs use rotating magnetic disks.",
+          "The description states that 'Unlike RAM, which is temporary, data in storage remains saved even when the computer is turned off'.",
       },
     ],
   },
@@ -210,9 +212,9 @@ export const components = [
         question:
           "The main function of a printer is to convert physical documents into digital data.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 1, // Answer is False
         explanation:
-          "The description says a printer is an output device that prints digital documents into physical form, the opposite of the question.",
+          "The description says a printer is an output device that prints digital documents into physical form. A scanner performs the opposite function.",
       },
     ],
   },
@@ -228,11 +230,11 @@ export const components = [
     quiz: [
       {
         question:
-          "A flash drive requires an external power source to store data permanently.",
+          "A flash drive is a portable storage device that is practical for transferring files between computers.",
         answers: ["True", "False"],
-        correctAnswerIndex: 1,
+        correctAnswerIndex: 0, // Answer is True
         explanation:
-          "The text specifies that flash memory allows data storage without the need for electrical power.",
+          "The text describes a flash drive as a 'small portable storage device' that is 'very practical for transferring files between computers'.",
       },
     ],
   },
