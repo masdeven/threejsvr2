@@ -1,24 +1,21 @@
 export const components = [
   {
-    label: "Sejarah",
+    label: "Introduction",
     modelFile: null,
-    audioFile: "assets/audio/intro.mp3",
+    audioFile: "assets/audio/history.mp3",
     description: [
-      "Sejarah komputer dimulai dari alat hitung sederhana seperti abakus ribuan tahun lalu, kemudian berkembang menjadi mesin hitung mekanik pada abad ke-17. Komputer elektronik pertama seperti ENIAC pada tahun 1946 berukuran sebesar ruangan dan menggunakan ribuan tabung vakum. Perkembangan transistor pada tahun 1950-an memungkinkan komputer menjadi lebih kecil dan efisien, diikuti dengan integrated circuit pada tahun 1960-an yang semakin memperkecil ukuran komputer.",
-
-      "Era komputer personal dimulai pada tahun 1970-an dengan kemunculan Apple II dan IBM PC yang membuat komputer dapat digunakan di rumah dan kantor kecil. Tahun 1980-an hingga 1990-an menjadi era perkembangan pesat dengan munculnya sistem operasi Windows, mouse, dan antarmuka grafis yang user-friendly. Internet mulai populer pada tahun 1990-an, mengubah cara manusia berkomunikasi dan mengakses informasi.",
-
-      "Abad ke-21 membawa revolusi komputer mobile dengan laptop yang semakin tipis dan ringan, smartphone yang merupakan komputer saku, serta tablet yang menggabungkan portabilitas dengan layar sentuh. Teknologi cloud computing memungkinkan akses data dari mana saja, while artificial intelligence dan machine learning membuka era baru komputasi cerdas yang dapat belajar dan beradaptasi. Saat ini, komputer quantum sedang dikembangkan untuk mengatasi masalah komputasi yang sangat kompleks.",
+      "The history of computers began with simple counting tools such as the abacus thousands of years ago, then developed into mechanical calculating machines in the 17th century. The first electronic computers, such as ENIAC in 1946, were room-sized and used thousands of vacuum tubes. The development of transistors in the 1950s allowed computers to become smaller and more efficient, followed by integrated circuits in the 1960s that further reduced computer size.",
+      "The era of personal computers began in the 1970s with the emergence of the Apple II and IBM PC, making computers usable in homes and small offices. The 1980s to 1990s became a period of rapid development with the arrival of Windows operating systems, the mouse, and user-friendly graphical interfaces. The Internet became popular in the 1990s, changing the way humans communicate and access information.",
+      "The 21st century brought the revolution of mobile computers with increasingly thin and light laptops, smartphones as pocket computers, and tablets combining portability with touchscreens. Cloud computing technology enables data access from anywhere, while artificial intelligence and machine learning open a new era of intelligent computing that can learn and adapt. Today, quantum computers are being developed to solve extremely complex computational problems.",
     ],
     unlocked: true,
     quiz: [
       {
-        question:
-          "Komputer pertama seperti ENIAC menggunakan mikroprosesor modern.",
-        answers: ["Benar", "Salah"],
+        question: "The first computers like ENIAC used modern microprocessors.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "ENIAC menggunakan tabung vakum, bukan mikroprosesor yang baru ditemukan pada 1970-an.",
+          "The text states that early computers like ENIAC used thousands of vacuum tubes, not microprocessors.",
       },
     ],
   },
@@ -27,18 +24,18 @@ export const components = [
     modelFile: "assets/models/monitor.glb",
     audioFile: "assets/audio/monitor.mp3",
     description: [
-      "Monitor adalah layar tampilan komputer yang berfungsi sebagai jendela visual antara pengguna dan sistem komputer. Perangkat ini menampilkan semua informasi, gambar, video, dan antarmuka program yang sedang berjalan di komputer. Tanpa monitor, kita tidak dapat melihat apa yang sedang dikerjakan oleh komputer.",
-
-      "Terdapat beberapa jenis monitor berdasarkan teknologinya, yaitu monitor LED yang paling umum digunakan saat ini karena hemat energi dan kualitas gambar yang baik, monitor OLED dengan kontras tinggi dan warna yang lebih hidup, serta monitor gaming dengan refresh rate tinggi untuk pengalaman bermain game yang lebih lancar. Monitor juga tersedia dalam berbagai ukuran mulai dari 15 inci hingga 32 inci atau lebih besar.",
+      "A monitor is the computer’s display screen that functions as a visual window between the user and the computer system. This device displays all information, images, videos, and program interfaces running on the computer. Without a monitor, we cannot see what the computer is working on.",
+      "There are several types of monitors based on their technology, such as LED monitors which are most commonly used today because they are energy-efficient and provide good image quality, OLED monitors with high contrast and more vivid colors, and gaming monitors with high refresh rates for smoother gaming experiences. Monitors are also available in various sizes ranging from 15 inches to 32 inches or larger.",
     ],
     unlocked: false,
     quiz: [
       {
-        question: "Teknologi monitor pertama adalah Layar Kristal Cair (LCD).",
-        answers: ["Benar", "Salah"],
+        question:
+          "According to the description, LED monitors offer higher contrast and more vivid colors than OLEDs.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "Teknologi monitor pertama adalah tabung sinar katoda (CRT); LCD baru muncul kemudian.",
+          "The text states that OLED monitors have high contrast and more vivid colors.",
       },
     ],
   },
@@ -47,18 +44,18 @@ export const components = [
     modelFile: "assets/models/keyboard.glb",
     audioFile: "assets/audio/keyboard.mp3",
     description: [
-      "Keyboard adalah perangkat input utama yang memungkinkan pengguna untuk memasukkan teks, angka, dan perintah ke dalam komputer. Setiap tombol pada keyboard mewakili karakter atau fungsi tertentu yang akan dikirim ke komputer saat ditekan. Keyboard modern umumnya memiliki 104 tombol standar termasuk huruf, angka, simbol, dan tombol fungsi khusus.",
-
-      "Ada berbagai jenis keyboard yang tersedia, mulai dari keyboard membran yang menggunakan lapisan fleksibel dan lebih terjangkau, keyboard mekanik yang memberikan respons taktil lebih baik dan tahan lama, hingga keyboard wireless yang menggunakan koneksi Bluetooth atau USB receiver. Beberapa keyboard khusus juga dilengkapi dengan lampu latar atau tombol makro untuk kebutuhan gaming dan produktivitas.",
+      "A keyboard is the main input device that allows users to enter text, numbers, and commands into the computer. Each key on the keyboard represents a specific character or function that is sent to the computer when pressed. Modern keyboards generally have 104 standard keys including letters, numbers, symbols, and special function keys.",
+      "There are various types of keyboards available, from membrane keyboards that use a flexible layer and are more affordable, mechanical keyboards that provide better tactile response and durability, to wireless keyboards that use Bluetooth or a USB receiver. Some special keyboards are also equipped with backlighting or macro keys for gaming and productivity needs.",
     ],
     unlocked: false,
     quiz: [
       {
-        question: "Inspirasi keyboard modern berasal dari mesin ketik.",
-        answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        question:
+          "Membrane keyboards are known for providing better tactile response and durability than mechanical keyboards.",
+        answers: ["True", "False"],
+        correctAnswerIndex: 1,
         explanation:
-          "Keyboard modern terinspirasi dari mesin ketik mekanik abad ke-19.",
+          "The description states that mechanical keyboards provide better tactile response and durability.",
       },
     ],
   },
@@ -67,19 +64,17 @@ export const components = [
     modelFile: "assets/models/mouse.glb",
     audioFile: "assets/audio/mouse.mp3",
     description: [
-      "Mouse adalah perangkat penunjuk yang memungkinkan pengguna untuk mengontrol kursor di layar komputer dan berinteraksi dengan elemen-elemen visual seperti ikon, menu, dan tombol. Mouse bekerja dengan mendeteksi gerakan dan mengonversinya menjadi pergerakan kursor di layar. Perangkat ini memiliki tombol kiri dan kanan untuk klik, serta scroll wheel untuk navigasi halaman.",
-
-      "Berdasarkan teknologi deteksinya, terdapat mouse optik yang menggunakan sensor LED dan dapat digunakan di hampir semua permukaan, mouse laser yang lebih akurat dan sensitif, dan mouse gaming dengan DPI tinggi untuk pergerakan yang presisi. Mouse juga tersedia dalam versi kabel dan wireless, dengan ergonomi yang disesuaikan untuk kenyamanan penggunaan jangka panjang.",
+      "A mouse is a pointing device that allows the user to control the cursor on the computer screen and interact with visual elements such as icons, menus, and buttons. The mouse works by detecting movement and converting it into cursor movement on the screen. This device has left and right buttons for clicking, as well as a scroll wheel for page navigation.",
+      "Based on detection technology, there are optical mice that use LED sensors and can be used on almost any surface, laser mice that are more accurate and sensitive, and gaming mice with high DPI for precise movement. Mice are also available in wired and wireless versions, with ergonomics designed for long-term comfort.",
     ],
     unlocked: false,
     quiz: [
       {
-        question:
-          "Mouse pertama kali ditemukan pada tahun 1964 oleh Douglas Engelbart.",
-        answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+        question: "A mouse is primarily considered an output device.",
+        answers: ["True", "False"],
+        correctAnswerIndex: 1,
         explanation:
-          "Mouse pertama diciptakan Douglas Engelbart pada 1964, awalnya berbahan kayu.",
+          "The description identifies the mouse as a 'pointing device' for user interaction, which are input functions.",
       },
     ],
   },
@@ -88,18 +83,17 @@ export const components = [
     modelFile: "assets/models/motherboard.glb",
     audioFile: "assets/audio/motherboard.mp3",
     description: [
-      'Motherboard atau papan induk adalah komponen utama yang menghubungkan semua bagian komputer menjadi satu sistem yang utuh. Seperti namanya, motherboard berfungsi sebagai "ibu" yang menyediakan jalur komunikasi dan daya listrik untuk semua komponen lainnya seperti prosesor, RAM, kartu grafis, dan perangkat penyimpanan. Tanpa motherboard, komponen-komponen ini tidak dapat saling berkomunikasi.',
-
-      "Motherboard hadir dalam berbagai ukuran atau form factor, mulai dari ATX yang berukuran besar dan cocok untuk komputer desktop dengan banyak slot ekspansi, Micro-ATX yang lebih kompak namun tetap memiliki fitur lengkap, hingga Mini-ITX yang sangat kecil untuk build PC yang hemat ruang. Setiap motherboard memiliki socket prosesor tertentu, slot RAM, port input-output, dan chipset yang menentukan kompatibilitas dengan komponen lainnya.",
+      "The motherboard is the main component that connects all parts of the computer into one complete system. As the name suggests, the motherboard functions as the “mother” that provides communication pathways and electrical power for all other components such as the processor, RAM, graphics card, and storage devices. Without a motherboard, these components cannot communicate with each other.",
+      "Motherboards come in various sizes or form factors, from large ATX boards suitable for desktop computers with many expansion slots, Micro-ATX which is more compact but still feature-rich, to Mini-ITX which is very small for space-saving PC builds. Each motherboard has a specific processor socket, RAM slots, input-output ports, and a chipset that determines compatibility with other components.",
     ],
     unlocked: false,
     quiz: [
       {
-        question: "Motherboard adalah komponen opsional dalam sebuah komputer.",
-        answers: ["Benar", "Salah"],
+        question: "The motherboard is an optional component in a computer.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "Motherboard wajib ada untuk menghubungkan semua komponen penting komputer.",
+          "The text states the motherboard is the main component that connects all parts and is essential for them to communicate.",
       },
     ],
   },
@@ -108,102 +102,97 @@ export const components = [
     modelFile: "assets/models/cpu.glb",
     audioFile: "assets/audio/cpu.mp3",
     description: [
-      "CPU atau prosesor adalah otak dari komputer yang bertugas menjalankan semua instruksi dan perhitungan yang dibutuhkan oleh sistem dan aplikasi. Setiap kali Anda membuka program, mengetik, atau melakukan aktivitas apapun di komputer, CPU bekerja memproses perintah-perintah tersebut dengan kecepatan yang sangat tinggi. Kinerja CPU sangat menentukan seberapa cepat komputer dapat menyelesaikan tugasnya.",
-
-      "CPU modern hadir dalam berbagai konfigurasi core, mulai dari dual-core untuk kebutuhan dasar, quad-core untuk multitasking yang lancar, hingga 8, 16, atau bahkan 32 core untuk keperluan profesional seperti editing video dan rendering. Dua produsen utama CPU adalah Intel dengan seri Core i3, i5, i7, dan i9, serta AMD dengan seri Ryzen 3, 5, 7, dan 9. Semakin tinggi angkanya, semakin kuat performa yang ditawarkan.",
+      "The CPU or processor is the brain of the computer that is responsible for executing all instructions and calculations required by the system and applications. Every time you open a program, type, or perform any activity on the computer, the CPU processes these commands at very high speed. CPU performance greatly determines how fast the computer can complete tasks.",
+      "Modern CPUs come in various core configurations, ranging from dual-core for basic needs, quad-core for smooth multitasking, to 8, 16, or even 32 cores for professional tasks such as video editing and rendering. The two main CPU manufacturers are Intel with its Core i3, i5, i7, and i9 series, and AMD with its Ryzen 3, 5, 7, and 9 series. The higher the number, the more powerful the performance offered.",
     ],
     unlocked: false,
     quiz: [
       {
         question:
-          "Intel 4004 adalah mikroprosesor pertama di dunia yang dirilis pada tahun 1971.",
-        answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
-        explanation:
-          "Intel 4004 adalah mikroprosesor pertama yang dirilis tahun 1971.",
-      },
-    ],
-  },
-  {
-    label: "Memori (RAM)",
-    modelFile: "assets/models/ram.glb",
-    audioFile: "assets/audio/ram.mp3",
-    description: [
-      "Memory atau memori adalah tempat penyimpanan data sementara yang digunakan komputer untuk menjalankan program dan sistem operasi. RAM atau Random Access Memory berfungsi sebagai ruang kerja komputer, menyimpan data yang sedang aktif digunakan agar dapat diakses dengan cepat oleh prosesor. Semakin besar kapasitas RAM, semakin banyak program yang dapat berjalan bersamaan tanpa membuat komputer lambat.",
-
-      "ROM atau Read-Only Memory adalah jenis memori permanen yang menyimpan instruksi dasar untuk menghidupkan komputer, seperti BIOS atau UEFI. RAM tersedia dalam berbagai kapasitas mulai dari 4GB untuk kebutuhan dasar, 8GB untuk penggunaan normal, hingga 16GB atau 32GB untuk kebutuhan profesional. RAM juga memiliki kecepatan yang berbeda, seperti DDR4 dan DDR5 yang lebih baru dengan performa lebih baik.",
-    ],
-    unlocked: false,
-    quiz: [
-      {
-        question:
-          "Data yang tersimpan di RAM akan tetap ada meskipun komputer dimatikan.",
-        answers: ["Benar", "Salah"],
+          "The CPU's main role is to permanently store files like photos and documents.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "RAM bersifat volatil, sehingga data hilang tanpa aliran listrik.",
+          "The text describes the CPU as the 'brain' responsible for executing instructions and calculations, not for permanent storage.",
       },
     ],
   },
   {
-    label: "Kartu Grafis (GPU)",
+    label: "Memory (RAM)",
+    modelFile: "assets/models/ram.glb",
+    audioFile: "assets/audio/memory.mp3",
+    description: [
+      "Memory is a storage area used by the computer to run programs and the operating system. RAM or Random Access Memory serves as the computer’s workspace, storing data that is actively in use so it can be quickly accessed by the processor. The larger the RAM capacity, the more programs can run simultaneously without slowing the computer down.",
+      "ROM or Read-Only Memory is a permanent type of memory that stores basic instructions for starting the computer, such as the BIOS or UEFI. RAM is available in various capacities starting from 4GB for basic needs, 8GB for normal use, up to 16GB or 32GB for professional requirements. RAM also comes in different speeds, such as DDR4 and the newer DDR5 with better performance.",
+    ],
+    unlocked: false,
+    quiz: [
+      {
+        question:
+          "A larger RAM capacity allows a computer to store more files permanently.",
+        answers: ["True", "False"],
+        correctAnswerIndex: 1,
+        explanation:
+          "According to the text, a larger RAM capacity allows more programs to run simultaneously, not for permanent file storage.",
+      },
+    ],
+  },
+  {
+    label: "Graphics Card (GPU)",
     modelFile: "assets/models/gpu.glb",
     audioFile: "assets/audio/gpu.mp3",
     description: [
-      "GPU atau kartu grafis adalah komponen yang bertanggung jawab untuk memproses dan menampilkan gambar, video, animasi, dan efek visual di layar komputer. Berbeda dengan CPU yang dirancang untuk pemrosesan umum, GPU memiliki ribuan core kecil yang bekerja secara paralel untuk menangani perhitungan grafis yang kompleks dengan sangat efisien. GPU sangat penting untuk gaming, desain grafis, editing video, dan aplikasi yang membutuhkan visualisasi tinggi.",
-
-      "Terdapat dua jenis GPU yaitu integrated graphics yang sudah tertanam dalam prosesor dan cocok untuk kebutuhan dasar, serta dedicated graphics card yang merupakan kartu terpisah dengan performa jauh lebih tinggi. GPU dedicated diproduksi oleh NVIDIA dengan seri GeForce RTX dan GTX, serta AMD dengan seri Radeon RX. GPU modern juga mendukung teknologi ray tracing untuk pencahayaan realistis dan DLSS untuk meningkatkan frame rate dalam gaming.",
+      "The GPU or graphics card is the component responsible for processing and displaying images, videos, animations, and visual effects on the computer screen. Unlike the CPU, which is designed for general processing, the GPU has thousands of small cores that work in parallel to handle complex graphic calculations efficiently. The GPU is essential for gaming, graphic design, video editing, and applications that require high visualization.",
+      "There are two types of GPUs: integrated graphics, which are built into the processor and suitable for basic needs, and dedicated graphics cards, which are separate cards with much higher performance. Dedicated GPUs are produced by NVIDIA with its GeForce RTX and GTX series, and AMD with its Radeon RX series. Modern GPUs also support ray tracing technology for realistic lighting and DLSS to increase frame rates in gaming.",
     ],
     unlocked: false,
     quiz: [
       {
         question:
-          "GPU hanya berfungsi untuk menampilkan teks dan tidak bisa memproses grafis 3D.",
-        answers: ["Benar", "Salah"],
+          "A GPU's only function is to display text; it cannot process 3D graphics.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
-        explanation: "GPU merender grafis 2D dan 3D dengan cepat dan efisien.",
+        explanation:
+          "The description clearly states the GPU is responsible for processing and displaying images, videos, and animations.",
       },
     ],
   },
   {
-    label: "Kartu Jaringan (NIC)",
+    label: "Network Card (NIC)",
     modelFile: "assets/models/kartu_jaringan.glb",
-    audioFile: "assets/audio/kartu_jaringan.mp3",
+    audioFile: "assets/audio/network_card.mp3",
     description: [
-      "Kartu jaringan atau Network Interface Card adalah komponen yang memungkinkan komputer untuk terhubung ke jaringan internet atau jaringan lokal. Perangkat ini berfungsi sebagai jembatan komunikasi antara komputer dengan router, modem, atau perangkat jaringan lainnya. Kartu jaringan mengonversi data digital menjadi sinyal yang dapat dikirim melalui kabel atau gelombang radio untuk koneksi wireless.",
-
-      "Kartu jaringan tersedia dalam dua jenis utama, yaitu Ethernet card untuk koneksi kabel dengan kecepatan stabil dan latensi rendah, serta WiFi card untuk koneksi nirkabel yang memberikan fleksibilitas mobilitas. Kecepatan kartu jaringan bervariasi mulai dari 100 Mbps untuk kebutuhan dasar, 1 Gbps untuk penggunaan rumahan, hingga 10 Gbps untuk server dan kebutuhan enterprise. Sebagian besar motherboard modern sudah memiliki kartu jaringan terintegrasi.",
+      "A network card or Network Interface Card is a component that allows the computer to connect to the internet or a local network. This device acts as a communication bridge between the computer and a router, modem, or other network devices. The network card converts digital data into signals that can be transmitted via cable or radio waves for wireless connections.",
+      "Network cards are available in two main types: Ethernet cards for wired connections with stable speed and low latency, and WiFi cards for wireless connections that provide mobility flexibility. Network card speeds range from 100 Mbps for basic needs, 1 Gbps for home use, up to 10 Gbps for servers and enterprise needs. Most modern motherboards already have an integrated network card.",
     ],
     unlocked: false,
     quiz: [
       {
         question:
-          "Setiap kartu jaringan memiliki alamat fisik unik yang disebut MAC address.",
-        answers: ["Benar", "Salah"],
-        correctAnswerIndex: 0,
+          "Ethernet cards are used for wireless connections to provide mobility.",
+        answers: ["True", "False"],
+        correctAnswerIndex: 1,
         explanation:
-          "MAC address adalah identitas unik kartu jaringan untuk komunikasi data.",
+          "The description specifies that Ethernet cards are for wired connections, while WiFi cards are for wireless ones.",
       },
     ],
   },
   {
-    label: "Storage (HDD/SSD)",
+    label: "Storage",
     modelFile: "assets/models/storage.glb",
     audioFile: "assets/audio/storage.mp3",
     description: [
-      "Storage atau perangkat penyimpanan adalah tempat menyimpan semua data, file, program, dan sistem operasi secara permanen di komputer. Berbeda dengan RAM yang bersifat sementara, data di storage akan tetap tersimpan meskipun komputer dimatikan. Storage berperan vital dalam menyimpan foto, video, dokumen, game, aplikasi, dan semua file digital yang Anda miliki.",
-
-      "Terdapat dua jenis storage utama yaitu HDD atau Hard Disk Drive yang menggunakan piringan magnetik berputar dengan kapasitas besar dan harga terjangkau, serta SSD atau Solid State Drive yang menggunakan chip flash memory dengan kecepatan baca-tulis jauh lebih cepat namun harga lebih mahal. Storage tersedia dalam berbagai kapasitas mulai dari 128GB hingga beberapa terabyte, dengan interface SATA untuk HDD tradisional dan NVMe untuk SSD modern yang super cepat.",
+      "Storage is the device that permanently stores all data, files, programs, and the operating system on the computer. Unlike RAM, which is temporary, data in storage remains saved even when the computer is turned off. Storage plays a vital role in keeping photos, videos, documents, games, applications, and all your digital files.",
+      "There are two main types of storage: HDD or Hard Disk Drive, which uses rotating magnetic disks with large capacity and affordable prices, and SSD or Solid State Drive, which uses flash memory chips with much faster read-write speeds but is more expensive. Storage is available in various capacities from 128GB to several terabytes, with SATA interfaces for traditional HDDs and NVMe for modern SSDs that are super fast.",
     ],
     unlocked: false,
     quiz: [
       {
-        question:
-          "SSD menyimpan data menggunakan piringan magnetik yang berputar.",
-        answers: ["Benar", "Salah"],
+        question: "An SSD stores data using rotating magnetic disks.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "SSD memakai memori flash tanpa bagian bergerak; HDD yang memakai piringan magnetik.",
+          "The text states that SSDs use flash memory chips, while HDDs use rotating magnetic disks.",
       },
     ],
   },
@@ -212,40 +201,38 @@ export const components = [
     modelFile: "assets/models/printer.glb",
     audioFile: "assets/audio/printer.mp3",
     description: [
-      "Printer adalah perangkat output yang berfungsi untuk mencetak dokumen digital menjadi bentuk fisik di atas kertas atau media lainnya. Printer mengubah file teks, gambar, atau dokumen yang ada di komputer menjadi hasil cetakan yang dapat dipegang dan dibaca secara langsung. Perangkat ini sangat penting untuk kebutuhan kantor, sekolah, dan rumah tangga dalam menghasilkan dokumen fisik.",
-
-      "Berdasarkan teknologi pencetakannya, terdapat printer inkjet yang menggunakan tinta cair dan cocok untuk mencetak foto dengan kualitas tinggi namun biaya operasional lebih mahal, printer laser yang menggunakan toner bubuk dengan kecepatan cetak tinggi dan cocok untuk dokumen teks dalam volume besar, serta printer dot matrix yang masih digunakan untuk dokumen resmi karena dapat mencetak dengan tekanan. Printer juga tersedia dalam versi monochrome hitam-putih atau color untuk kebutuhan cetak berwarna.",
+      "A printer is an output device that functions to print digital documents into physical form on paper or other media. The printer converts text, images, or documents from the computer into printed results that can be held and read directly. This device is very important for office, school, and household needs in producing physical documents.",
+      "Based on printing technology, there are inkjet printers that use liquid ink and are suitable for printing high-quality photos but have higher operating costs, laser printers that use powdered toner with high print speeds and are ideal for large-volume text documents, and dot matrix printers that are still used for official documents because they can print with pressure. Printers are also available in monochrome black-and-white or color versions for color printing needs.",
     ],
     unlocked: false,
     quiz: [
       {
         question:
-          "Fungsi utama printer adalah mengubah dokumen fisik menjadi data digital.",
-        answers: ["Benar", "Salah"],
+          "The main function of a printer is to convert physical documents into digital data.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "Printer mengubah data digital menjadi salinan fisik, sedangkan scanner fungsi sebaliknya.",
+          "The description says a printer is an output device that prints digital documents into physical form, the opposite of the question.",
       },
     ],
   },
   {
-    label: "Flashdisk",
+    label: "Flashdrive",
     modelFile: "assets/models/flashdisk.glb",
-    audioFile: "assets/audio/flashdisk.mp3",
+    audioFile: "assets/audio/flashdrive.mp3",
     description: [
-      "Flashdisk atau USB flash drive adalah perangkat penyimpanan portabel berukuran kecil yang dapat dengan mudah dibawa kemana-mana. Perangkat ini menggunakan teknologi flash memory yang memungkinkan penyimpanan data tanpa memerlukan daya listrik untuk mempertahankan data. Flashdisk sangat praktis untuk memindahkan file antar komputer, membuat backup data penting, atau menyimpan file sementara.",
-
-      "Flashdisk tersedia dalam berbagai kapasitas mulai dari 8GB untuk kebutuhan dasar hingga 1TB untuk penyimpanan besar, dengan interface USB 2.0, USB 3.0, hingga USB 3.2 dan USB-C yang lebih cepat dalam transfer data. Kecepatan transfer flashdisk bervariasi dari 10 MB/s hingga lebih dari 200 MB/s tergantung teknologi yang digunakan. Beberapa flashdisk dilengkapi dengan enkripsi dan password untuk keamanan data.",
+      "A flash drive or USB flash drive is a small portable storage device that can be easily carried anywhere. This device uses flash memory technology, which allows data storage without the need for electrical power to retain data. Flash drives are very practical for transferring files between computers, backing up important data, or storing temporary files.",
+      "Flash drives are available in various capacities starting from 8GB for basic needs up to 1TB for large storage, with USB 2.0, USB 3.0, USB 3.2, and USB-C interfaces for faster data transfer. Flash drive transfer speeds vary from 10 MB/s to over 200 MB/s depending on the technology used. Some flash drives are equipped with encryption and passwords for data security.",
     ],
     unlocked: false,
     quiz: [
       {
         question:
-          "Flashdisk memerlukan daya listrik eksternal untuk menyimpan data secara permanen.",
-        answers: ["Benar", "Salah"],
+          "A flash drive requires an external power source to store data permanently.",
+        answers: ["True", "False"],
         correctAnswerIndex: 1,
         explanation:
-          "Flashdisk menggunakan memori flash non-volatil yang menyimpan data tanpa perlu daya listrik.",
+          "The text specifies that flash memory allows data storage without the need for electrical power.",
       },
     ],
   },

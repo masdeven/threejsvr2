@@ -25,7 +25,40 @@ const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 
-// ... (kode dari `preloadAvatar` sampai `createMenuPage` tidak berubah)
+const VIEWER_UI_POSITION = new THREE.Vector3(-2.5, 1.6, -4); // Z diubah dari -3 ke -3.5
+const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
+
+export const GREETING_DATA = (playerName) => [
+  {
+    text: `Hello, I'm Aria! It's great to meet you.\nWelcome to the WebXR Computer Lab application.`,
+    audioFile: "assets/audio/greetings/greeting_0.mp3",
+  },
+  {
+    text: "Here, you can explore 3D models of computer hardware, try mini-quizzes, and test your knowledge in the final test.",
+    audioFile: "assets/audio/greetings/greeting_1.mp3",
+  },
+  {
+    text: "Follow the material step-by-step. Each section includes a mini-quiz to test your knowledge before unlocking the next one.",
+    audioFile: "assets/audio/greetings/greeting_2.mp3",
+  },
+  {
+    text: "Once you've finished all the topics, head to the 'Select Topic' menu to take the final test and evaluate your overall understanding.",
+    audioFile: "assets/audio/greetings/greeting_3.mp3",
+  },
+  {
+    text: "After taking the final test, you can view your learning report in the 'Learning Report' menu to see your achievements and progress.",
+    audioFile: "assets/audio/greetings/greeting_4.mp3",
+  },
+  {
+    text: "Oh, and don't forget! You can spin the 3D models around by hand to check out all the details. 😄",
+    audioFile: "assets/audio/greetings/greeting_5.mp3",
+  },
+  {
+    text: "Happy learning, and hope you have fun!",
+    audioFile: "assets/audio/greetings/greeting_6.mp3",
+  },
+];
+
 export function preloadAvatar() {
   return new Promise((resolve, reject) => {
     if (avatarModel) {
@@ -491,24 +524,17 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.add(exitButton);
   // --- AKHIR PENAMBAHAN TOMBOL "X" ---
 
-  const greetingTexts = [
-    `Halo, ${playerName}! Senang bertemu denganmu.\nSelamat datang di aplikasi WebXR Computer Lab.`,
-    "Di sini, kamu bisa menjelajahi model 3D perangkat keras komputer, mencoba mini-kuis, dan menguji pengetahuanmu di tes akhir.",
-    "Materi disusun secara berurutan, dan di setiap bagian kamu akan menemukan mini-kuis untuk menguji pemahaman sebelum melanjutkan ke materi berikutnya.",
-    "Setelah menyelesaikan semua materi, kamu dapat mengerjakan tes akhir melalui menu 'Pilih Materi' untuk mengukur pemahamanmu secara keseluruhan.",
-    "Setelah tes akhir, cek laporan belajarmu di menu 'Laporan Belajar' untuk melihat pencapaian dan kemajuanmu!",
-    "Oh iyaaa, jangan lupa! Kamu bisa memutar model 3D secara manual untuk mengeksplor setiap detailnya. 😄",
-    "Selamat belajar dan semoga menyenangkan!",
-  ];
+  const greetingTexts = GREETING_DATA(playerName);
+  const currentGreeting = greetingTexts[greetingIndex];
+  if (!currentGreeting) return;
 
-  const currentText = greetingTexts[greetingIndex];
   const isLastGreeting = greetingIndex >= greetingTexts.length - 1;
   const buttonAction = isLastGreeting ? "continue_to_landing" : "next_greeting";
 
   const primaryButtonWidth = 2.8;
   const primaryButtonHeight = 0.32;
   const continueButton = createButton(
-    isLastGreeting ? "Mulai Belajar" : "Lanjutkan",
+    isLastGreeting ? "Start Learning" : "Continue",
     null,
     primaryButtonWidth,
     primaryButtonHeight,
@@ -518,9 +544,9 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   continueButton.visible = false;
   viewerUIGroup.add(continueButton);
 
-  if (currentText) {
+  if (currentGreeting.text) {
     const welcomeLabel = createTypingText(
-      currentText,
+      currentGreeting.text,
       3.2,
       {
         baseFontSize: 32,
@@ -579,7 +605,7 @@ export function createLandingPage(playerName) {
   viewerUIGroup.add(logoPanel);
 
   if (playerName) {
-    const welcomeText = `Pilih Aktivitasmu, ${playerName}`;
+    const welcomeText = `Select Activity, ${playerName}`;
     const welcomeLabel = createTitleLabel(welcomeText, 3.8, 0.35);
     welcomeLabel.position.set(0, 0.45, 0.01);
     viewerUIGroup.add(welcomeLabel);
@@ -591,8 +617,8 @@ export function createLandingPage(playerName) {
   const primaryStartY = 0.1;
 
   const primaryButtons = [
-    { text: "Mulai Belajar", action: "start_learning", color: ACCENT_COLOR },
-    { text: "Laporan Belajar", action: "show_quiz_report", color: BG_COLOR },
+    { text: "Start Learning", action: "start_learning", color: ACCENT_COLOR },
+    { text: "Learning Report", action: "show_quiz_report", color: BG_COLOR },
   ];
 
   primaryButtons.forEach((btn, index) => {
@@ -663,10 +689,10 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const rowHeight = 0.5;
   const localLookAtTarget = new THREE.Vector3(0, localCenterY, 5);
 
-  const titleY = localCenterY + 0.9;
-  const titleZ = -(radius - 1);
+  const titleY = localCenterY + 0.8;
+  const titleZ = -(radius - 2);
 
-  const titleBgWidth = 4.2;
+  const titleBgWidth = 3;
   const titleBgHeight = 0.45;
   const titleBackground = createUIPanel(
     titleBgWidth,
@@ -679,7 +705,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   titleBackground.lookAt(localLookAtTarget);
   viewerUIGroup.add(titleBackground);
 
-  const titleLabel = createTitleLabel("Pilih Materi", 4.0, 0.35);
+  const titleLabel = createTitleLabel("Select Topic", 4.0, 0.35);
   titleLabel.position.set(0, titleY, titleZ + 0.01);
   titleLabel.lookAt(localLookAtTarget);
   viewerUIGroup.add(titleLabel);
@@ -693,7 +719,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 
     const angle = startAngle + col * angleStep;
     const isUnlocked = comp.unlocked;
-    const buttonLabel = isUnlocked ? comp.label : "🔒 Terkunci";
+    const buttonLabel = isUnlocked ? comp.label : "🔒 Locked";
     const buttonColor = isUnlocked ? BG_COLOR : "#4A5568";
     const button = createButton(
       buttonLabel,
@@ -719,22 +745,22 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const actionZ = -(radius - 1.5);
   const actionSpacingX = 2.4;
 
-  const exitButton = createButton("Menu Utama", "back_to_landing", 2.2, 0.3);
+  const exitButton = createButton("Main Menu", "back_to_landing", 2.2, 0.3);
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(localLookAtTarget);
   viewerUIGroup.add(exitButton);
 
   let quizButtonLabel, quizButtonAction, quizButtonColor;
   if (!allComponentsUnlocked) {
-    quizButtonLabel = "Tes Akhir (Terkunci)";
+    quizButtonLabel = "Final Test (Locked)";
     quizButtonAction = "locked";
     quizButtonColor = "#4A5568";
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Tes Akhir";
+    quizButtonLabel = "Final Test";
     quizButtonAction = "show_quiz";
     quizButtonColor = ACCENT_COLOR;
   } else {
-    quizButtonLabel = "Lihat Laporan";
+    quizButtonLabel = "Learning Report";
     quizButtonAction = "show_quiz_report";
     quizButtonColor = "#28a745";
   }
@@ -764,8 +790,11 @@ export function createViewerPage(
   descriptionIndex = 0,
   highestComponentUnlocked = 0
 ) {
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
+  // --- AWAL PERUBAHAN ---
+  // Menggunakan konstanta posisi yang sudah didefinisikan di atas
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
+  // --- AKHIR PERUBAHAN ---
 
   clearViewerUI();
 
@@ -868,7 +897,7 @@ export function createViewerPage(
 
   if (index > 0) {
     const prevButton = createButton(
-      "< Sebelumnya",
+      "< Back",
       "prev_component",
       navButtonWidth,
       navButtonHeight
@@ -887,7 +916,7 @@ export function createViewerPage(
 
   if (!isLastComponent || !allMaterialsUnlocked) {
     const nextButton = createButton(
-      "Berikutnya >",
+      "Next >",
       "next_component",
       navButtonWidth,
       navButtonHeight
@@ -931,17 +960,56 @@ export function createViewerPage(
   audioButton.renderOrder = 1;
   viewerUIGroup.add(audioButton);
 
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(
+        -totalPanelWidth / 2 - 0.3,
+        totalPanelHeight / 2 - 0.2,
+        0.05
+      )
+    );
+  }
+
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
 export function clearViewerUI() {
-  viewerUIGroup.children.forEach((child) => {
-    child.geometry.dispose();
-    child.material.map?.dispose();
-    child.material.dispose();
-  });
-  viewerUIGroup.clear();
+  // --- AWAL PERUBAHAN ---
+  // Iterasi mundur untuk menghapus objek dari grup dengan aman
+  for (let i = viewerUIGroup.children.length - 1; i >= 0; i--) {
+    const child = viewerUIGroup.children[i];
+
+    // Gunakan traverse untuk membersihkan semua mesh di dalam objek
+    // (ini penting untuk membersihkan model kompleks seperti avatar)
+    child.traverse((object) => {
+      if (object.isMesh) {
+        // Cek jika geometri dan material ada sebelum di-dispose
+        object.geometry?.dispose();
+
+        if (object.material) {
+          // Handle jika material adalah sebuah array (untuk model multi-material)
+          if (Array.isArray(object.material)) {
+            object.material.forEach((material) => {
+              material.map?.dispose();
+              material.dispose();
+            });
+          } else {
+            // Handle jika material tunggal
+            object.material.map?.dispose();
+            object.material.dispose();
+          }
+        }
+      }
+    });
+
+    // Hapus objek level atas dari grup setelah semua isinya dibersihkan
+    viewerUIGroup.remove(child);
+  }
+  // --- AKHIR PERUBAHAN ---
 }
 
 function createTitleLabel(text, width, height, color = TEXT_COLOR) {
@@ -1166,19 +1234,19 @@ export function createCompletionScreen(playerName) {
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  let titleText = `Luar Biasa, ${playerName}!`;
+  let titleText = `Excellent, ${playerName}!`;
   const titleLabel = createTitleLabel(titleText, 3.8, 0.4, "#FFD700");
   titleLabel.position.set(0, 0.5, 0.01);
   viewerUIGroup.add(titleLabel);
 
   const messageText =
-    "Kamu telah berhasil menyelesaikan semua materi pembelajaran.\nSaatnya menguji pemahamanmu di Tes Akhir!";
+    "You have successfully completed all the learning topics.\nNow it's time to test your knowledge in the Final Test!";
   const messageBody = createBodyText(messageText, 3.5, 40, 30);
   messageBody.position.set(0, 0, 0.01);
   viewerUIGroup.add(messageBody);
 
   const quizButton = createButton(
-    "Lanjutkan ke Tes Akhir",
+    "Go to Final Test",
     "back_to_menu",
     3.0,
     0.3,
@@ -1225,11 +1293,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
 
   const titleWidth = 2.8;
   const titleHeight = 0.3;
-  const titleLabel = createTitleLabel(
-    "Tentang Aplikasi",
-    titleWidth,
-    titleHeight
-  );
+  const titleLabel = createTitleLabel("About", titleWidth, titleHeight);
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   titleLabel.position.set(0, titleY, 0.01);
@@ -1422,7 +1486,7 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   const titleHeight = 0.4;
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
-  const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
+  const titleText = isCorrect ? "Correct Answer!" : "Wrong Answer!";
   const titleColor = isCorrect ? "#28a745" : "#dc3545";
   const titleLabel = createTitleLabel(titleText, 3.5, titleHeight, titleColor);
   titleLabel.position.set(0, titleY, 0.01);
@@ -1430,7 +1494,7 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   viewerUIGroup.add(titleLabel);
 
   const EXPLANATION_PANEL_FIXED_HEIGHT = 0.9;
-  const explanationText = `Jawaban yang benar adalah:\n${
+  const explanationText = `The correct answer is:\n${
     currentQuestion.answers[currentQuestion.correctAnswerIndex]
   }`;
   const explanationPanel = createTextPanel(explanationText, 4.4, {
@@ -1445,9 +1509,7 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   const buttonHeight = 0.35;
   const buttonY = explanationPanelY - panelHeight / 2 - buttonHeight / 2 - 0.1;
   const isLastQuestion = questionIndex >= quizData.length - 1;
-  const buttonText = isLastQuestion
-    ? "Lihat Hasil"
-    : "Lanjut ke Soal Berikutnya";
+  const buttonText = isLastQuestion ? "View Results" : "Next Question";
   const continueButton = createButton(
     buttonText,
     "next_question",
@@ -1509,15 +1571,15 @@ export function createQuizReportScreen(
   viewerUIGroup.add(mainPanel);
 
   const titleText = hasAttempted
-    ? "Laporan Belajar Anda"
-    : "Laporan Belum Tersedia";
+    ? "Your Learning Report"
+    : "Report Not Available";
   const titleLabel = createTitleLabel(titleText, 4.0, 0.35);
   titleLabel.position.set(0, 0.8, 0.01);
   viewerUIGroup.add(titleLabel);
 
   if (!hasAttempted) {
     const reportText =
-      "Anda harus menyelesaikan semua materi dan mengerjakan Tes Akhir terlebih dahulu untuk melihat laporan nilai.";
+      "You must complete all materials and take the Final Test before viewing your report.";
     const reportBody = createBodyText(reportText, 4.2, {
       baseFontSize: 30,
       vrFontScale: 1.6,
@@ -1528,7 +1590,7 @@ export function createQuizReportScreen(
     const totalQuestions = quizData.length;
     const finalScore = (score / totalQuestions) * 100;
 
-    const scoreTitle = createSubtitleLabel("Nilai Akhir", 2.0, 0.2);
+    const scoreTitle = createSubtitleLabel("Final Score", 2.0, 0.2);
     scoreTitle.position.set(0, 0.4, 0.02);
     viewerUIGroup.add(scoreTitle);
 
@@ -1536,7 +1598,8 @@ export function createQuizReportScreen(
     scoreDisplay.position.set(0, -0.1, 0.01);
     viewerUIGroup.add(scoreDisplay);
 
-    const detailText = `Anda berhasil menjawab ${score} dari ${totalQuestions} soal dengan benar.`;
+    const detailText = `You answered ${score} out of ${totalQuestions} questions correctly.`;
+
     const reportBody = createBodyText(detailText, 4.2);
     reportBody.position.set(0, -0.6, 0.02);
     viewerUIGroup.add(reportBody);
@@ -1578,8 +1641,11 @@ export function createQuizReportScreen(
 }
 
 export function createMiniQuizPage(component) {
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
+  // --- AWAL PERUBAHAN ---
+  // Menggunakan konstanta posisi yang sama
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
+  // --- AKHIR PERUBAHAN ---
 
   const totalPanelWidth = 4;
   const totalPanelHeight = 2.3;
@@ -1645,8 +1711,11 @@ export function createMiniQuizPage(component) {
 }
 
 export function createMiniQuizResultPage(component, isCorrect) {
-  const uiBasePosition = new THREE.Vector3(-2.5, 1.6, -3);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 0);
+  // --- AWAL PERUBAHAN ---
+  // Menggunakan konstanta posisi yang sama
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
+  // --- AKHIR PERUBAHAN ---
 
   const totalPanelWidth = 4;
   const totalPanelHeight = 2.3;
@@ -1661,7 +1730,7 @@ export function createMiniQuizResultPage(component, isCorrect) {
   backgroundPanel.renderOrder = 0;
   viewerUIGroup.add(backgroundPanel);
 
-  const titleText = isCorrect ? "Jawaban Benar!" : "Jawaban Salah!";
+  const titleText = isCorrect ? "Correct Answer!" : "Wrong Answer!";
   const titleColor = isCorrect ? "#28a745" : "#dc3545";
   const titleWidth = 2.8;
   const titleHeight = 0.35;
@@ -1679,8 +1748,8 @@ export function createMiniQuizResultPage(component, isCorrect) {
 
   const explanation = component.quiz[0].explanation;
   const resultMessage = isCorrect
-    ? "Bagus! Kamu sudah memahami materi ini."
-    : "Jawabanmu kurang tepat. Coba pelajari lagi penjelasannya ya!";
+    ? "Well done!"
+    : "Try reviewing the explanation!";
   const messageText = `${resultMessage}\n\n${explanation}`;
   const RESULT_PANEL_FIXED_HEIGHT = 1.2;
   const messagePanel = createTextPanel(messageText, 2.8, {
@@ -1695,7 +1764,7 @@ export function createMiniQuizResultPage(component, isCorrect) {
   const navButtonWidth = 2.0;
   const navButtonHeight = 0.25;
   const navY = -totalPanelHeight / 2 + navButtonHeight / 2 + 0.1;
-  const buttonText = isCorrect ? "Lanjutkan" : "Coba Lagi";
+  const buttonText = isCorrect ? "Continue" : "Try Again";
 
   const continueButton = createButton(
     buttonText,
@@ -1727,7 +1796,8 @@ export function createPostQuizChoiceScreen() {
   viewerUIGroup.add(mainPanel);
 
   // 2. Atur ulang posisi vertikal elemen agar rapi dan simetris
-  const titleLabel = createTitleLabel("Sesi Belajar Selesai", 3.5, 0.3);
+  const titleLabel = createTitleLabel("Learning Session Complete", 3.5, 0.3);
+
   titleLabel.position.set(0, 0.45, 0.01); // Digeser ke atas
   viewerUIGroup.add(titleLabel);
 
@@ -1735,7 +1805,7 @@ export function createPostQuizChoiceScreen() {
   const buttonHeight = 0.32;
 
   const learnAgainButton = createButton(
-    "Kembali Belajar",
+    "Learn Again",
     "back_to_menu",
     buttonWidth,
     buttonHeight,
@@ -1745,7 +1815,7 @@ export function createPostQuizChoiceScreen() {
   viewerUIGroup.add(learnAgainButton);
 
   const mainMenuButton = createButton(
-    "Kembali ke Menu Utama",
+    "Back to Main Menu",
     "back_to_landing",
     buttonWidth,
     buttonHeight,
@@ -1762,7 +1832,8 @@ export function createPostQuizChoiceScreen() {
 export function createModeSelectionPage() {
   clearUI();
 
-  const titleLabel = createTitleLabel("Pilih Mode Pengalaman", 4, 0.5);
+  const titleLabel = createTitleLabel("Choose Experience Mode", 4, 0.5);
+
   titleLabel.position.set(0, 2.2, -3);
   uiGroup.add(titleLabel);
 

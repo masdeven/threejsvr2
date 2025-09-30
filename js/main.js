@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { scene, camera, renderer, controls } from "./scene-setup.js";
 import { components } from "./component-data.js";
+// --- AWAL PERUBAHAN ---
 import {
   createLandingPage,
   createMenuPage,
@@ -24,7 +25,9 @@ import {
   preloadAvatar,
   activeTypingAnimation,
   uiGroup,
+  GREETING_DATA, // Impor data sapaan
 } from "./ui-creator.js";
+// --- AKHIR PERUBAHAN ---
 import {
   loader,
   loadComponentModel,
@@ -49,7 +52,10 @@ import Stats from "three/addons/libs/stats.module.js";
 import { creditsData } from "./credits-data.js";
 import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 
-let audioListener, sound, backgroundSound, completionSound;
+// --- AWAL PERUBAHAN ---
+let audioListener, sound, backgroundSound, completionSound, greetingSound; // Tambahkan objek audio baru
+// --- AKHIR PERUBAHAN ---
+
 const audioLoader = new THREE.AudioLoader(loadingManager);
 let playerName = "";
 let currentQuestionIndex = 0;
@@ -67,9 +73,10 @@ let isFadingInUI = false;
 let frameCount = 0;
 let lastFpsUpdate = 0;
 let fpsLabel = null;
-let currentGreetingIndex = 0; // Melacak indeks teks sapaan
+let currentGreetingIndex = 0;
 const audioCache = {};
 
+// ... (Objek AppState tidak berubah)
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
   AVATAR_GREETING: "AVATAR_GREETING",
@@ -100,10 +107,13 @@ function refreshUI() {
       createModeSelectionPage();
       break;
     case AppState.AVATAR_GREETING:
-      // --- PERUBAHAN BARU ---
       createAvatarGreetingPage(playerName, currentGreetingIndex);
+      // --- PERUBAHAN BARU ---
+      // Panggil fungsi untuk memutar audio sapaan setelah UI dibuat
+      playCurrentGreetingAudio();
       // --- AKHIR PERUBAHAN ---
       break;
+    // ... (sisa case tidak berubah)
     case AppState.LANDING:
       createLandingPage(playerName);
       break;
@@ -151,7 +161,8 @@ function refreshUI() {
       break;
   }
 }
-// --- MODIFIKASI DIMULAI DI SINI ---
+
+// ... (Fungsi showViewer tidak berubah)
 function showViewer(index) {
   const component = components[index];
   if (!component) return;
@@ -171,7 +182,6 @@ function showViewer(index) {
     highestComponentUnlocked
   );
 }
-// --- AKHIR MODIFIKASI ---
 
 async function init() {
   stats = new Stats();
@@ -183,7 +193,11 @@ async function init() {
   sound = new THREE.Audio(audioListener);
   sound.userData = {};
   completionSound = new THREE.Audio(audioListener);
+  // --- PERUBAHAN BARU ---
+  greetingSound = new THREE.Audio(audioListener); // Inisialisasi objek audio sapaan
+  // --- AKHIR PERUBAHAN ---
 
+  // ... (Sisa fungsi init tidak berubah)
   const ktx2Loader = new KTX2Loader()
     .setTranscoderPath("assets/basis/")
     .detectSupport(renderer);
@@ -235,8 +249,8 @@ async function init() {
 
   animate();
 }
-// File: main.js
 
+// ... (Fungsi setupHTMLEvents sampai playSoundFromCache tidak berubah)
 function setupHTMLEvents() {
   const welcomeNextBtn = document.getElementById("welcome-next-button");
   const nameContinueBtn = document.getElementById("continue-button");
@@ -332,7 +346,7 @@ function preloadAssets() {
             );
           })
       );
-
+    const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
     // --- Preload audio ---
     const audioFilesToPreload = [
       "assets/audio/button_press.mp3",
@@ -340,6 +354,7 @@ function preloadAssets() {
       "assets/audio/completion.mp3",
       "assets/audio/background_music.mp3",
       ...components.filter((c) => c.audioFile).map((c) => c.audioFile),
+      ...greetingAudioFiles,
     ];
     const uniqueAudioFiles = [...new Set(audioFilesToPreload)];
 
@@ -396,6 +411,7 @@ function playSoundFromCache(audioObject, path, options = {}) {
     });
   }
 }
+
 function playControlledSound(audioObject, path, options = {}) {
   const { loop = false, volume = 1 } = options;
 
@@ -412,6 +428,7 @@ function playControlledSound(audioObject, path, options = {}) {
   }
 }
 
+// ... (Fungsi playOneShotSound sampai playButtonConfirmAudio tidak berubah)
 // Fungsi BARU untuk suara pendek (efek tombol)
 function playOneShotSound(path, volume = 1) {
   const buffer = audioCache[path];
@@ -441,7 +458,20 @@ function playButtonPressAudio() {
 function playButtonConfirmAudio() {
   playOneShotSound("assets/audio/button_confirm.mp3", 0.5);
 }
+
+// --- AWAL PERUBAHAN ---
+// Fungsi baru untuk memutar audio sapaan saat ini
+function playCurrentGreetingAudio() {
+  const greetingData = GREETING_DATA(playerName)[currentGreetingIndex];
+  if (greetingData && greetingData.audioFile) {
+    // Menggunakan objek greetingSound yang didedikasikan
+    playControlledSound(greetingSound, greetingData.audioFile, { volume: 1 });
+  }
+}
+// --- AKHIR PERUBAHAN ---
+
 function startBackgroundMusic() {
+  // ... (kode fungsi ini tidak berubah)
   if (audioListener.context.state === "suspended") {
     audioListener.context.resume();
   }
@@ -461,8 +491,15 @@ function stopAudio() {
     sound.stop();
     sound.userData.path = null;
   }
+  // --- PERUBAHAN BARU ---
+  // Pastikan audio sapaan juga berhenti saat berpindah state
+  if (greetingSound && greetingSound.isPlaying) {
+    greetingSound.stop();
+  }
+  // --- AKHIR PERUBAHAN ---
 }
 
+// ... (Sisa kode sampai akhir file tetap sama)
 function reloadViewer() {
   const component = components[currentComponentIndex];
   if (!component) return;
@@ -501,36 +538,37 @@ function changeState(newState) {
     AppState.MINI_QUIZ_RESULT,
   ]);
 
-  // Cek apakah kita berpindah antar state dalam konteks yang sama
   const isTransitioningWithinViewer =
     viewerContextStates.has(currentState) && viewerContextStates.has(newState);
 
-  // Hapus model hanya jika kita keluar dari konteks viewer
   if (!isTransitioningWithinViewer) {
     unloadComponentModel();
   }
 
   currentState = newState;
 
-  // --- PERUBAHAN BARU ---
-  // Reset indeks sapaan saat masuk ke state AVATAR_GREETING
   if (newState === AppState.AVATAR_GREETING) {
     currentGreetingIndex = 0;
   }
-  // --- AKHIR PERUBAHAN ---
 
   if (newState === AppState.COMPLETION) {
     playCompletionAudio();
   }
+
+  // --- AWAL PERUBAHAN ---
+  // Tambahkan AppState.VIEWER agar avatar terlihat di halaman viewer
   if (
     newState === AppState.LANDING ||
     newState === AppState.QUIZ_REPORT ||
-    newState === AppState.AVATAR_GREETING
+    newState === AppState.AVATAR_GREETING ||
+    newState === AppState.VIEWER // <-- TAMBAHKAN INI
   ) {
     toggleAvatarVisibility(true);
   } else {
     toggleAvatarVisibility(false);
   }
+  // --- AKHIR PERUBAHAN ---
+
   refreshUI();
   if (!isDragging && !isTransitioningWithinViewer) {
     switch (newState) {
@@ -780,8 +818,6 @@ function handleInteraction(action) {
       break;
   }
 }
-
-// ... (sisa kode dari `stopConfettiEffect` sampai `render` tetap sama)
 function stopConfettiEffect() {
   if (confettiEffect) {
     confettiEffect.destroy();

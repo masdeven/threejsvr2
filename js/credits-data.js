@@ -1,5 +1,5 @@
 export const creditsData = [
-  "Aplikasi ini dikembangkan sebagai bagian dari proyek studi untuk visualisasi interaktif perangkat keras komputer berbasis virtual reality lintas platform.",
-  "Dikembangkan oleh:\nFalachul A.I.",
-  "Aset 3D dan teknologi yang digunakan:\n- Three.js dan WebXR\n- Sketcfab dan CGTrader \n- Blender dan glTF-Transform",
+  "This application was developed as part of a study project for interactive visualization of computer hardware using cross-platform virtual reality.",
+  "Developed by:\nFalachul A.I.",
+  "3D assets and technologies used:\n- Three.js and WebXR\n- Sketchfab and CGTrader\n- Blender and glTF-Transform",
 ];
