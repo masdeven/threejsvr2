@@ -25,7 +25,7 @@ const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 
-const VIEWER_UI_POSITION = new THREE.Vector3(-2.5, 1.6, -4); // Z diubah dari -3 ke -3.5
+const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -4); // Z diubah dari -3 ke -3.5
 const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
 
 export const GREETING_DATA = (playerName) => [

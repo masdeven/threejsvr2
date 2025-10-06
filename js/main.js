@@ -476,7 +476,7 @@ function startBackgroundMusic() {
   if (backgroundSound.isPlaying) return;
   playControlledSound(backgroundSound, "assets/audio/background_music.mp3", {
     loop: true,
-    volume: 0.2,
+    volume: 0.1,
   });
 }
 function playCompletionAudio() {
