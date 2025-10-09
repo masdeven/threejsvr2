@@ -343,19 +343,26 @@ body {
 .hidden {
   display: none !important;
 }
+
 .button-group {
   display: flex;
-  gap: 15px; /* Memberi jarak antar tombol */
-  margin-top: 20px;
   justify-content: center;
+  gap: 20px; /* Jarak antar tombol */
+  margin-top: 25px;
 }
 
-/* Gaya untuk tombol sekunder (Mulai Baru) */
-.btn.btn-secondary {
-  background-color: #6c757d; /* Abu-abu */
-  border: 1px solid #6c757d;
+/* Sedikit penyesuaian untuk tombol di dalam button-group */
+.button-group .overlay-button {
+  margin-top: 0; /* Hapus margin atas default agar sejajar */
+  min-width: 180px; /* Beri lebar minimum agar seimbang */
 }
 
-.btn.btn-secondary:hover {
+/* Gaya khusus untuk tombol sekunder (Mulai Baru) */
+.overlay-button.secondary {
+  background-color: #6c757d; /* Warna abu-abu */
+  border: 1px solid #8f9aa3;
+}
+
+.overlay-button.secondary:hover {
   background-color: #5a6268;
 }

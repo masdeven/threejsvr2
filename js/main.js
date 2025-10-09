@@ -111,6 +111,24 @@ function loadProgress() {
   return false; // Kembalikan false jika tidak ada data
 }
 
+function resetProgress() {
+  // Hapus data dari localStorage
+  localStorage.removeItem(STORAGE_KEY);
+
+  // Reset variabel global ke nilai default
+  playerName = "";
+  highestComponentUnlocked = 0;
+  quizScore = 0;
+  hasAttemptedQuiz = false;
+
+  // Reset status 'unlocked' pada semua komponen (kecuali yang pertama)
+  components.forEach((comp, index) => {
+    comp.unlocked = index === 0;
+  });
+
+  console.log("Progres telah direset.");
+}
+
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
   AVATAR_GREETING: "AVATAR_GREETING",
@@ -307,14 +325,15 @@ async function init() {
     setTimeout(() => splashScreen.remove(), 500);
   }
 
-  // === Tentukan layar pertama berdasarkan progres ===
   if (hasSavedProgress && playerName) {
-    startBackgroundMusic();
-    changeState(AppState.LANDING);
+    // Jika ada progres, tampilkan layar pilihan
+    document
+      .getElementById("progress-choice-overlay")
+      .classList.remove("hidden");
   } else {
+    // Jika tidak ada, mulai dari layar selamat datang
     showWelcomeScreen();
   }
-  // === 💾 AKHIR LOGIKA PEMUATAN PROGRES ===
 
   // === Debug group & FPS label ===
   fpsLabel = createFpsLabel();
@@ -330,6 +349,25 @@ async function init() {
 function setupHTMLEvents() {
   const welcomeNextBtn = document.getElementById("welcome-next-button");
   const nameContinueBtn = document.getElementById("continue-button");
+
+  const continueProgressBtn = document.getElementById(
+    "continue-progress-button"
+  );
+  const startNewBtn = document.getElementById("start-new-button");
+
+  continueProgressBtn.addEventListener("click", () => {
+    document.getElementById("progress-choice-overlay").classList.add("hidden");
+    document.getElementById("container").classList.remove("hidden"); // <-- TAMBAHKAN INI
+    startBackgroundMusic();
+    changeState(AppState.MODE_SELECTION);
+  });
+
+  startNewBtn.addEventListener("click", () => {
+    // Reset progres, sembunyikan overlay, dan mulai dari layar selamat datang
+    resetProgress();
+    document.getElementById("progress-choice-overlay").classList.add("hidden");
+    showWelcomeScreen();
+  });
 
   welcomeNextBtn.addEventListener("click", () => {
     document.getElementById("welcome-overlay").classList.add("hidden");
@@ -362,7 +400,7 @@ function setupHTMLEvents() {
       if (vrButton) {
         vrButton.remove();
       }
-
+      document.getElementById("container").classList.remove("hidden");
       // 4. Ubah state ke pemilihan mode setelah overlay tidak terlihat
       changeState(AppState.MODE_SELECTION);
     }, fadeOutDuration);
