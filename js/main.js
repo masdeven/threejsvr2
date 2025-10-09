@@ -75,6 +75,7 @@ let lastFpsUpdate = 0;
 let fpsLabel = null;
 let currentGreetingIndex = 0;
 const audioCache = {};
+let isDebugVisible = false;
 
 // ... (Objek AppState tidak berubah)
 const AppState = {
@@ -185,8 +186,9 @@ function showViewer(index) {
 
 async function init() {
   stats = new Stats();
-  stats.showPanel(0);
+  // stats.showPanel(0);
   document.body.appendChild(stats.dom);
+  stats.dom.style.display = "none";
   audioListener = new THREE.AudioListener();
   backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
@@ -221,6 +223,13 @@ async function init() {
 
   setupHTMLEvents();
 
+  window.addEventListener("keydown", (event) => {
+    if (event.key.toLowerCase() === "d") {
+      isDebugVisible = !isDebugVisible;
+      stats.dom.style.display = isDebugVisible ? "block" : "none";
+    }
+  });
+
   const assetPromises = [
     preloadAvatar(), // avatar juga sudah mengembalikan promise
     preloadAssets(), // versi baru yang menunggu semua model & audio
@@ -242,9 +251,10 @@ async function init() {
   }
 
   fpsLabel = createFpsLabel();
-  fpsLabel.position.set(0, -0.3, -0.5);
+  fpsLabel.position.set(-0.4, 0.3, -0.7);
   // fpsLabel.scale.set(1.5, 1.5, 1.5);
   debugGroup.add(fpsLabel);
+  debugGroup.visible = false;
   scene.add(debugGroup);
 
   animate();
@@ -859,21 +869,22 @@ function render() {
     activeTypingAnimation.update(deltaTime);
   }
 
-  if (isVRMode()) {
-    debugGroup.visible = true;
+  if (isDebugVisible) {
+    // Posisikan panel debug mengikuti kamera di mode apapun
     debugGroup.position.copy(camera.position);
     debugGroup.quaternion.copy(camera.quaternion);
     updateFpsLabel(fpsLabel, fps);
+  }
+  // --- AKHIR LOGIKA DEBUG BARU ---
+
+  if (isVRMode()) {
     handleVRHover();
     handleVRDrag();
     if (currentState !== AppState.MENU) {
       updateUIGroupPosition();
     }
   } else {
-    debugGroup.visible = false;
     controls.update();
-    if (currentState === AppState.VIEWER || currentState === AppState.HELP) {
-    }
   }
 
   if (currentState === AppState.VIEWER) {

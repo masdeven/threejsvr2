@@ -115,17 +115,13 @@ function redrawButton(button, color) {
   const finalFontSize = Math.floor(
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
-  ctx.font = `${fontStyle} ${finalFontSize}px Arial`;
-  // --- AKHIR PENAMBAHAN ---
+  ctx.font = `${fontStyle} ${finalFontSize}px Verdana, Geneva, sans-serif`;
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // --- PENYESUAIAN UNTUK PUSAT IKON ---
-  // Menambahkan sedikit offset vertikal untuk beberapa ikon/karakter
   const verticalOffset = shape === "circle" ? finalFontSize * 0.05 : 0;
   ctx.fillText(data.text, canvas.width / 2, canvas.height / 2 + verticalOffset);
-  // --- AKHIR PENYESUAIAN ---
 
   button.material.map.needsUpdate = true;
 }

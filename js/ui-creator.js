@@ -6,7 +6,7 @@ import { quizData } from "./quiz-data.js";
 import { loader } from "./model-loader.js";
 import { TextureLoader } from "three";
 
-export const FONT = "bold 32px Arial";
+export const FONT = "bold 32px Verdana, Geneva, sans-serif";
 export const uiGroup = new THREE.Group();
 scene.add(uiGroup);
 
@@ -142,7 +142,7 @@ function createTypingText(text, width, options = {}, onComplete) {
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
-  const font = `${finalFontSize}px Arial, sans-serif`;
+  const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
   ctx.font = font;
 
   const padding = 15;
@@ -280,7 +280,7 @@ function createButton(
   const finalFontSize = Math.floor(
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
-  ctx.font = `${fontStyle} ${finalFontSize}px Arial`;
+  ctx.font = `${fontStyle} ${finalFontSize}px Verdana, Geneva, sans-serif`;
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -325,7 +325,7 @@ function createTextPanel(text, width, options = {}) {
     isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX
   );
   const lineHeight = Math.round(finalFontSize * 1.2);
-  const font = `${finalFontSize}px Arial`;
+  const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
 
   const padding = 25;
   const resolution = getResolution();
@@ -675,23 +675,20 @@ function createImagePanel(imageUrl, width, height) {
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  // --- AWAL PERBAIKAN ---
-
-  // 1. Pindahkan posisi UI lebih jauh dari kamera agar cakupan pandang lebih luas
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -2.5); // Nilai Z diubah dari -2
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
-
   const localCenterY = 0;
-  // 2. Perkecil radius dan rentang sudut untuk membuat kurva lebih ramping
-  const radius = 3.2; // Nilai diubah dari 3.5
-  const angleSpan = Math.PI * 0.75; // Nilai diubah dari 0.8
-  const itemsPerRow = 5;
+
+  // --- PENYESUAIAN LAYOUT DIMULAI DI SINI ---
+  const radius = 3; // <-- DIUBAH: Radius sedikit diperlebar untuk memberi ruang
+  const angleSpan = Math.PI * 0.8; // <-- DIUBAH: Sudut kurva disesuaikan untuk 4 item
+  const itemsPerRow = 4; // <-- DIUBAH: Jumlah item per baris menjadi 4
   const rowHeight = 0.5;
   const localLookAtTarget = new THREE.Vector3(0, localCenterY, 5);
+  // --- PENYESUAIAN LAYOUT SELESAI ---
 
   const titleY = localCenterY + 0.8;
   const titleZ = -(radius - 2);
-
   const titleBgWidth = 3;
   const titleBgHeight = 0.45;
   const titleBackground = createUIPanel(
@@ -716,15 +713,20 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   components.forEach((comp, index) => {
     const row = Math.floor(index / itemsPerRow);
     const col = index % itemsPerRow;
-
     const angle = startAngle + col * angleStep;
     const isUnlocked = comp.unlocked;
-    const buttonLabel = isUnlocked ? comp.label : "🔒 Locked";
+
+    // --- PENAMBAHAN NOMOR URUT PADA LABEL ---
+    const buttonLabel = isUnlocked
+      ? `${index + 1}. ${comp.label}`
+      : "🔒 Locked"; // <-- DIUBAH
+    // --- AKHIR PENAMBAHAN NOMOR ---
+
     const buttonColor = isUnlocked ? BG_COLOR : "#4A5568";
     const button = createButton(
       buttonLabel,
       isUnlocked ? `select_${index}` : "locked",
-      1.4,
+      1.8, // <-- DIUBAH: Lebar tombol diperbesar
       0.25,
       buttonColor
     );
@@ -741,7 +743,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     viewerUIGroup.add(button);
   });
 
-  const actionButtonY = localCenterY - 0.8;
+  const actionButtonY = localCenterY - 1;
   const actionZ = -(radius - 1.5);
   const actionSpacingX = 2.4;
 
@@ -1025,7 +1027,7 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
 
-  ctx.font = `bold ${fontSize}px "Arial Rounded MT Bold", Arial, sans-serif`;
+  ctx.font = `bold ${fontSize}px Verdana, Geneva, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
@@ -1059,7 +1061,7 @@ function createSubtitleLabel(text, width, height) {
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
 
-  ctx.font = `${fontSize}px Arial, sans-serif`;
+  ctx.font = `${fontSize}px Verdana, Geneva, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#E2E8F0";
@@ -1108,7 +1110,7 @@ function createBodyText(text, width, options = {}) {
   canvas.width = canvasWidth;
   canvas.height = totalTextPixelHeight + padding;
 
-  ctx.font = `${finalFontSize}px Arial, sans-serif`;
+  ctx.font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillStyle = "#E2E8F0";
@@ -1899,7 +1901,7 @@ export function createFpsLabel() {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.fillStyle = "white";
-  context.font = "bold 48px Arial";
+  context.font = "bold 48px Verdana, Geneva, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText("0", canvas.width / 2, canvas.height / 2);
@@ -1934,7 +1936,7 @@ export function updateFpsLabel(mesh, fps) {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.fillStyle = "white";
-  context.font = "bold 48px Arial";
+  context.font = "bold 48px Verdana, Geneva, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText(

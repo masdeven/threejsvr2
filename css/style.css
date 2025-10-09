@@ -234,3 +234,79 @@ body {
   visibility: visible;
   opacity: 1;
 }
+
+/* ======================= AWAL PERUBAHAN ======================= */
+/* Aturan untuk Floating Button */
+.floating-button {
+  position: fixed;
+  bottom: 20px; /* dikurangi sedikit */
+  right: 20px; /* dikurangi sedikit */
+  width: 40px; /* tombol lebih kecil */
+  height: 40px; /* tombol lebih kecil */
+  background-color: #2d3748;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px; /* disesuaikan dengan ukuran tombol */
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* dikurangi agar proporsional */
+  z-index: 1000;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  font-family: monospace;
+}
+
+.floating-button:hover {
+  transform: scale(1.1);
+  background-color: #4a5568;
+}
+
+/* Aturan untuk Tooltip */
+.floating-button .tooltip {
+  visibility: hidden;
+  width: 180px; /* lebih kecil */
+  background-color: #1a202c;
+  color: #fff;
+  text-align: left; /* teks rata kiri agar rapi */
+  border-radius: 6px;
+  padding: 6px 8px; /* padding lebih kecil */
+  position: absolute;
+  z-index: 1001;
+  bottom: 100%; /* tepat di atas tombol */
+  right: 0; /* sejajar sisi kanan tombol */
+  margin-bottom: 6px; /* jarak tooltip dan tombol lebih kecil */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 12px; /* font lebih kecil */
+  font-family: Arial, sans-serif;
+  font-weight: normal;
+  pointer-events: none;
+
+  /* Pastikan tooltip tidak melebar keluar layar */
+  max-width: calc(100vw - 40px);
+  word-wrap: break-word;
+}
+
+/* Tampilkan tooltip saat hover */
+.floating-button:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Media query untuk layar kecil */
+@media (max-width: 480px) {
+  .floating-button {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .floating-button .tooltip {
+    width: 150px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+}
+/* ======================= AKHIR PERUBAHAN ======================= */
