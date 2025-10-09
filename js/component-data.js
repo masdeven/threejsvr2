@@ -219,7 +219,7 @@ export const components = [
     ],
   },
   {
-    label: "Flashdrive",
+    label: "Flash Drive",
     modelFile: "assets/models/flashdisk.glb",
     audioFile: "assets/audio/flashdrive.mp3",
     description: [

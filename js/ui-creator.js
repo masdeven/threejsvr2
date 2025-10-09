@@ -847,10 +847,10 @@ export function createViewerPage(
 
   const descNavY = descPanelYOffset - panelHeight / 2 - 0.15;
   if (component.description.length > 1) {
-    const rightEdgeX = panelWidth / 2;
+    const rightEdgeX = panelWidth / 1.85;
     const buttonWidth = 0.25;
-    const indicatorWidth = 0.6;
-    const padding = 0.05;
+    const indicatorWidth = 0.5;
+    const padding = 0.1;
     let currentX = rightEdgeX;
 
     const isLastPage = descriptionIndex >= component.description.length - 1;
