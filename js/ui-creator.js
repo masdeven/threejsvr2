@@ -384,9 +384,6 @@ function createTextPanel(text, width, options = {}) {
   ctx.quadraticCurveTo(0, 0, radius, 0);
   ctx.closePath();
 
-  ctx.fillStyle = "rgba(0,0,0,0.85)";
-  ctx.fill();
-
   ctx.font = font;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
@@ -437,13 +434,7 @@ export function clearUI() {
     }
   });
 }
-function createUIPanel(
-  width,
-  height,
-  radius,
-  color = "#1A202C",
-  opacity = 0.8
-) {
+function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const panelResolution = getResolution();
@@ -476,7 +467,7 @@ function createUIPanel(
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
-    opacity: opacity,
+    // opacity: opacity,
   });
 
   const geometry = new THREE.PlaneGeometry(width, height);
@@ -509,7 +500,7 @@ export function updateAvatar(deltaTime, elapsedTime) {
 }
 
 export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.0;
@@ -593,7 +584,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 export function createLandingPage(playerName) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.0;
@@ -690,12 +681,12 @@ function createImagePanel(imageUrl, width, height) {
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
   const localCenterY = 0;
 
   // --- PENYESUAIAN LAYOUT DIMULAI DI SINI ---
-  const radius = 3; // <-- DIUBAH: Radius sedikit diperlebar untuk memberi ruang
+  const radius = 3.5; // <-- DIUBAH: Radius sedikit diperlebar untuk memberi ruang
   const angleSpan = Math.PI * 0.8; // <-- DIUBAH: Sudut kurva disesuaikan untuk 4 item
   const itemsPerRow = 4; // <-- DIUBAH: Jumlah item per baris menjadi 4
   const rowHeight = 0.5;
@@ -1238,7 +1229,7 @@ function createConfettiEffect() {
 export function createCompletionScreen(playerName) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.0;
@@ -1292,7 +1283,7 @@ export function createCompletionScreen(playerName) {
 
 // --- FUNGSI INI DIUBAH TOTAL ---
 export function createCreditsScreen(creditPages, pageIndex) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   clearViewerUI();
@@ -1410,7 +1401,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
 export function createQuizScreen(questionIndex) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const currentQuestion = quizData[questionIndex];
@@ -1486,7 +1477,7 @@ export function createQuizScreen(questionIndex) {
 export function createQuizResultScreen(isCorrect, questionIndex) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const currentQuestion = quizData[questionIndex];
@@ -1595,7 +1586,7 @@ export function createQuizReportScreen(
 ) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.8;
@@ -1817,7 +1808,7 @@ export function createMiniQuizResultPage(component, isCorrect) {
 export function createPostQuizChoiceScreen() {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   // --- PERUBAIKAN DIMULAI DI SINI ---
@@ -1863,18 +1854,32 @@ export function createPostQuizChoiceScreen() {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 export function createModeSelectionPage() {
   clearUI();
 
-  const titleLabel = createTitleLabel("Choose Experience Mode", 4, 0.5);
+  // --- AWAL PERUBAHAN DESAIN ---
 
-  titleLabel.position.set(0, 2.2, -3);
-  uiGroup.add(titleLabel);
+  // 1. Menggunakan sistem posisi dan grup yang sama dengan Landing Page
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+
+  // 2. Buat panel latar belakang yang solid
+  const panelWidth = 4.0;
+  const panelHeight = 1.3;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  mainPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(mainPanel); // Tambahkan ke viewerUIGroup
+
+  // 3. Posisikan ulang semua elemen di atas panel
+  const titleLabel = createTitleLabel("Choose Experience Mode", 3.8, 0.35);
+  titleLabel.position.set(0, 0.45, 0.01); // Atur posisi Y dan Z relatif terhadap panel
+  viewerUIGroup.add(titleLabel);
 
   const buttonWidth = 3.0;
-  const buttonHeight = 0.4;
-  const spacing = 0.45;
-  const startY = 1.6;
+  const buttonHeight = 0.32;
+  const spacing = 0.4;
+  const startY = 0.05;
 
   const browserButton = createButton(
     "Mode Browser",
@@ -1883,28 +1888,25 @@ export function createModeSelectionPage() {
     buttonHeight,
     ACCENT_COLOR
   );
-  browserButton.position.set(0, startY, -3);
-  uiGroup.add(browserButton);
+  browserButton.position.set(0, startY, 0.01); // Atur posisi Y dan Z
+  viewerUIGroup.add(browserButton);
 
   const vrButton = createButton(
     "Mode VR",
     "start_vr",
     buttonWidth,
     buttonHeight
+    // Warna default (BUTTON_COLOR) akan digunakan
   );
-  vrButton.position.set(0, startY - spacing, -3);
-  uiGroup.add(vrButton);
+  vrButton.position.set(0, startY - spacing, 0.01); // Atur posisi Y dan Z
+  viewerUIGroup.add(vrButton);
 
-  // --- AWAL TAMBAHAN ---
-  // Atur semua elemen agar transparan untuk persiapan fade-in
-  uiGroup.children.forEach((child) => {
-    if (child.material) {
-      // Pastikan material diatur untuk bisa transparan
-      child.material.transparent = true;
-      child.material.opacity = 0;
-    }
-  });
-  // --- AKHIR TAMBAHAN ---
+  // 4. Atur posisi akhir untuk keseluruhan grup UI
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
+
+  // 5. Logika fade-in tidak lagi diperlukan karena sudah konsisten
+  // --- AKHIR PERUBAHAN DESAIN ---
 }
 export function updateUIGroupPosition() {
   if (uiGroup.children.length > 0) {
