@@ -375,6 +375,14 @@ function setupHTMLEvents() {
   // Logika diubah untuk menambahkan efek fade-out
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
+    const nameValue = nameInput.value.trim(); // Ambil nilai dan hapus spasi
+
+    if (nameValue === "") {
+      // Jika nama kosong, tampilkan peringatan dan hentikan proses
+      alert("Nama tidak boleh kosong!");
+      return; // Hentikan eksekusi fungsi
+    }
+
     playerName = nameInput.value.trim() || "Tamu";
     saveProgress();
     const nameOverlay = document.getElementById("name-input-overlay");
