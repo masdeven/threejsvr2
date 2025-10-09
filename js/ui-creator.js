@@ -621,8 +621,8 @@ export function createLandingPage(playerName) {
 
   if (playerName) {
     const welcomeText = `Select Activity, ${playerName}`;
-    const welcomeLabel = createTitleLabel(welcomeText, 3.8, 0.35);
-    welcomeLabel.position.set(0, 0.45, 0.01);
+    const welcomeLabel = createTitleLabel(welcomeText, 3.4, 0.35);
+    welcomeLabel.position.set(0.1, 0.45, 0.01);
     viewerUIGroup.add(welcomeLabel);
   }
 
