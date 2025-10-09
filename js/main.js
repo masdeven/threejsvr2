@@ -160,12 +160,8 @@ function refreshUI() {
       break;
     case AppState.AVATAR_GREETING:
       createAvatarGreetingPage(playerName, currentGreetingIndex);
-      // --- PERUBAHAN BARU ---
-      // Panggil fungsi untuk memutar audio sapaan setelah UI dibuat
       playCurrentGreetingAudio();
-      // --- AKHIR PERUBAHAN ---
       break;
-    // ... (sisa case tidak berubah)
     case AppState.LANDING:
       createLandingPage(playerName);
       break;

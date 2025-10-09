@@ -1416,7 +1416,7 @@ export function createQuizScreen(questionIndex) {
   const currentQuestion = quizData[questionIndex];
 
   const totalPanelWidth = 4.8;
-  const totalPanelHeight = 2.4;
+  const totalPanelHeight = 2;
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   mainPanel.renderOrder = 0;
@@ -1424,19 +1424,15 @@ export function createQuizScreen(questionIndex) {
 
   const titleHeight = 0.3;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - 0.1;
-  const titleText = `Uji Pemahaman (Soal ${questionIndex + 1}/${
-    quizData.length
-  })`;
-  const titleLabel = createTitleLabel(titleText, 4.5, titleHeight);
+  const titleText = `Final (Question ${questionIndex + 1}/${quizData.length})`;
+  const titleLabel = createTitleLabel(titleText, 3.8, titleHeight);
   titleLabel.position.set(0, titleY, 0.01);
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  // --- AWAL PENYESUAIAN ---
-
-  // 1. Tinggi panel soal dikurangi untuk memberi lebih banyak ruang di bawah
-  const QUESTION_PANEL_FIXED_HEIGHT = 0.8; // Diubah dari 0.9
-  const questionPanel = createTextPanel(currentQuestion.question, 4.4, {
+  // --- ADJUSTED QUESTION PANEL SIZE ---
+  const QUESTION_PANEL_FIXED_HEIGHT = 0.7;
+  const questionPanel = createTextPanel(currentQuestion.question, 3.6, {
     fixedHeight: QUESTION_PANEL_FIXED_HEIGHT,
   });
   const panelHeight = questionPanel.geometry.parameters.height;
@@ -1445,17 +1441,14 @@ export function createQuizScreen(questionIndex) {
   questionPanel.renderOrder = 1;
   viewerUIGroup.add(questionPanel);
 
-  // 2. Tombol dan jarak vertikal diperkecil
   const buttonWidth = 2.1;
-  const buttonHeight = 0.28; // Diubah dari 0.3
+  const buttonHeight = 0.25;
+  const gapY = 0.12;
   const gapX = 0.2;
-  const gapY = 0.15; // Diubah dari 0.2
 
-  // Kalkulasi posisi akan otomatis menyesuaikan berdasarkan nilai baru di atas
+  // Auto calculate button layout based on spacing
   const startX = -(buttonWidth + gapX) / 2;
   const startY = questionPanelY - panelHeight / 2 - gapY - buttonHeight / 2;
-
-  // --- AKHIR PENYESUAIAN ---
 
   const shuffledAnswers = currentQuestion.answers
     .map((answer, index) => ({ text: answer, originalIndex: index }))
@@ -1487,6 +1480,9 @@ export function createQuizScreen(questionIndex) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
+// --- QUIZ RESULT SCREEN ---
+
 export function createQuizResultScreen(isCorrect, questionIndex) {
   clearUI();
 
@@ -1495,44 +1491,59 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
 
   const currentQuestion = quizData[questionIndex];
 
-  const totalPanelWidth = 4.8;
-  const totalPanelHeight = 2.0;
+  const totalPanelWidth = 4.2;
+  const totalPanelHeight = 1.8;
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   mainPanel.renderOrder = 0;
   viewerUIGroup.add(mainPanel);
 
-  const titleHeight = 0.4;
+  const titleHeight = 0.35;
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
-  const titleText = isCorrect ? "Correct Answer!" : "Wrong Answer!";
+  const titleText = isCorrect ? "Correct Answer!" : "Incorrect Answer!";
   const titleColor = isCorrect ? "#28a745" : "#dc3545";
-  const titleLabel = createTitleLabel(titleText, 3.5, titleHeight, titleColor);
+  const titleLabel = createTitleLabel(titleText, 3.0, titleHeight, titleColor);
   titleLabel.position.set(0, titleY, 0.01);
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  const EXPLANATION_PANEL_FIXED_HEIGHT = 0.9;
-  const explanationText = `The correct answer is:\n${
-    currentQuestion.answers[currentQuestion.correctAnswerIndex]
-  }`;
-  const explanationPanel = createTextPanel(explanationText, 4.4, {
-    fixedHeight: EXPLANATION_PANEL_FIXED_HEIGHT,
-  });
-  const panelHeight = explanationPanel.geometry.parameters.height;
-  const explanationPanelY = titleY - titleHeight / 2 - panelHeight / 2 - 0.1;
-  explanationPanel.position.set(0, explanationPanelY, 0.01);
-  explanationPanel.renderOrder = 1;
-  viewerUIGroup.add(explanationPanel);
+  // --- NEW FEEDBACK LOGIC ---
+  const correctAnswerText =
+    currentQuestion.answers[currentQuestion.correctAnswerIndex];
 
-  const buttonHeight = 0.35;
-  const buttonY = explanationPanelY - panelHeight / 2 - buttonHeight / 2 - 0.1;
+  if (isCorrect) {
+    // If answer is CORRECT, show the user's selected answer.
+    const answerPanel = createButton(correctAnswerText, null, 3.6, 0.45);
+    answerPanel.userData.colors = null;
+    answerPanel.position.set(0, 0, 0.01);
+    answerPanel.renderOrder = 1;
+    viewerUIGroup.add(answerPanel);
+  } else {
+    // If answer is WRONG, show "Correct Answer:" label and highlight the correct one.
+    const answerLabelY = titleY - titleHeight / 2 - 0.2;
+    const answerLabel = createSubtitleLabel("Correct Answer:", 3.8, 0.2);
+    answerLabel.position.set(0, answerLabelY, 0.01);
+    viewerUIGroup.add(answerLabel);
+
+    const answerPanel = createButton(correctAnswerText, null, 3.6, 0.35);
+    answerPanel.userData.colors = null;
+
+    const answerPanelY = answerLabelY - 0.15 - 0.35 / 2;
+    answerPanel.position.set(0, answerPanelY, 0.01);
+    answerPanel.renderOrder = 1;
+    viewerUIGroup.add(answerPanel);
+  }
+
+  const buttonHeight = 0.3;
+  const buttonY = -totalPanelHeight / 2 + buttonHeight / 2 + 0.15;
   const isLastQuestion = questionIndex >= quizData.length - 1;
   const buttonText = isLastQuestion ? "View Results" : "Next Question";
+
   const continueButton = createButton(
     buttonText,
     "next_question",
-    3.0,
+    2.8,
     buttonHeight,
     ACCENT_COLOR
   );
@@ -1543,6 +1554,9 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
+// --- SCORE LABEL CREATOR ---
+
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -1573,6 +1587,7 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const geometry = new THREE.PlaneGeometry(size, size);
   return new THREE.Mesh(geometry, material);
 }
+
 export function createQuizReportScreen(
   score,
   hasAttempted,
