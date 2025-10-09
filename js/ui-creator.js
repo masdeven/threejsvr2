@@ -96,7 +96,18 @@ function setupAvatar(model, scale, position) {
 }
 
 export function getResolution() {
-  return isVRMode() ? 512 : 256;
+  if (isVRMode()) {
+    // Untuk VR, resolusi tinggi yang tetap adalah pilihan terbaik
+    return 512;
+  } else {
+    // Untuk mobile & desktop, gunakan kepadatan piksel perangkat
+    const baseResolution = 256;
+    // Ambil device pixel ratio, batasi maksimal di 2x untuk menjaga performa
+    const dpr = Math.min(window.devicePixelRatio, 2);
+
+    // Hasilnya akan 256 (di layar standar) atau 512 (di layar Hi-DPR)
+    return baseResolution * dpr;
+  }
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
@@ -138,8 +149,10 @@ function createTypingText(text, width, options = {}, onComplete) {
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
 
+  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+
   const finalFontSize = Math.round(
-    isVRMode() ? baseFontSize * vrFontScale : baseFontSize
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize * dpr
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
@@ -321,8 +334,10 @@ function createTextPanel(text, width, options = {}) {
   const BASE_FONT_SIZE_PX = 26;
   const vrFontScale = 2;
 
+  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+
   const finalFontSize = Math.round(
-    isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX
+    isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX * dpr
   );
   const lineHeight = Math.round(finalFontSize * 1.2);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
@@ -1094,8 +1109,10 @@ function createBodyText(text, width, options = {}) {
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
 
+  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+
   const finalFontSize = Math.round(
-    isVRMode() ? baseFontSize * vrFontScale : baseFontSize
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize * dpr
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   ctx.font = `${finalFontSize}px Arial, sans-serif`;

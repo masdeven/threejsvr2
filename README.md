@@ -1,4 +1,4 @@
-# 🧠 Aplikasi Pembelajaran Perangkat Keras VR (WebXR + Three.js)
+# 🧠 Aplikasi Pembelajaran Perangkat Keras Berbasis VR (WebXR + Three.js)
 
 Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat keras komputer dalam 3D. Dikembangkan menggunakan **Three.js** dan **WebXR** dengan metodologi **Multimedia Development Life Cycle (MDLC)**, aplikasi ini memungkinkan pelajar untuk mempelajari komponen perangkat keras komputer secara interaktif melalui pengalaman berbasis browser yang imersif—tanpa memerlukan perangkat VR yang mahal.
 

@@ -76,8 +76,41 @@ let fpsLabel = null;
 let currentGreetingIndex = 0;
 const audioCache = {};
 let isDebugVisible = false;
+const STORAGE_KEY = "webxr_learning_progress";
 
-// ... (Objek AppState tidak berubah)
+function saveProgress() {
+  const progress = {
+    playerName: playerName,
+    highestComponentUnlocked: highestComponentUnlocked,
+    quizScore: quizScore,
+    hasAttemptedQuiz: hasAttemptedQuiz,
+  };
+  // Simpan objek progres sebagai string JSON di localStorage
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  console.log("Progres disimpan:", progress);
+}
+
+function loadProgress() {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+  if (savedData) {
+    const progress = JSON.parse(savedData);
+    playerName = progress.playerName || "";
+    highestComponentUnlocked = progress.highestComponentUnlocked || 0;
+    quizScore = progress.quizScore || 0;
+    hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
+
+    // Terapkan progres yang sudah terbuka ke data komponen
+    for (let i = 0; i <= highestComponentUnlocked; i++) {
+      if (components[i]) {
+        components[i].unlocked = true;
+      }
+    }
+    console.log("Progres dimuat:", progress);
+    return true; // Kembalikan true jika ada data yang dimuat
+  }
+  return false; // Kembalikan false jika tidak ada data
+}
+
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
   AVATAR_GREETING: "AVATAR_GREETING",
@@ -183,23 +216,49 @@ function showViewer(index) {
     highestComponentUnlocked
   );
 }
+function checkOrientation() {
+  // Cek apakah ini perangkat mobile (memiliki touch screen)
+  const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  // Jika bukan mobile, jangan lakukan apa-apa
+  if (!isMobile) {
+    return;
+  }
+
+  const overlay = document.getElementById("orientation-overlay");
+  const container = document.getElementById("container"); // Container utama aplikasi
+
+  // Cek apakah layar dalam mode potret (tinggi > lebar)
+  if (window.innerHeight > window.innerWidth) {
+    // Tampilkan overlay dan sembunyikan aplikasi
+    overlay.classList.remove("hidden");
+    container.classList.add("hidden");
+  } else {
+    // Sembunyikan overlay dan tampilkan aplikasi
+    overlay.classList.add("hidden");
+    container.classList.remove("hidden");
+  }
+}
+// main.js
 
 async function init() {
+  checkOrientation();
+  window.addEventListener("resize", checkOrientation);
+
   stats = new Stats();
-  // stats.showPanel(0);
   document.body.appendChild(stats.dom);
   stats.dom.style.display = "none";
+
+  // === Audio setup ===
   audioListener = new THREE.AudioListener();
   backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
   sound = new THREE.Audio(audioListener);
   sound.userData = {};
   completionSound = new THREE.Audio(audioListener);
-  // --- PERUBAHAN BARU ---
-  greetingSound = new THREE.Audio(audioListener); // Inisialisasi objek audio sapaan
-  // --- AKHIR PERUBAHAN ---
+  greetingSound = new THREE.Audio(audioListener);
 
-  // ... (Sisa fungsi init tidak berubah)
+  // === Loader setup ===
   const ktx2Loader = new KTX2Loader()
     .setTranscoderPath("assets/basis/")
     .detectSupport(renderer);
@@ -210,17 +269,19 @@ async function init() {
   setupDRACOLoader(dracoLoader);
 
   setupVR();
+
   renderer.xr.addEventListener("sessionstart", () => {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMappingExposure = 1.2;
     changeState(AppState.AVATAR_GREETING);
   });
+
   renderer.xr.addEventListener("sessionend", () => {
     changeState(AppState.MENU);
   });
-  setupInteraction(handleInteraction);
 
+  setupInteraction(handleInteraction);
   setupHTMLEvents();
 
   window.addEventListener("keydown", (event) => {
@@ -230,14 +291,14 @@ async function init() {
     }
   });
 
-  const assetPromises = [
-    preloadAvatar(), // avatar juga sudah mengembalikan promise
-    preloadAssets(), // versi baru yang menunggu semua model & audio
-  ];
+  // === 💾 AWAL LOGIKA PEMUATAN PROGRES ===
+  const hasSavedProgress = loadProgress();
 
+  // Preload semua aset seperti biasa
+  const assetPromises = [preloadAvatar(), preloadAssets()];
   await Promise.all(assetPromises);
 
-  // Setelah preload selesai, splash screen bisa fade out
+  // === 🔁 Setelah preload selesai ===
   const splashScreen = document.getElementById("splash-screen");
   if (splashScreen) {
     splashScreen.classList.add("fade-out");
@@ -246,13 +307,18 @@ async function init() {
     setTimeout(() => splashScreen.remove(), 500);
   }
 
-  if (currentState === null) {
+  // === Tentukan layar pertama berdasarkan progres ===
+  if (hasSavedProgress && playerName) {
+    startBackgroundMusic();
+    changeState(AppState.LANDING);
+  } else {
     showWelcomeScreen();
   }
+  // === 💾 AKHIR LOGIKA PEMUATAN PROGRES ===
 
+  // === Debug group & FPS label ===
   fpsLabel = createFpsLabel();
   fpsLabel.position.set(-0.4, 0.3, -0.7);
-  // fpsLabel.scale.set(1.5, 1.5, 1.5);
   debugGroup.add(fpsLabel);
   debugGroup.visible = false;
   scene.add(debugGroup);
@@ -276,6 +342,7 @@ function setupHTMLEvents() {
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
     playerName = nameInput.value.trim() || "Tamu";
+    saveProgress();
     const nameOverlay = document.getElementById("name-input-overlay");
     const fadeOutDuration = 500; // Durasi dalam milidetik (0.5s)
 
@@ -692,6 +759,7 @@ function handleInteraction(action) {
       currentQuestionIndex++;
       if (currentQuestionIndex >= quizData.length) {
         hasAttemptedQuiz = true;
+        saveProgress();
         changeState(AppState.QUIZ_POST_COMPLETION_REPORT);
       } else {
         changeState(AppState.QUIZ);
@@ -783,6 +851,7 @@ function handleInteraction(action) {
             components[unlockedIndex].unlocked = true;
             if (unlockedIndex > highestComponentUnlocked) {
               highestComponentUnlocked = unlockedIndex;
+              saveProgress();
             }
           }
           // Lanjutkan ke viewer komponen berikutnya

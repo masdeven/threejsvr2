@@ -309,4 +309,53 @@ body {
     transform: translateX(50%);
   }
 }
-/* ======================= AKHIR PERUBAHAN ======================= */
+/* style.css */
+
+#orientation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #1a202c; /* Warna latar belakang gelap */
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#orientation-overlay .message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#orientation-overlay p {
+  font-size: 1.2em;
+  max-width: 80%;
+}
+
+/* Class 'hidden' untuk menyembunyikan elemen */
+.hidden {
+  display: none !important;
+}
+.button-group {
+  display: flex;
+  gap: 15px; /* Memberi jarak antar tombol */
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* Gaya untuk tombol sekunder (Mulai Baru) */
+.btn.btn-secondary {
+  background-color: #6c757d; /* Abu-abu */
+  border: 1px solid #6c757d;
+}
+
+.btn.btn-secondary:hover {
+  background-color: #5a6268;
+}
