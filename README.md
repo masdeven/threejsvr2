@@ -1,94 +1,114 @@
-# 🧠 Virtual Reality Hardware Learning App (WebXR + Three.js)
+# 🧠 Aplikasi Pembelajaran Perangkat Keras VR (WebXR + Three.js)
 
-A WebXR-based interactive learning application for exploring computer hardware in 3D.  
-Developed using **Three.js** and **WebXR**, following the **Multimedia Development Life Cycle (MDLC)** methodology.  
-The app allows learners to interactively study computer hardware components through immersive, browser-based experiences — without requiring expensive VR devices.
+Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat keras komputer dalam 3D. Dikembangkan menggunakan **Three.js** dan **WebXR** dengan metodologi **Multimedia Development Life Cycle (MDLC)**, aplikasi ini memungkinkan pelajar untuk mempelajari komponen perangkat keras komputer secara interaktif melalui pengalaman berbasis browser yang imersif—tanpa memerlukan perangkat VR yang mahal.
 
 ---
 
-## 🚀 Features
-- 3D interactive visualization of computer hardware  
-- Web-based VR mode (WebXR)  
-- Audio narration using AI-generated voices  
-- Lightweight and optimized 3D rendering (Draco + KTX2 compression)  
-- Responsive control for both desktop and VR devices  
+## 🚀 Fitur
+
+- Visualisasi 3D interaktif dari perangkat keras komputer
+- Mode VR berbasis web (WebXR)
+- Narasi audio menggunakan suara yang dihasilkan AI
+- Rendering 3D yang ringan dan dioptimalkan (kompresi Draco + KTX2)
+- Kontrol responsif untuk perangkat desktop dan VR
 
 ---
 
-## 🧩 Technology Stack
-| Category | Tools / Frameworks |
-|-----------|--------------------|
-| 3D Engine | Three.js |
-| XR Support | WebXR API |
-| Optimization | glTF-Transform, Draco, KTX2 |
-| Modeling | Blender |
-| Audio | Narakeet (AI TTS), YouTube Audio Library |
-| Hosting | Cloudflare Pages / GitHub Pages |
+## 🧩 Tumpukan Teknologi
+
+| Kategori        | Alat / Kerangka Kerja                    |
+| :-------------- | :--------------------------------------- |
+| **Mesin 3D**    | Three.js                                 |
+| **Dukungan XR** | WebXR API                                |
+| **Optimisasi**  | glTF-Transform, Draco, KTX2              |
+| **Pemodelan**   | Blender                                  |
+| **Audio**       | Narakeet (AI TTS), YouTube Audio Library |
+| **Hosting**     | Cloudflare Pages / GitHub Pages          |
 
 ---
 
-## 🧱 Development Flow
-1. 3D modeling in Blender (vertex reduction ±20%)  
-2. Export as `.glb` format  
-3. Optimize using **glTF-Transform**  
-   - `optimize` (simplify structure)  
-   - `draco` (geometry compression)  
-   - `ktx2` (texture compression)  
-4. Integrate into **Three.js + WebXR**  
-5. Test and deploy on the web  
+## 🧱 Alur Pengembangan
+
+1.  Pemodelan 3D di Blender (pengurangan verteks ±20%)
+2.  Ekspor sebagai format `.glb`
+3.  Optimalkan menggunakan **glTF-Transform**
+    - `optimize` (menyederhanakan struktur)
+    - `draco` (kompresi geometri)
+    - `ktx2` (kompresi tekstur)
+4.  Integrasikan ke dalam **Three.js + WebXR**
+5.  Uji dan deploy di web
 
 ---
 
-## 🎨 Credits & Licenses
+## 🎨 Kredit & Lisensi
 
-### 🧱 3D Models
-| Model | Source | Author | License |
-|--------|--------|---------|----------|
-| Motherboard | [Sketchfab](<!-- URL -->) | <!-- Author --> | CC BY 4.0 |
-| CPU | [CGTrader](<!-- URL -->) | <!-- Author --> | Royalty Free |
-| GPU | [Sketchfab](<!-- URL -->) | <!-- Author --> | CC BY 4.0 |
-| Hard Drive | [Sketchfab](<!-- URL -->) | <!-- Author --> | CC BY 4.0 |
+### 🧱 Model 3D
 
-> Please note: All 3D models are used under their respective licenses. Attribution is given according to platform requirements.
+| Model              | Sumber                                                                                                                      | 3D Artist / Modeler    | Lisensi                    |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------------------- | :--------------------- | :------------------------- |
+| **Monitor**        | [Sketchfab](https://sketchfab.com/3d-models/rigged-monitor-iiyama-gb2770hsu-free-download-bca1aef8e0424cc3baf4369beec3b6a8) | BlendedPopcorn         | CC BY 4.0                  |
+| **Keyboard**       | [CGTrader](https://www.cgtrader.com/free-3d-models/electronics/computer/mechanical-keybord)                                 | autho                  | Royalty Free No Ai License |
+| **Mouse**          | [Sketchfab](https://sketchfab.com/3d-models/mouse-ef4c6dfb6de44d0c9bd200a64c8c1a73)                                         | Mukhesh                | CC BY 4.0                  |
+| **Printer**        | [Sketchfab](https://sketchfab.com/3d-models/epson-printer-model-752da10ef09a4f4782aa6c38a82f4b26)                           | zafry                  | CC BY 4.0                  |
+| **Storage**        | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
+| **Motherboard**    | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
+| **CPU**            | [Sketchfab](https://sketchfab.com/3d-models/am4-cpu-free-912c9c42d2dc40fe95574345aae51ea0)                                  | Igor.Jop               | CC BY 4.0                  |
+| **Kartu Jaringan** | [Sketchfab](https://sketchfab.com/3d-models/network-interface-card-191c8ad40de2430980b879615aa0d2e3)                        | ARComputerFundamentals | CC BY 4.0                  |
+| **GPU**            | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
+| **RAM**            | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
+| **Flask Drive**    | [Sketchfab](https://sketchfab.com/3d-models/usb-flashdrive-0e6df3d1f2c44bf3a68b728bcf0157e8)                                | Hardy Noer             | CC BY 4.0                  |
+| **Avatar**         | [Sketchfab](https://sketchfab.com/3d-models/low-poly-guardian-8df18d89b3354cd88c2fea99c2c2048a)                             | Akash Sisodiya         | CC BY 4.0                  |
+| **Ruangan**        | [Sketchfab](https://sketchfab.com/3d-models/vr-gallery-1e087aa25dc742e680accb15249bd6be)                                    | Maxim Mavrichev        | CC BY 4.0                  |
 
----
-
-### 🔊 Audio & Voice
-| Source | Description | License / Credit |
-|---------|-------------|------------------|
-| [Narakeet](https://www.narakeet.com) | AI-generated voice narration | Licensed for educational/non-commercial use |
-| [YouTube Audio Library](https://www.youtube.com/audiolibrary) | Background music & sound effects | Free to use with attribution |
-| <!-- Add others if any --> |  |  |
-
----
-
-### 🧰 Tools & Frameworks
-- [Three.js](https://threejs.org/) – 3D rendering engine  
-- [WebXR](https://immersive-web.github.io/webxr/) – Browser-based VR/AR support  
-- [glTF-Transform](https://gltf-transform.donmccurdy.com/) – Model optimization CLI  
-- [Blender](https://www.blender.org/) – 3D modeling and asset preparation  
+> Perlu diketahui: Semua model 3D digunakan di bawah lisensi masing-masing. Atribusi diberikan sesuai dengan persyaratan platform.
 
 ---
 
-## ⚖️ License
-This project is licensed under the **MIT License**.  
-You are free to use, modify, and distribute this project for educational or non-commercial purposes, provided that all attributions and credits remain intact.
+### 🔊 Audio & Suara
+
+| Sumber                                                                       | Deskripsi    |
+| :--------------------------------------------------------------------------- | :----------- |
+| **[Narakeet](https://www.narakeet.com)**                                     | Narasi suara |
+| **[YouTube](https://www.youtube.com/watch?v=pBEdwmP8B4o&list=LL&index=17s)** | Musik latar  |
+| **[Pixabay](https://pixabay.com/id/)**                                       | Efek suara   |
+|                                                                              |              |
 
 ---
 
-## 🙌 Acknowledgements
-Special thanks to:
-- All creators on **Sketchfab** and **CGTrader** for providing high-quality 3D models.  
-- **Narakeet** for AI voice narration services.  
-- The open-source community of **Three.js** and **WebXR** developers.  
+### 🧰 Alat & Kerangka Kerja
+
+- [Three.js](https://threejs.org/) – Mesin rendering 3D
+- [WebXR](https://immersiveweb.dev/) – Dukungan VR/AR berbasis browser
+- [glTF-Transform](https://gltf-transform.dev/) – CLI optimisasi model
+- [Blender](https://www.blender.org/) – Pemodelan 3D dan persiapan aset
 
 ---
 
-## 🧑‍💻 Author
-**<!-- Nama Kamu -->**  
-Undergraduate Research Project — Virtual Reality Learning Media  
-Faculty of <!-- Fakultas / Universitas -->  
-📧 <!-- email / optional -->
+## ⚖️ Lisensi
+
+Proyek ini dilisensikan di bawah **Lisensi MIT**. Anda bebas menggunakan, memodifikasi, dan mendistribusikan proyek ini untuk tujuan pendidikan atau non-komersial, dengan syarat semua atribusi dan kredit tetap utuh.
 
 ---
 
+## 🙌 Ucapan Terima Kasih
+
+Terima kasih khusus kepada:
+
+- Semua kreator di **Sketchfab** dan **CGTrader** yang telah menyediakan model 3D berkualitas tinggi.
+- **Narakeet** untuk layanan narasi suara AI.
+- Komunitas sumber terbuka dari para pengembang **Three.js** dan **WebXR**.
+
+---
+
+## 🧑‍💻 Penulis
+
+**Falachul Akhadihima Ibrahaical**
+
+Proyek Skripsi — IMPLEMENTASI THREE.JS DAN WEBXR DALAM PENGEMBANGAN APLIKASI VIRTUAL REALITY (VR) UNTUK PENGENALAN
+PERANGKAT KERAS KOMPUTER
+_Program Studi Teknik Infromatika_
+_Fakultas Teknologi dan Desain, Universitas Ma Chung_
+
+---
+
+Proyek Penelitian Sarjana 📧
