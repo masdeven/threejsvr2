@@ -753,7 +753,13 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const actionZ = -(radius - 1.5);
   const actionSpacingX = 2.4;
 
-  const exitButton = createButton("Main Menu", "back_to_landing", 2.2, 0.3);
+  const exitButton = createButton(
+    "Main Menu",
+    "back_to_landing",
+    2.2,
+    0.3,
+    ACCENT_COLOR
+  );
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(localLookAtTarget);
   viewerUIGroup.add(exitButton);
@@ -1475,6 +1481,10 @@ export function createQuizScreen(questionIndex) {
 // --- QUIZ RESULT SCREEN ---
 
 export function createQuizResultScreen(isCorrect, questionIndex) {
+  if (!quizData[questionIndex]) {
+    console.error("Indeks pertanyaan kuis tidak valid:", questionIndex);
+    return; // Hentikan eksekusi jika data tidak ada
+  }
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);

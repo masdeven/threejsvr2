@@ -152,6 +152,18 @@ let currentState = null;
 let currentComponentIndex = -1;
 let currentDescriptionIndex = 0;
 
+function onVRSessionEnded() {
+  // Hentikan model 3D yang sedang ditampilkan
+  unloadComponentModel();
+
+  // Aktifkan kembali kontrol orbit di mode desktop
+  controls.enabled = true;
+
+  // Kembali ke halaman pemilihan mode untuk alur yang konsisten
+  changeState(AppState.MODE_SELECTION);
+  console.log("Sesi VR berakhir, kembali ke pemilihan mode.");
+}
+
 function refreshUI() {
   clearUI();
   switch (currentState) {
@@ -299,7 +311,7 @@ async function init() {
   setupHTMLEvents();
 
   window.addEventListener("keydown", (event) => {
-    if (event.key.toLowerCase() === "d") {
+    if (event.key.toLowerCase() === "q") {
       isDebugVisible = !isDebugVisible;
       stats.dom.style.display = isDebugVisible ? "block" : "none";
     }
@@ -752,9 +764,7 @@ function handleInteraction(action) {
       changeState(AppState.AVATAR_GREETING);
       break;
     case "start_vr":
-      startVRSession(() => {
-        changeState(AppState.AVATAR_GREETING);
-      });
+      startVRSession(onVRSessionEnded);
       break;
     // --- PERUBAHAN BARU ---
     case "next_greeting":
