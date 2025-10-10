@@ -328,6 +328,10 @@ function createTextPanel(descriptions, width, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
+  const descriptionsArray = Array.isArray(descriptions)
+    ? descriptions
+    : [descriptions];
+
   // Pengaturan font dan resolusi (tetap sama)
   const BASE_FONT_SIZE_PX = 50;
   const vrFontScale = 1.1;
@@ -343,14 +347,12 @@ function createTextPanel(descriptions, width, options = {}) {
   const canvasWidth = width * resolution;
   const maxWidth = canvasWidth - padding * 2;
 
-  // --- AWAL PERUBAHAN LOGIKA ---
-  // Tentukan tinggi canvas berdasarkan fixedHeight per halaman
   const singlePagePixelHeight = fixedHeight * resolution;
   canvas.width = canvasWidth;
-  canvas.height = singlePagePixelHeight * descriptions.length; // Canvas tinggi untuk semua halaman
+  canvas.height = singlePagePixelHeight * descriptionsArray.length;
 
   // Loop untuk menggambar setiap halaman deskripsi
-  descriptions.forEach((text, index) => {
+  descriptionsArray.forEach((text, index) => {
     const pageOffsetY = index * singlePagePixelHeight;
 
     // Gambar teks untuk halaman saat ini pada posisi Y yang benar
@@ -381,7 +383,7 @@ function createTextPanel(descriptions, width, options = {}) {
   // PENTING: Ulangi tekstur secara vertikal
   texture.wrapS = THREE.ClampToEdgeWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(1, 1 / descriptions.length); // Tampilkan hanya 1 bagian dari total halaman
+  texture.repeat.set(1, 1 / descriptionsArray.length);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -394,7 +396,7 @@ function createTextPanel(descriptions, width, options = {}) {
 
   // Simpan data penting untuk animasi scroll
   mesh.userData.isScrollableText = true;
-  mesh.userData.totalPages = descriptions.length;
+  mesh.userData.totalPages = descriptionsArray.length;
   mesh.userData.currentPage = 0;
   mesh.userData.targetOffsetY = 0;
   // --- AKHIR PERUBAHAN LOGIKA ---
@@ -1475,7 +1477,7 @@ export function createQuizScreen(currentQuestion, questionIndex) {
     );
 
     const buttonX = choiceStartX + i * (choiceButtonWidth + choiceGapX);
-    button.position.set(buttonX, choiceButtonY, 0.01);
+    button.position.set(buttonX, choiceButtonY, 0.02);
     button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
