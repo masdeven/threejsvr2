@@ -487,16 +487,16 @@ function setupHTMLEvents() {
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
     const nameValue = nameInput.value.trim(); // Ambil nilai dan hapus spasi
-    const nameOverlay = document.getElementById("player-name-input");
+    const nameOverlay = document.getElementById("name-input-overlay");
 
     if (nameValue === "") {
       // --- NOTIFIKASI INTERAKTIF BARU ---
       // 1. Tambahkan class .shake untuk memicu animasi
-      nameOverlay.classList.add("shake");
+      nameInput.classList.add("shake");
 
       // 2. Hapus class setelah animasi selesai agar bisa dipicu lagi
       setTimeout(() => {
-        nameOverlay.classList.remove("shake");
+        nameInput.classList.remove("shake");
       }, 500); // Durasi harus sama dengan durasi animasi di CSS
 
       return;
