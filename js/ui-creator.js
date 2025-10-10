@@ -98,15 +98,11 @@ function setupAvatar(model, scale, position) {
 
 export function getResolution() {
   if (isVRMode()) {
-    // Untuk VR, resolusi tinggi yang tetap adalah pilihan terbaik
     return 512;
   } else {
-    // Untuk mobile & desktop, gunakan kepadatan piksel perangkat
-    const baseResolution = 256;
-    // Ambil device pixel ratio, batasi maksimal di 2x untuk menjaga performa
-    const dpr = Math.min(window.devicePixelRatio, 2);
+    const baseResolution = 480; // <-- INCREASED FROM 256
+    const dpr = Math.min(window.devicePixelRatio, 1.5); // <-- INCREASED FROM 2
 
-    // Hasilnya akan 256 (di layar standar) atau 512 (di layar Hi-DPR)
     return baseResolution * dpr;
   }
 }
@@ -281,7 +277,7 @@ function createButton(
 
   ctx.fillStyle = TEXT_COLOR;
 
-  const vrFontScale = 1.2;
+  const vrFontScale = 1;
   const resolution = getResolution();
   const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
 
@@ -332,8 +328,8 @@ function createTextPanel(text, width, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
-  const BASE_FONT_SIZE_PX = 26;
-  const vrFontScale = 2;
+  const BASE_FONT_SIZE_PX = 42;
+  const vrFontScale = 1.3;
 
   const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
 
@@ -556,7 +552,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
       currentGreeting.text,
       3.2,
       {
-        baseFontSize: 32,
+        baseFontSize: 42,
         vrFontScale: 1.5,
         lineHeightScale: 1.3,
       },
@@ -1101,7 +1097,7 @@ function createSubtitleLabel(text, width, height) {
 
 function createBodyText(text, width, options = {}) {
   const {
-    baseFontSize = 28,
+    baseFontSize = 42,
     vrFontScale = 1.5,
     lineHeightScale = 1.2,
   } = options;
@@ -1638,7 +1634,7 @@ export function createQuizReportScreen(
     const reportText =
       "You must complete all materials and take the Final Test before viewing your report.";
     const reportBody = createBodyText(reportText, 4.2, {
-      baseFontSize: 30,
+      baseFontSize: 42,
       vrFontScale: 1.6,
     });
     reportBody.position.set(0, 0, 0.02);

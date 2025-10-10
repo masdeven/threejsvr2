@@ -102,7 +102,7 @@ function redrawButton(button, color, text = null) {
   ctx.fillStyle = TEXT_COLOR;
 
   // --- DITAMBAHKAN: Menggunakan logika font yang SAMA seperti createButton ---
-  const vrFontScale = 1.2;
+  const vrFontScale = 1;
   const resolution = getResolution();
   const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
 
