@@ -180,7 +180,7 @@ function createTypingText(text, width, options = {}, onComplete) {
   // Data untuk animasi
   let currentIndex = 0;
   let timeAccumulator = 0;
-  const typingSpeed = 40; // karakter per detik
+  const typingSpeed = 20; // karakter per detik
 
   function update(deltaTime) {
     if (currentIndex >= text.length) {
@@ -329,8 +329,8 @@ function createTextPanel(descriptions, width, options = {}) {
   const ctx = canvas.getContext("2d");
 
   // Pengaturan font dan resolusi (tetap sama)
-  const BASE_FONT_SIZE_PX = 42;
-  const vrFontScale = 1.3;
+  const BASE_FONT_SIZE_PX = 50;
+  const vrFontScale = 1.1;
   const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
   const finalFontSize = Math.round(
     isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX * dpr
@@ -547,8 +547,8 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
       currentGreeting.text,
       3.2,
       {
-        baseFontSize: 42,
-        vrFontScale: 1.5,
+        baseFontSize: 50,
+        vrFontScale: 1.1,
         lineHeightScale: 1.3,
       },
       () => {
@@ -1099,8 +1099,8 @@ function createSubtitleLabel(text, width, height) {
 
 function createBodyText(text, width, options = {}) {
   const {
-    baseFontSize = 42,
-    vrFontScale = 1.5,
+    baseFontSize = 50,
+    vrFontScale = 1.1,
     lineHeightScale = 1.2,
   } = options;
 
