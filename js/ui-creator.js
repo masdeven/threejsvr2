@@ -1415,8 +1415,9 @@ export function createQuizScreen(questionIndex) {
 
   const currentQuestion = quizData[questionIndex];
 
+  // --- ADJUSTMENT: Increased panel height to fit the new layout ---
   const totalPanelWidth = 4.8;
-  const totalPanelHeight = 2;
+  const totalPanelHeight = 2.4; // Increased from 2.0
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   mainPanel.renderOrder = 0;
@@ -1424,69 +1425,77 @@ export function createQuizScreen(questionIndex) {
 
   const titleHeight = 0.3;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - 0.1;
-  const titleText = `Final (Question ${questionIndex + 1}/${quizData.length})`;
+  const titleText = `Final Test (Question ${questionIndex + 1}/${
+    quizData.length
+  })`;
   const titleLabel = createTitleLabel(titleText, 3.8, titleHeight);
   titleLabel.position.set(0, titleY, 0.01);
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  // --- ADJUSTED QUESTION PANEL SIZE ---
-  const QUESTION_PANEL_FIXED_HEIGHT = 0.7;
-  const questionPanel = createTextPanel(currentQuestion.question, 3.6, {
-    fixedHeight: QUESTION_PANEL_FIXED_HEIGHT,
+  // --- NEW LAYOUT LOGIC STARTS HERE ---
+
+  // 1. Combine the question and all answer choices into a single text block.
+  // This ensures clean, non-interactive display.
+  const questionText = currentQuestion.question;
+  const answerChoicesText = currentQuestion.answers
+    .map((answer, index) => `${String.fromCharCode(65 + index)}. ${answer}`) // A, B, C, D
+    .join("\n"); // Add spacing between answers
+
+  const fullQuizText = `${questionText}\n\n${answerChoicesText}`;
+
+  // 2. Create a single text panel for the question and answers.
+  const QUIZ_TEXT_PANEL_HEIGHT = 1.6; // Adjusted height for all text
+  const quizTextPanel = createTextPanel(fullQuizText, 4.2, {
+    fixedHeight: QUIZ_TEXT_PANEL_HEIGHT,
   });
-  const panelHeight = questionPanel.geometry.parameters.height;
-  const questionPanelY = titleY - titleHeight / 2 - panelHeight / 2 - 0.1;
-  questionPanel.position.set(0, questionPanelY, 0.01);
-  questionPanel.renderOrder = 1;
-  viewerUIGroup.add(questionPanel);
 
-  const buttonWidth = 2.1;
-  const buttonHeight = 0.25;
-  const gapY = 0.12;
-  const gapX = 0.2;
+  const textPanelY =
+    titleY - titleHeight / 2 - QUIZ_TEXT_PANEL_HEIGHT / 2 - 0.1;
+  quizTextPanel.position.set(0, textPanelY, 0.01);
+  quizTextPanel.renderOrder = 1;
+  viewerUIGroup.add(quizTextPanel);
 
-  // Auto calculate button layout based on spacing
-  const startX = -(buttonWidth + gapX) / 2;
-  const startY = questionPanelY - panelHeight / 2 - gapY - buttonHeight / 2;
+  // 3. Create a horizontal row of simple A, B, C, D buttons at the bottom.
+  const choiceButtonWidth = 0.6;
+  const choiceButtonHeight = 0.3;
+  const choiceGapX = 0.2;
+  const totalButtonsWidth =
+    currentQuestion.answers.length * choiceButtonWidth +
+    (currentQuestion.answers.length - 1) * choiceGapX;
+  const choiceStartX = -totalButtonsWidth / 2 + choiceButtonWidth / 2;
 
-  const shuffledAnswers = currentQuestion.answers
-    .map((answer, index) => ({ text: answer, originalIndex: index }))
-    .sort(() => Math.random() - 0.5);
+  // Position the buttons near the bottom of the main panel
+  const choiceButtonY = -totalPanelHeight / 2 + choiceButtonHeight / 2 + 0.15;
 
-  shuffledAnswers.forEach((answerData, i) => {
-    const row = Math.floor(i / 2);
-    const col = i % 2;
-
-    const isCorrect =
-      answerData.originalIndex === currentQuestion.correctAnswerIndex;
+  currentQuestion.answers.forEach((_, i) => {
+    const isCorrect = i === currentQuestion.correctAnswerIndex;
     const action = isCorrect ? "answer_correct" : "answer_incorrect";
+    const buttonLabel = String.fromCharCode(65 + i); // "A", "B", "C", "D"
 
     const button = createButton(
-      answerData.text,
+      buttonLabel,
       action,
-      buttonWidth,
-      buttonHeight
+      choiceButtonWidth,
+      choiceButtonHeight
     );
 
-    const buttonX = startX + col * (buttonWidth + gapX);
-    const buttonY = startY - row * (buttonHeight + gapY);
-
-    button.position.set(buttonX, buttonY, 0.01);
+    const buttonX = choiceStartX + i * (choiceButtonWidth + choiceGapX);
+    button.position.set(buttonX, choiceButtonY, 0.01);
     button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
+
+  // --- NEW LAYOUT LOGIC ENDS HERE ---
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-// --- QUIZ RESULT SCREEN ---
-
 export function createQuizResultScreen(isCorrect, questionIndex) {
   if (!quizData[questionIndex]) {
     console.error("Indeks pertanyaan kuis tidak valid:", questionIndex);
-    return; // Hentikan eksekusi jika data tidak ada
+    return; // Stop execution if the data doesn't exist
   }
   clearUI();
 
@@ -1495,72 +1504,85 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
 
   const currentQuestion = quizData[questionIndex];
 
-  const totalPanelWidth = 4.2;
-  const totalPanelHeight = 1.8;
+  // DESIGN SYNC: Use the same panel dimensions as the quiz screen
+  const totalPanelWidth = 4.8;
+  const totalPanelHeight = 2.4;
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   mainPanel.renderOrder = 0;
   viewerUIGroup.add(mainPanel);
 
+  // IMPROVED FEEDBACK: Make the title more conversational
   const titleHeight = 0.35;
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
-  const titleText = isCorrect ? "Correct Answer!" : "Incorrect Answer!";
-  const titleColor = isCorrect ? "#28a745" : "#dc3545";
-  const titleLabel = createTitleLabel(titleText, 3.0, titleHeight, titleColor);
+  const titleText = isCorrect
+    ? "Excellent, that's correct!"
+    : "Not quite. Here's the review:";
+  const titleColor = isCorrect ? "#28a745" : "#FFC107"; // Green for correct, Yellow for review
+  const titleLabel = createTitleLabel(titleText, 4.0, titleHeight, titleColor);
   titleLabel.position.set(0, titleY, 0.01);
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  // --- NEW FEEDBACK LOGIC ---
-  const correctAnswerText =
-    currentQuestion.answers[currentQuestion.correctAnswerIndex];
+  // Re-display the question for context.
+  const questionText = `Question:\n${currentQuestion.question}`;
 
-  if (isCorrect) {
-    // If answer is CORRECT, show the user's selected answer.
-    const answerPanel = createButton(correctAnswerText, null, 3.6, 0.45);
-    answerPanel.userData.colors = null;
-    answerPanel.position.set(0, 0, 0.01);
-    answerPanel.renderOrder = 1;
-    viewerUIGroup.add(answerPanel);
-  } else {
-    // If answer is WRONG, show "Correct Answer:" label and highlight the correct one.
-    const answerLabelY = titleY - titleHeight / 2 - 0.2;
-    const answerLabel = createSubtitleLabel("Correct Answer:", 3.8, 0.2);
-    answerLabel.position.set(0, answerLabelY, 0.01);
-    viewerUIGroup.add(answerLabel);
+  // Format all answer choices, clearly marking the correct one.
+  const answerChoicesText = currentQuestion.answers
+    .map((answer, index) => {
+      const prefix = `${String.fromCharCode(65 + index)}. ${answer}`;
+      // Add a visual marker to the correct answer
+      if (index === currentQuestion.correctAnswerIndex) {
+        return `${prefix}  <-- Correct Answer`;
+      }
+      return prefix;
+    })
+    .join("\n"); // Add spacing between answers for readability
 
-    const answerPanel = createButton(correctAnswerText, null, 3.6, 0.35);
-    answerPanel.userData.colors = null;
+  const fullResultText = `${questionText}\n\n${answerChoicesText}`;
 
-    const answerPanelY = answerLabelY - 0.15 - 0.35 / 2;
-    answerPanel.position.set(0, answerPanelY, 0.01);
-    answerPanel.renderOrder = 1;
-    viewerUIGroup.add(answerPanel);
-  }
+  // Create a single, unified text panel for the review.
+  const RESULT_TEXT_PANEL_HEIGHT = 1.5;
+  const resultTextPanel = createTextPanel(fullResultText, 4.2, {
+    fixedHeight: RESULT_TEXT_PANEL_HEIGHT,
+  });
 
-  const buttonHeight = 0.3;
-  const buttonY = -totalPanelHeight / 2 + buttonHeight / 2 + 0.15;
+  const textPanelY =
+    titleY - titleHeight / 2 - RESULT_TEXT_PANEL_HEIGHT / 2 - 0.1;
+  resultTextPanel.position.set(0, textPanelY, 0.01);
+  resultTextPanel.renderOrder = 1;
+  viewerUIGroup.add(resultTextPanel);
+
+  // --- PERUBAHAN DI SINI: Tombol navigasi yang lebih kecil di pojok kanan bawah ---
+  const continueButtonWidth = 1.2;
+  const continueButtonHeight = 0.25;
+  const padding = 0.15; // Jarak dari tepi panel
+
+  // Hitung posisi X dan Y untuk pojok kanan bawah
+  const buttonY = -totalPanelHeight / 2 + continueButtonHeight / 2 + padding;
+  const buttonX = totalPanelWidth / 2 - continueButtonWidth / 2 - padding;
+
   const isLastQuestion = questionIndex >= quizData.length - 1;
-  const buttonText = isLastQuestion ? "View Results" : "Next Question";
+  // Teks tombol dibuat lebih ringkas
+  const buttonText = isLastQuestion ? "Results >" : "Next >";
 
   const continueButton = createButton(
     buttonText,
     "next_question",
-    2.8,
-    buttonHeight,
+    continueButtonWidth,
+    continueButtonHeight,
     ACCENT_COLOR
   );
-  continueButton.position.set(0, buttonY, 0.01);
+  // Atur posisi baru
+  continueButton.position.set(buttonX, buttonY, 0.01);
   continueButton.renderOrder = 1;
   viewerUIGroup.add(continueButton);
+  // --- AKHIR PERUBAHAN ---
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
-// --- SCORE LABEL CREATOR ---
-
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -1889,7 +1911,14 @@ export function createPostQuizChoiceScreen() {
   mainMenuButton.position.set(0, -0.38, 0.01); // Posisi disesuaikan
   viewerUIGroup.add(mainMenuButton);
 
-  // --- PERUBAIKAN SELESAI ---
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
+    );
+  }
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);

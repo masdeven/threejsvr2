@@ -391,7 +391,7 @@ function setupHTMLEvents() {
     document.getElementById("progress-choice-overlay").classList.add("hidden");
     document.getElementById("container").classList.remove("hidden"); // <-- TAMBAHKAN INI
     startBackgroundMusic();
-    changeState(AppState.MODE_SELECTION);
+    changeState(AppState.QUIZ);
   });
 
   startNewBtn.addEventListener("click", () => {
