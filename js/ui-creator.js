@@ -1684,8 +1684,8 @@ export function createQuizReportScreen(
     const avatarInstance = avatarModel.scene.clone();
     setupAvatar(
       avatarInstance,
-      new THREE.Vector3(0.5, 0.5, 0.5),
-      new THREE.Vector3(-panelWidth / 2 - 0.5, panelHeight / 2 - 0.2, 0.1)
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
     );
   }
 
