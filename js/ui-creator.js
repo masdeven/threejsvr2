@@ -101,7 +101,7 @@ export function getResolution() {
     return 512;
   } else {
     const baseResolution = 480; // <-- INCREASED FROM 256
-    const dpr = Math.min(window.devicePixelRatio, 1.5); // <-- INCREASED FROM 2
+    const dpr = Math.min(window.devicePixelRatio, 2); // <-- INCREASED FROM 2
 
     return baseResolution * dpr;
   }
@@ -322,87 +322,82 @@ function createButton(
   return mesh;
 }
 
-function createTextPanel(text, width, options = {}) {
-  const { footerHeight = 0, fixedHeight = null } = options;
+function createTextPanel(descriptions, width, options = {}) {
+  const { fixedHeight = null } = options;
   const MAX_PANEL_HEIGHT_3D = 1.2;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
+  // Pengaturan font dan resolusi (tetap sama)
   const BASE_FONT_SIZE_PX = 42;
   const vrFontScale = 1.3;
-
   const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
-
   const finalFontSize = Math.round(
     isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX * dpr
   );
   const lineHeight = Math.round(finalFontSize * 1.2);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
-
   const padding = 25;
   const resolution = getResolution();
-
   ctx.font = font;
   const canvasWidth = width * resolution;
   const maxWidth = canvasWidth - padding * 2;
 
-  const textMetrics = wrapText(ctx, text, 0, 0, maxWidth, lineHeight, false);
-  const totalTextPixelHeight = textMetrics.pixelHeight;
-  const footerPixelHeight = footerHeight * resolution;
-
-  let finalPanelHeight3D;
-
-  if (fixedHeight !== null) {
-    finalPanelHeight3D = fixedHeight;
-  } else {
-    finalPanelHeight3D =
-      (totalTextPixelHeight + padding * 2 + footerPixelHeight) / resolution;
-    finalPanelHeight3D = Math.min(finalPanelHeight3D, MAX_PANEL_HEIGHT_3D);
-  }
-
+  // --- AWAL PERUBAHAN LOGIKA ---
+  // Tentukan tinggi canvas berdasarkan fixedHeight per halaman
+  const singlePagePixelHeight = fixedHeight * resolution;
   canvas.width = canvasWidth;
-  canvas.height = finalPanelHeight3D * resolution;
+  canvas.height = singlePagePixelHeight * descriptions.length; // Canvas tinggi untuk semua halaman
 
-  const radius = 20;
-  ctx.beginPath();
-  ctx.moveTo(radius, 0);
-  ctx.lineTo(canvas.width - radius, 0);
-  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
-  ctx.lineTo(canvas.width, canvas.height - radius);
-  ctx.quadraticCurveTo(
-    canvas.width,
-    canvas.height,
-    canvas.width - radius,
-    canvas.height
-  );
-  ctx.lineTo(radius, canvas.height);
-  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
-  ctx.lineTo(0, radius);
-  ctx.quadraticCurveTo(0, 0, radius, 0);
-  ctx.closePath();
+  // Loop untuk menggambar setiap halaman deskripsi
+  descriptions.forEach((text, index) => {
+    const pageOffsetY = index * singlePagePixelHeight;
 
-  ctx.font = font;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.shadowColor = "rgba(0,0,0,0.6)";
-  ctx.shadowBlur = 3;
-  ctx.shadowOffsetX = 1;
-  ctx.shadowOffsetY = 1;
+    // Gambar teks untuk halaman saat ini pada posisi Y yang benar
+    ctx.font = font;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = TEXT_COLOR;
+    ctx.shadowColor = "rgba(0,0,0,0.6)";
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
 
-  ctx.fillStyle = TEXT_COLOR;
-  wrapText(ctx, text, padding, padding, maxWidth, lineHeight, true);
+    wrapText(
+      ctx,
+      text,
+      padding,
+      pageOffsetY + padding,
+      maxWidth,
+      lineHeight,
+      true
+    );
+  });
 
   ctx.shadowColor = "transparent";
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = 16;
+  // PENTING: Ulangi tekstur secara vertikal
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(1, 1 / descriptions.length); // Tampilkan hanya 1 bagian dari total halaman
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
   });
 
-  const geometry = new THREE.PlaneGeometry(width, finalPanelHeight3D);
+  // Geometri tetap menggunakan tinggi untuk satu halaman
+  const geometry = new THREE.PlaneGeometry(width, fixedHeight);
   const mesh = new THREE.Mesh(geometry, material);
+
+  // Simpan data penting untuk animasi scroll
+  mesh.userData.isScrollableText = true;
+  mesh.userData.totalPages = descriptions.length;
+  mesh.userData.currentPage = 0;
+  mesh.userData.targetOffsetY = 0;
+  // --- AKHIR PERUBAHAN LOGIKA ---
 
   return mesh;
 }
@@ -833,10 +828,17 @@ export function createViewerPage(
   viewerUIGroup.add(titleLabel);
 
   const DESC_PANEL_FIXED_HEIGHT = 1.2;
-  const currentDescription = component.description[descriptionIndex];
-  const descPanel = createTextPanel(currentDescription, 3.5, {
+  const descPanel = createTextPanel(component.description, 3.5, {
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
+
+  // Inisialisasi posisi offset tekstur berdasarkan halaman awal
+  const initialOffsetY =
+    (component.description.length - 1 - descriptionIndex) /
+    component.description.length;
+  descPanel.material.map.offset.y = initialOffsetY;
+  descPanel.userData.targetOffsetY = initialOffsetY;
+  descPanel.userData.currentPage = descriptionIndex;
 
   const panelHeight = descPanel.geometry.parameters.height;
   const panelWidth = descPanel.geometry.parameters.width;
@@ -1033,7 +1035,7 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   canvas.width = width * resolution;
   canvas.height = height * resolution;
 
-  const vrFontScale = 1.2;
+  const vrFontScale = 1;
   const baseFontSize = height * resolution * 0.6;
   const fontSize = Math.floor(
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
@@ -1287,7 +1289,8 @@ export function createCompletionScreen(playerName) {
   return confetti;
 }
 
-// --- FUNGSI INI DIUBAH TOTAL ---
+// ui-creator.js
+
 export function createCreditsScreen(creditPages, pageIndex) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -1304,7 +1307,6 @@ export function createCreditsScreen(creditPages, pageIndex) {
     0.9
   );
   backgroundPanel.position.set(0, 0, 0);
-  backgroundPanel.renderOrder = 0;
   viewerUIGroup.add(backgroundPanel);
 
   const titleWidth = 2.8;
@@ -1313,44 +1315,47 @@ export function createCreditsScreen(creditPages, pageIndex) {
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   titleLabel.position.set(0, titleY, 0.01);
-  titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
+  // --- AWAL PERBAIKAN LOGIKA ---
   const DESC_PANEL_FIXED_HEIGHT = 1.1;
-  const currentCreditText = creditPages[pageIndex];
-  const descPanel = createTextPanel(currentCreditText, 2.8, {
+  // 1. Kirim SEMUA halaman ke createTextPanel untuk digambar sekaligus
+  const descPanel = createTextPanel(creditPages, 2.8, {
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
 
-  const panelHeight = descPanel.geometry.parameters.height;
-  const panelWidth = descPanel.geometry.parameters.width;
+  // 2. Atur posisi awal "viewport" tekstur
+  const initialOffsetY =
+    (creditPages.length - 1 - pageIndex) / creditPages.length;
+  descPanel.material.map.offset.y = initialOffsetY;
+  descPanel.userData.targetOffsetY = initialOffsetY;
+  descPanel.userData.currentPage = pageIndex;
 
-  const descPanelYOffset = titleY - titleHeight / 2 - panelHeight / 2 - 0.05;
+  // 3. Tambahkan properti unik untuk identifikasi
+  descPanel.userData.isCreditsPanel = true;
 
+  const descPanelYOffset =
+    titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.05;
   descPanel.position.set(0, descPanelYOffset, 0.01);
-  descPanel.renderOrder = 1;
   viewerUIGroup.add(descPanel);
+  // --- AKHIR PERBAIKAN LOGIKA ---
 
-  const descNavY = descPanelYOffset - panelHeight / 2 - 0.12;
+  // Logika untuk membuat tombol navigasi (tetap sama)
+  const descNavY =
+    descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.12;
   if (creditPages.length > 1) {
-    // --- AWAL PERBAIKAN: Logika Penempatan Tombol Simetris ---
     const buttonWidth = 0.25;
     const indicatorWidth = 0.6;
-    const padding = 0.1; // Sedikit padding antar elemen
-
-    // 1. Tempatkan indikator halaman di tengah (x=0)
+    const padding = 0.1;
     const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
     const pageIndicator = createTitleLabel(
       pageIndicatorText,
       indicatorWidth,
       0.15
     );
-    pageIndicator.material.depthWrite = false;
-    pageIndicator.position.set(0, descNavY, 0.02); // x diatur ke 0
-    pageIndicator.renderOrder = 2;
+    pageIndicator.position.set(0, descNavY, 0.02);
     viewerUIGroup.add(pageIndicator);
 
-    // 2. Hitung posisi tombol 'Next' di sebelah kanan indikator
     const isLastPage = pageIndex >= creditPages.length - 1;
     const nextButtonX = indicatorWidth / 2 + padding + buttonWidth / 2;
     const nextDescButton = createButton(
@@ -1362,10 +1367,8 @@ export function createCreditsScreen(creditPages, pageIndex) {
     );
     if (isLastPage) nextDescButton.userData.colors = null;
     nextDescButton.position.set(nextButtonX, descNavY, 0.01);
-    nextDescButton.renderOrder = 1;
     viewerUIGroup.add(nextDescButton);
 
-    // 3. Hitung posisi tombol 'Prev' di sebelah kiri indikator
     const isFirstPage = pageIndex <= 0;
     const prevButtonX = -(indicatorWidth / 2 + padding + buttonWidth / 2);
     const prevDescButton = createButton(
@@ -1377,7 +1380,6 @@ export function createCreditsScreen(creditPages, pageIndex) {
     );
     if (isFirstPage) prevDescButton.userData.colors = null;
     prevDescButton.position.set(prevButtonX, descNavY, 0.01);
-    prevDescButton.renderOrder = 1;
     viewerUIGroup.add(prevDescButton);
   }
 
@@ -1396,13 +1398,11 @@ export function createCreditsScreen(creditPages, pageIndex) {
     totalPanelHeight / 2 - padding - exitButtonSize / 2,
     0.02
   );
-  exitButton.renderOrder = 2;
   viewerUIGroup.add(exitButton);
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
 export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 

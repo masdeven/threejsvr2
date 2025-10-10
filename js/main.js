@@ -155,6 +155,8 @@ let wasMiniQuizCorrect = false;
 let currentState = null;
 let currentComponentIndex = -1;
 let currentDescriptionIndex = 0;
+let activeTextPanel = null;
+let activeCreditsPanel = null;
 
 function onVRSessionEnded() {
   // Hentikan model 3D yang sedang ditampilkan
@@ -277,6 +279,7 @@ function showViewer(index, options = {}) {
     currentDescriptionIndex,
     highestComponentUnlocked
   );
+  activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
 }
 function checkOrientation() {
   // Cek apakah ini perangkat mobile (memiliki touch screen)
@@ -385,6 +388,57 @@ async function init() {
   scene.add(debugGroup);
 
   animate();
+}
+
+function updateActiveTextPanelTarget() {
+  // Temukan panel teks di dalam scene
+  activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
+  if (activeTextPanel) {
+    const totalPages = activeTextPanel.userData.totalPages;
+    // Hitung offset Y baru yang menjadi target animasi
+    activeTextPanel.userData.targetOffsetY =
+      (totalPages - 1 - currentDescriptionIndex) / totalPages;
+    activeTextPanel.userData.currentPage = currentDescriptionIndex;
+  }
+}
+
+// Fungsi ini hanya akan membuat ulang tombol dan indikator halaman, bukan panel teks utama
+function reloadViewerNavigation() {
+  const component = components[currentComponentIndex];
+  if (!component) return;
+
+  // Hapus UI yang ada (ini cepat karena hanya beberapa tombol)
+  clearViewerUI();
+
+  // Buat ulang halaman viewer. Karena panel teks sudah ada,
+  // ini hanya akan membuat ulang tombol dan elemen lain di sekitarnya.
+  createViewerPage(
+    component,
+    currentComponentIndex,
+    currentDescriptionIndex,
+    highestComponentUnlocked
+  );
+
+  // PENTING: Setelah UI dibuat ulang, kita harus mencari lagi panel teksnya.
+  updateActiveTextPanelTarget();
+}
+
+// main.js
+
+function updateActiveCreditsPanelTarget() {
+  if (activeCreditsPanel) {
+    const totalPages = activeCreditsPanel.userData.totalPages;
+    activeCreditsPanel.userData.targetOffsetY =
+      (totalPages - 1 - currentCreditIndex) / totalPages;
+    activeCreditsPanel.userData.currentPage = currentCreditIndex;
+  }
+}
+
+function reloadCreditsNavigation() {
+  clearViewerUI();
+  createCreditsScreen(creditsData, currentCreditIndex);
+  // Tetapkan kembali panel aktif setelah UI digambar ulang
+  activeCreditsPanel = scene.getObjectByProperty("isCreditsPanel", true);
 }
 
 // ... (Fungsi setupHTMLEvents sampai playSoundFromCache tidak berubah)
@@ -686,12 +740,30 @@ function reloadViewer() {
     highestComponentUnlocked
   );
 }
+function updateScrollAnimation(panel, deltaTime) {
+  if (panel && panel.userData.isScrollableText) {
+    const texture = panel.material.map;
+    const currentOffsetY = texture.offset.y;
+    const targetOffsetY = panel.userData.targetOffsetY;
 
+    if (Math.abs(currentOffsetY - targetOffsetY) > 0.001) {
+      texture.offset.y = THREE.MathUtils.lerp(
+        currentOffsetY,
+        targetOffsetY,
+        deltaTime * 10
+      );
+    } else {
+      texture.offset.y = targetOffsetY;
+    }
+  }
+}
 function reloadCreditsScreen() {
   clearViewerUI();
   createCreditsScreen(creditsData, currentCreditIndex);
 }
 function changeState(newState, options = {}) {
+  activeTextPanel = null;
+  activeCreditsPanel = null;
   if (currentState === newState && newState !== AppState.VIEWER) {
     return;
   }
@@ -893,23 +965,32 @@ function handleInteraction(action) {
     case "show_credits":
       currentCreditIndex = 0;
       changeState(AppState.CREDITS);
+      // Setelah UI dibuat, cari dan atur panel aktif
+      setTimeout(() => {
+        activeCreditsPanel = scene.getObjectByProperty("isCreditsPanel", true);
+      }, 0);
       break;
     case "prev_credit":
       if (currentCreditIndex > 0) {
         currentCreditIndex--;
-        reloadCreditsScreen();
+        updateActiveCreditsPanelTarget(); // Panggil helper baru
+        reloadCreditsNavigation(); // Panggil helper baru
       }
       break;
+
     case "next_credit":
       if (currentCreditIndex < creditsData.length - 1) {
         currentCreditIndex++;
-        reloadCreditsScreen();
+        updateActiveCreditsPanelTarget(); // Panggil helper baru
+        reloadCreditsNavigation(); // Panggil helper baru
       }
       break;
     case "prev_description":
       if (currentDescriptionIndex > 0) {
         currentDescriptionIndex--;
-        reloadViewer();
+        // --- GANTI reloadViewer() DENGAN LOGIKA BARU ---
+        updateActiveTextPanelTarget();
+        reloadViewerNavigation(); // Fungsi baru untuk update tombol & indikator
       }
       break;
     case "next_description":
@@ -919,7 +1000,9 @@ function handleInteraction(action) {
         currentDescriptionIndex < currentComp.description.length - 1
       ) {
         currentDescriptionIndex++;
-        reloadViewer();
+        // --- GANTI reloadViewer() DENGAN LOGIKA BARU ---
+        updateActiveTextPanelTarget();
+        reloadViewerNavigation(); // Fungsi baru untuk update tombol & indikator
       }
       break;
 
@@ -1068,6 +1151,9 @@ function render() {
     }
   }
   updateModelTransition(deltaTime);
+  updateScrollAnimation(activeTextPanel, deltaTime);
+  updateScrollAnimation(activeCreditsPanel, deltaTime);
+
   if (activeTypingAnimation) {
     activeTypingAnimation.update(deltaTime);
   }
