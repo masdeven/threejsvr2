@@ -841,7 +841,7 @@ function changeState(newState, options = {}) {
       case AppState.MINI_QUIZ_RESULT:
         controls.enabled = true;
         camera.position.set(0, 1.6, 0.5);
-        controls.target.set(-0.2, 1.6, 0);
+        controls.target.set(-0.3, 1.6, 0);
         break;
     }
   }
