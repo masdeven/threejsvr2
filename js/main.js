@@ -487,16 +487,24 @@ function setupHTMLEvents() {
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
     const nameValue = nameInput.value.trim(); // Ambil nilai dan hapus spasi
+    const nameOverlay = document.getElementById("player-name-input");
 
     if (nameValue === "") {
-      // Jika nama kosong, tampilkan peringatan dan hentikan proses
-      alert("Nama tidak boleh kosong!");
-      return; // Hentikan eksekusi fungsi
+      // --- NOTIFIKASI INTERAKTIF BARU ---
+      // 1. Tambahkan class .shake untuk memicu animasi
+      nameOverlay.classList.add("shake");
+
+      // 2. Hapus class setelah animasi selesai agar bisa dipicu lagi
+      setTimeout(() => {
+        nameOverlay.classList.remove("shake");
+      }, 500); // Durasi harus sama dengan durasi animasi di CSS
+
+      return;
+      // --- AKHIR NOTIFIKASI BARU ---
     }
 
     playerName = nameInput.value.trim() || "Tamu";
     saveProgress();
-    const nameOverlay = document.getElementById("name-input-overlay");
     const fadeOutDuration = 500; // Durasi dalam milidetik (0.5s)
 
     // 1. Tambahkan class fade-out untuk memulai animasi
