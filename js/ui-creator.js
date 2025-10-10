@@ -1407,13 +1407,11 @@ export function createCreditsScreen(creditPages, pageIndex) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-export function createQuizScreen(questionIndex) {
+export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
-
-  const currentQuestion = quizData[questionIndex];
 
   // --- ADJUSTMENT: Increased panel height to fit the new layout ---
   const totalPanelWidth = 4.8;
@@ -1492,17 +1490,16 @@ export function createQuizScreen(questionIndex) {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-export function createQuizResultScreen(isCorrect, questionIndex) {
-  if (!quizData[questionIndex]) {
-    console.error("Indeks pertanyaan kuis tidak valid:", questionIndex);
-    return; // Stop execution if the data doesn't exist
-  }
+export function createQuizResultScreen(
+  isCorrect,
+  currentQuestion,
+  questionIndex,
+  totalQuestions
+) {
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
-
-  const currentQuestion = quizData[questionIndex];
 
   // DESIGN SYNC: Use the same panel dimensions as the quiz screen
   const totalPanelWidth = 4.8;
@@ -1563,7 +1560,7 @@ export function createQuizResultScreen(isCorrect, questionIndex) {
   const buttonY = -totalPanelHeight / 2 + continueButtonHeight / 2 + padding;
   const buttonX = totalPanelWidth / 2 - continueButtonWidth / 2 - padding;
 
-  const isLastQuestion = questionIndex >= quizData.length - 1;
+  const isLastQuestion = questionIndex >= totalQuestions - 1;
   // Teks tombol dibuat lebih ringkas
   const buttonText = isLastQuestion ? "Results >" : "Next >";
 

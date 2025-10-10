@@ -58,7 +58,7 @@ import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 
 // --- AWAL PERUBAHAN ---
 let audioListener, sound, backgroundSound, completionSound, greetingSound; // Tambahkan objek audio baru
-// --- AKHIR PERUBAHAN ---
+let shuffledQuizData = [];
 
 const audioLoader = new THREE.AudioLoader(loadingManager);
 let playerName = "";
@@ -203,10 +203,20 @@ function refreshUI(options = {}) {
       createHelpPanel();
       break;
     case AppState.QUIZ:
-      createQuizScreen(currentQuestionIndex);
+      // Kirim objek soal yang sudah diacak, bukan hanya indeks
+      createQuizScreen(
+        shuffledQuizData[currentQuestionIndex],
+        currentQuestionIndex
+      );
       break;
     case AppState.QUIZ_RESULT:
-      createQuizResultScreen(wasAnswerCorrect, currentQuestionIndex);
+      // Kirim objek soal, indeks saat ini, dan total soal
+      createQuizResultScreen(
+        wasAnswerCorrect,
+        shuffledQuizData[currentQuestionIndex],
+        currentQuestionIndex, // <-- TAMBAHKAN INI
+        shuffledQuizData.length // <-- DAN TAMBAHKAN INI
+      );
       break;
     case AppState.QUIZ_REPORT:
       createQuizReportScreen(quizScore, hasAttemptedQuiz);
@@ -391,7 +401,18 @@ function setupHTMLEvents() {
     document.getElementById("progress-choice-overlay").classList.add("hidden");
     document.getElementById("container").classList.remove("hidden"); // <-- TAMBAHKAN INI
     startBackgroundMusic();
-    changeState(AppState.QUIZ);
+    shuffledQuizData = [...quizData];
+    for (let i = shuffledQuizData.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledQuizData[i], shuffledQuizData[j]] = [
+        shuffledQuizData[j],
+        shuffledQuizData[i],
+      ];
+    }
+
+    // 2. Reset the quiz state variables
+    currentQuestionIndex = 0;
+    changeState(AppState.MODE_SELECTION);
   });
 
   startNewBtn.addEventListener("click", () => {
@@ -831,6 +852,15 @@ function handleInteraction(action) {
       changeState(AppState.LANDING);
       break;
     case "show_quiz":
+      shuffledQuizData = [...quizData];
+      for (let i = shuffledQuizData.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledQuizData[i], shuffledQuizData[j]] = [
+          shuffledQuizData[j],
+          shuffledQuizData[i],
+        ];
+      }
+
       currentQuestionIndex = 0;
       quizScore = 0;
       changeState(AppState.QUIZ);
@@ -849,7 +879,7 @@ function handleInteraction(action) {
       break;
     case "next_question":
       currentQuestionIndex++;
-      if (currentQuestionIndex >= quizData.length) {
+      if (currentQuestionIndex >= shuffledQuizData.length) {
         hasAttemptedQuiz = true;
         saveProgress();
         changeState(AppState.QUIZ_POST_COMPLETION_REPORT);
