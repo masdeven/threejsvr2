@@ -962,6 +962,7 @@ export function createViewerPage(
   menuButton.position.set(actionX, menuY, 0.01);
   menuButton.renderOrder = 1;
   viewerUIGroup.add(menuButton);
+  navButtons.push(menuButton);
 
   const audioButton = createButton(
     "🔊",
@@ -975,6 +976,7 @@ export function createViewerPage(
   audioButton.position.set(actionX, audioY, 0.01);
   audioButton.renderOrder = 1;
   viewerUIGroup.add(audioButton);
+  navButtons.push(audioButton);
 
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();

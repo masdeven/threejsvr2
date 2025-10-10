@@ -810,7 +810,22 @@ function handleInteraction(action) {
       changeState(AppState.LANDING);
       break;
     case "back_to_menu":
-      changeState(AppState.MENU);
+      // 1. Tambahkan guard clause dan kunci interaksi
+      if (isChangingComponent) return;
+      isChangingComponent = true;
+
+      // 2. Buat callback yang akan dijalankan setelah animasi selesai
+      const onAnimationMidpointBackToMenu = () => {
+        // Model sudah tersembunyi, sekarang aman untuk mengubah state
+        changeState(AppState.MENU);
+
+        // Setelah state diubah, transisi selesai dan interaksi dibuka kembali
+        isChangingComponent = false;
+      };
+
+      // 3. Mulai animasi untuk menyembunyikan model yang ada
+      // Jika tidak ada model (misal di halaman Introduction), callback akan langsung dijalankan
+      startModelAnimation(true, onAnimationMidpointBackToMenu);
       break;
     case "back_to_landing":
       changeState(AppState.LANDING);
@@ -970,12 +985,15 @@ function handleInteraction(action) {
       break;
     default:
       if (action.startsWith("select_")) {
+        if (isChangingComponent) return;
+        isChangingComponent = true;
+
         const index = parseInt(action.split("_")[1], 10);
         if (!isNaN(index) && index >= 0 && index < components.length) {
-          // 1. Atur materi mana yang akan ditampilkan
           currentComponentIndex = index;
-          // 2. Panggil fungsi changeState agar logika kamera ikut dijalankan
-          changeState(AppState.VIEWER);
+          changeState(AppState.VIEWER, { isTransitioning: true });
+        } else {
+          isChangingComponent = false;
         }
       }
       break;
