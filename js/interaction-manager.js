@@ -57,7 +57,7 @@ function getVRIntersectedModel(controller) {
 }
 // --- AKHIR BARU ---
 
-function redrawButton(button, color) {
+function redrawButton(button, color, text = null) {
   const data = button.userData;
   const ctx = data.canvasContext;
   const canvas = ctx.canvas;
@@ -121,9 +121,32 @@ function redrawButton(button, color) {
   ctx.textBaseline = "middle";
 
   const verticalOffset = shape === "circle" ? finalFontSize * 0.05 : 0;
-  ctx.fillText(data.text, canvas.width / 2, canvas.height / 2 + verticalOffset);
+  ctx.fillText(
+    text || data.text,
+    canvas.width / 2,
+    canvas.height / 2 + verticalOffset
+  );
 
   button.material.map.needsUpdate = true;
+}
+export function setButtonEnabled(button, enabled, text = null) {
+  if (!button || !button.userData.isButton) return;
+
+  const DISABLED_COLOR = "#4A5568"; // Warna abu-abu untuk status nonaktif
+  const data = button.userData;
+
+  if (enabled) {
+    // Kembalikan ke status aktif
+    data.action = data.originalAction || data.action;
+    data.colors.hover = "#4A5568"; // Aktifkan kembali efek hover
+    redrawButton(button, data.colors.default, data.text);
+  } else {
+    // Ubah ke status nonaktif
+    data.originalAction = data.action; // Simpan aksi asli
+    data.action = "locked"; // Matikan aksi
+    data.colors.hover = DISABLED_COLOR; // Matikan efek hover
+    redrawButton(button, DISABLED_COLOR, text || data.text);
+  }
 }
 
 function handleHover(intersectedObject) {

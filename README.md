@@ -66,12 +66,12 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ### 🔊 Audio & Suara
 
-| Sumber                                                                       | Deskripsi    |
-| :--------------------------------------------------------------------------- | :----------- |
-| **[Narakeet](https://www.narakeet.com)**                                     | Narasi suara |
-| **[YouTube](https://www.youtube.com/watch?v=pBEdwmP8B4o&list=LL&index=17s)** | Musik latar  |
-| **[Pixabay](https://pixabay.com/id/)**                                       | Efek suara   |
-|                                                                              |              |
+| Sumber                                                                                                                | Deskripsi    |
+| :-------------------------------------------------------------------------------------------------------------------- | :----------- |
+| **[Narakeet](https://www.narakeet.com)**                                                                              | Narasi suara |
+| **[YouTube - BreakingCopyright — Royalty Free Music](https://www.youtube.com/watch?v=pBEdwmP8B4o&list=LL&index=17s)** | Musik latar  |
+| **[Pixabay](https://pixabay.com/id/)**                                                                                | Efek suara   |
+|                                                                                                                       |              |
 
 ---
 

@@ -24,6 +24,7 @@ const TEXT_COLOR = "#FFFFFF";
 const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
+export let navButtons = [];
 
 const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -4); // Z diubah dari -3 ke -3.5
 const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
@@ -722,13 +723,11 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     const angle = startAngle + col * angleStep;
     const isUnlocked = comp.unlocked;
 
-    // --- PENAMBAHAN NOMOR URUT PADA LABEL ---
     const buttonLabel = isUnlocked
       ? `${index + 1}. ${comp.label}`
-      : "🔒 Locked"; // <-- DIUBAH
-    // --- AKHIR PENAMBAHAN NOMOR ---
+      : "🔒 Locked";
 
-    const buttonColor = isUnlocked ? BG_COLOR : "#4A5568";
+    const buttonColor = isUnlocked ? "#1A202C" : "#4A5568";
     const button = createButton(
       buttonLabel,
       isUnlocked ? `select_${index}` : "locked",
@@ -754,7 +753,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const actionSpacingX = 2.4;
 
   const exitButton = createButton(
-    "Main Menu",
+    "< Main Menu",
     "back_to_landing",
     2.2,
     0.3,
@@ -766,15 +765,15 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
 
   let quizButtonLabel, quizButtonAction, quizButtonColor;
   if (!allComponentsUnlocked) {
-    quizButtonLabel = "Final Test (Locked)";
+    quizButtonLabel = "Final Test > (Locked)";
     quizButtonAction = "locked";
     quizButtonColor = "#4A5568";
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Final Test";
+    quizButtonLabel = "Final Test >";
     quizButtonAction = "show_quiz";
-    quizButtonColor = ACCENT_COLOR;
+    quizButtonColor = "#dc3545";
   } else {
-    quizButtonLabel = "Learning Report";
+    quizButtonLabel = "Learning Report >";
     quizButtonAction = "show_quiz_report";
     quizButtonColor = "#28a745";
   }
@@ -811,6 +810,7 @@ export function createViewerPage(
   // --- AKHIR PERUBAHAN ---
 
   clearViewerUI();
+  navButtons = [];
 
   const totalPanelWidth = 4;
   const totalPanelHeight = 2.3;
@@ -923,6 +923,7 @@ export function createViewerPage(
     );
     prevButton.renderOrder = 1;
     viewerUIGroup.add(prevButton);
+    navButtons.push(prevButton);
   }
 
   const isLastComponent = index >= components.length - 1;
@@ -942,6 +943,7 @@ export function createViewerPage(
     );
     nextButton.renderOrder = 1;
     viewerUIGroup.add(nextButton);
+    navButtons.push(nextButton);
   }
 
   const actionButtonSize = 0.25;
@@ -1333,13 +1335,26 @@ export function createCreditsScreen(creditPages, pageIndex) {
 
   const descNavY = descPanelYOffset - panelHeight / 2 - 0.12;
   if (creditPages.length > 1) {
-    const rightEdgeX = panelWidth / 2;
+    // --- AWAL PERBAIKAN: Logika Penempatan Tombol Simetris ---
     const buttonWidth = 0.25;
     const indicatorWidth = 0.6;
-    const padding = 0.05;
-    let currentX = rightEdgeX;
+    const padding = 0.1; // Sedikit padding antar elemen
 
+    // 1. Tempatkan indikator halaman di tengah (x=0)
+    const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
+    const pageIndicator = createTitleLabel(
+      pageIndicatorText,
+      indicatorWidth,
+      0.15
+    );
+    pageIndicator.material.depthWrite = false;
+    pageIndicator.position.set(0, descNavY, 0.02); // x diatur ke 0
+    pageIndicator.renderOrder = 2;
+    viewerUIGroup.add(pageIndicator);
+
+    // 2. Hitung posisi tombol 'Next' di sebelah kanan indikator
     const isLastPage = pageIndex >= creditPages.length - 1;
+    const nextButtonX = indicatorWidth / 2 + padding + buttonWidth / 2;
     const nextDescButton = createButton(
       ">",
       isLastPage ? "locked" : "next_credit",
@@ -1348,26 +1363,13 @@ export function createCreditsScreen(creditPages, pageIndex) {
       isLastPage ? "#4A5568" : BG_COLOR
     );
     if (isLastPage) nextDescButton.userData.colors = null;
-    const nextButtonX = currentX - buttonWidth / 2;
     nextDescButton.position.set(nextButtonX, descNavY, 0.01);
     nextDescButton.renderOrder = 1;
     viewerUIGroup.add(nextDescButton);
-    currentX = nextButtonX - buttonWidth / 2 - padding;
 
-    const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
-    const pageIndicator = createTitleLabel(
-      pageIndicatorText,
-      indicatorWidth,
-      0.15
-    );
-    pageIndicator.material.depthWrite = false;
-    const indicatorX = currentX - indicatorWidth / 2;
-    pageIndicator.position.set(indicatorX, descNavY, 0.02);
-    pageIndicator.renderOrder = 2;
-    viewerUIGroup.add(pageIndicator);
-    currentX = indicatorX - indicatorWidth / 2 - padding;
-
+    // 3. Hitung posisi tombol 'Prev' di sebelah kiri indikator
     const isFirstPage = pageIndex <= 0;
+    const prevButtonX = -(indicatorWidth / 2 + padding + buttonWidth / 2);
     const prevDescButton = createButton(
       "<",
       isFirstPage ? "locked" : "prev_credit",
@@ -1376,7 +1378,6 @@ export function createCreditsScreen(creditPages, pageIndex) {
       isFirstPage ? "#4A5568" : BG_COLOR
     );
     if (isFirstPage) prevDescButton.userData.colors = null;
-    const prevButtonX = currentX - buttonWidth / 2;
     prevDescButton.position.set(prevButtonX, descNavY, 0.01);
     prevDescButton.renderOrder = 1;
     viewerUIGroup.add(prevDescButton);
@@ -1740,6 +1741,19 @@ export function createMiniQuizPage(component) {
     button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      // Gunakan posisi yang sama persis seperti di halaman viewer
+      new THREE.Vector3(
+        -totalPanelWidth / 2 - 0.3,
+        totalPanelHeight / 2 - 0.2,
+        0.05
+      )
+    );
+  }
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
@@ -1811,6 +1825,20 @@ export function createMiniQuizResultPage(component, isCorrect) {
   continueButton.position.set(0, navY, 0.01);
   continueButton.renderOrder = 1;
   viewerUIGroup.add(continueButton);
+
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      // Gunakan posisi yang sama persis seperti di halaman viewer
+      new THREE.Vector3(
+        -totalPanelWidth / 2 - 0.3,
+        totalPanelHeight / 2 - 0.2,
+        0.05
+      )
+    );
+  }
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);

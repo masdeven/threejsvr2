@@ -25,7 +25,8 @@ import {
   preloadAvatar,
   activeTypingAnimation,
   uiGroup,
-  GREETING_DATA, // Impor data sapaan
+  GREETING_DATA,
+  navButtons, // Impor data sapaan
 } from "./ui-creator.js";
 // --- AKHIR PERUBAHAN ---
 import {
@@ -37,11 +38,14 @@ import {
   setupKTX2Loader,
   isDragging,
   modelCache,
+  startModelAnimation, // <-- IMPOR BARU
+  updateModelTransition, // <-- IMPOR BARU
 } from "./model-loader.js";
 import {
   setupInteraction,
   handleVRHover,
   handleVRDrag,
+  setButtonEnabled,
 } from "./interaction-manager.js";
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
 import { loadingManager } from "./loading-manager.js";
@@ -164,7 +168,7 @@ function onVRSessionEnded() {
   console.log("Sesi VR berakhir, kembali ke pemilihan mode.");
 }
 
-function refreshUI() {
+function refreshUI(options = {}) {
   clearUI();
   switch (currentState) {
     case AppState.MODE_SELECTION:
@@ -183,7 +187,7 @@ function refreshUI() {
       break;
     case AppState.VIEWER:
       if (currentComponentIndex !== -1) {
-        showViewer(currentComponentIndex);
+        showViewer(currentComponentIndex, options);
       }
       break;
     case AppState.MINI_QUIZ:
@@ -223,7 +227,8 @@ function refreshUI() {
 }
 
 // ... (Fungsi showViewer tidak berubah)
-function showViewer(index) {
+function showViewer(index, options = {}) {
+  const { isTransitioning = false } = options;
   const component = components[index];
   if (!component) return;
 
@@ -231,10 +236,31 @@ function showViewer(index) {
   currentDescriptionIndex = 0;
 
   clearUI();
+
   if (component.modelFile) {
-    loadComponentModel(component.modelFile);
+    const onModelReady = () => {
+      // Callback ini akan dipanggil saat model selesai dianimasikan
+      if (isTransitioning) {
+        isChangingComponent = false;
+        navButtons.forEach((btn) => setButtonEnabled(btn, true));
+      }
+    };
+
+    if (isTransitioning) {
+      loadComponentModel(component.modelFile, -1.5, onModelReady);
+    } else {
+      loadComponentModel(component.modelFile, 0);
+    }
+  } else {
+    // Jika komponen tidak punya model (misal: Introduction), pastikan flag transisi di-reset
+    if (isTransitioning) {
+      setTimeout(() => {
+        isChangingComponent = false;
+        navButtons.forEach((btn) => setButtonEnabled(btn, true));
+      }, CHANGE_DEBOUNCE_TIME);
+    }
   }
-  // Teruskan `highestComponentUnlocked` ke `createViewerPage`
+
   createViewerPage(
     component,
     currentComponentIndex,
@@ -320,9 +346,7 @@ async function init() {
   // === 💾 AWAL LOGIKA PEMUATAN PROGRES ===
   const hasSavedProgress = loadProgress();
 
-  // Preload semua aset seperti biasa
-  const assetPromises = [preloadAvatar(), preloadAssets()];
-  await Promise.all(assetPromises);
+  await Promise.all([preloadAvatar(), preloadAssets()]);
 
   // === 🔁 Setelah preload selesai ===
   const splashScreen = document.getElementById("splash-screen");
@@ -646,7 +670,7 @@ function reloadCreditsScreen() {
   clearViewerUI();
   createCreditsScreen(creditsData, currentCreditIndex);
 }
-function changeState(newState) {
+function changeState(newState, options = {}) {
   if (currentState === newState && newState !== AppState.VIEWER) {
     return;
   }
@@ -690,15 +714,16 @@ function changeState(newState) {
     newState === AppState.LANDING ||
     newState === AppState.QUIZ_REPORT ||
     newState === AppState.AVATAR_GREETING ||
-    newState === AppState.VIEWER // <-- TAMBAHKAN INI
+    newState === AppState.VIEWER ||
+    newState === AppState.MINI_QUIZ || // <-- TAMBAHKAN INI
+    newState === AppState.MINI_QUIZ_RESULT // <-- TAMBAHKAN INI
   ) {
     toggleAvatarVisibility(true);
   } else {
     toggleAvatarVisibility(false);
   }
-  // --- AKHIR PERUBAHAN ---
 
-  refreshUI();
+  refreshUI(options);
   if (!isDragging && !isTransitioningWithinViewer) {
     switch (newState) {
       case AppState.MODE_SELECTION:
@@ -853,31 +878,32 @@ function handleInteraction(action) {
       }
       break;
 
-    // --- MODIFIKASI DIMULAI DI SINI ---
     case "next_component":
       if (isChangingComponent) return;
       isChangingComponent = true;
 
-      // Jika ini adalah komponen terbaru yang dibuka (atau yang terakhir),
-      // pengguna harus menyelesaikan mini kuis untuk membuka yang berikutnya.
-      if (currentComponentIndex === highestComponentUnlocked) {
-        changeState(AppState.MINI_QUIZ);
-      }
-      // Jika pengguna meninjau komponen lama, langsung ke komponen berikutnya.
-      else if (currentComponentIndex < components.length - 1) {
-        currentComponentIndex++;
-        changeState(AppState.VIEWER);
-      }
-      // Fallback (seharusnya tidak terjadi dalam alur normal jika UI benar)
-      else {
-        changeState(AppState.MENU);
-      }
+      navButtons.forEach((btn) => setButtonEnabled(btn, false, "..."));
 
-      setTimeout(() => {
-        isChangingComponent = false;
-      }, CHANGE_DEBOUNCE_TIME);
+      const onAnimationMidpointNext = () => {
+        // --- PERBAIKAN DI SINI ---
+        // Hapus variabel 'allComponentsUnlocked' yang tidak akurat.
+        // Kondisi '!allComponentsUnlocked' juga dihapus.
+        // Kuis sekarang akan muncul setiap kali pengguna berada di materi terjauh yang telah mereka buka.
+        if (currentComponentIndex === highestComponentUnlocked) {
+          changeState(AppState.MINI_QUIZ);
+          isChangingComponent = false;
+        }
+        // Logika selanjutnya tidak berubah dan akan bekerja dengan benar setelah perbaikan di atas.
+        else if (currentComponentIndex < components.length - 1) {
+          currentComponentIndex++;
+          changeState(AppState.VIEWER, { isTransitioning: true });
+        } else {
+          changeState(AppState.MENU);
+          isChangingComponent = false;
+        }
+      };
+      startModelAnimation(true, onAnimationMidpointNext);
       break;
-    // --- AKHIR MODIFIKASI ---
 
     case "mini_quiz_correct":
       wasMiniQuizCorrect = true;
@@ -889,15 +915,16 @@ function handleInteraction(action) {
       break;
     case "continue_after_mini_quiz":
       if (wasMiniQuizCorrect) {
-        // Cek apakah ini adalah komponen terakhir
         if (currentComponentIndex >= components.length - 1) {
-          // Tandai bahwa semua materi telah selesai
           if (highestComponentUnlocked < components.length) {
             highestComponentUnlocked = components.length;
           }
           changeState(AppState.COMPLETION);
         } else {
-          // Buka komponen berikutnya
+          // --- AWAL PERBAIKAN ---
+          // Logika lama yang menyebabkan bug telah dihapus.
+          // Sekarang kita hanya perlu memajukan indeks dan memanggil
+          // changeState dengan opsi transisi.
           const unlockedIndex = currentComponentIndex + 1;
           if (unlockedIndex < components.length) {
             components[unlockedIndex].unlocked = true;
@@ -906,16 +933,16 @@ function handleInteraction(action) {
               saveProgress();
             }
           }
-          // Lanjutkan ke viewer komponen berikutnya
-          isChangingComponent = true;
+
+          // Tidak perlu menganimasikan model lama turun karena kita
+          // datang dari layar non-model (hasil mini-kuis).
+          // Cukup panggil changeState untuk memuat model baru dengan animasi naik.
           currentComponentIndex++;
-          changeState(AppState.VIEWER);
-          setTimeout(() => {
-            isChangingComponent = false;
-          }, CHANGE_DEBOUNCE_TIME);
+          changeState(AppState.VIEWER, { isTransitioning: true });
+          // --- AKHIR PERBAIKAN ---
         }
       } else {
-        // Jika salah, kembali ke viewer untuk mencoba lagi
+        // Jika salah, kembali ke viewer untuk mencoba lagi (tanpa animasi)
         changeState(AppState.VIEWER);
       }
       break;
@@ -923,11 +950,18 @@ function handleInteraction(action) {
       if (isChangingComponent) return;
       isChangingComponent = true;
 
-      currentComponentIndex--;
-      changeState(AppState.VIEWER);
-      setTimeout(() => {
-        isChangingComponent = false;
-      }, CHANGE_DEBOUNCE_TIME);
+      navButtons.forEach((btn) => setButtonEnabled(btn, false, "..."));
+
+      const onAnimationMidpointPrev = () => {
+        if (currentComponentIndex > 0) {
+          currentComponentIndex--;
+          changeState(AppState.VIEWER, { isTransitioning: true });
+        } else {
+          isChangingComponent = false; // Jika sudah di awal, batalkan
+          navButtons.forEach((btn) => setButtonEnabled(btn, true));
+        }
+      };
+      startModelAnimation(true, onAnimationMidpointPrev);
       break;
     case "play_audio":
       if (currentComponentIndex > -1) {
@@ -985,7 +1019,7 @@ function render() {
       isFadingInUI = false;
     }
   }
-
+  updateModelTransition(deltaTime);
   if (activeTypingAnimation) {
     activeTypingAnimation.update(deltaTime);
   }
