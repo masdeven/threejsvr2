@@ -1,5 +1,3 @@
-// File: model-loader.js
-
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { scene } from "./scene-setup.js";
@@ -13,13 +11,12 @@ export let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 export const modelCache = {};
 
-// --- PERBAIKAN: Tambahkan properti onComplete pada transitionState ---
 let transitionState = {
   isAnimating: false,
   targetY: 0,
   speed: 4,
   onMidpoint: null,
-  onComplete: null, // <-- TAMBAHAN BARU
+  onComplete: null,
 };
 
 export function setupKTX2Loader(ktx2Loader) {
@@ -30,11 +27,10 @@ export function setupDRACOLoader(dracoLoader) {
   loader.setDRACOLoader(dracoLoader);
 }
 
-// --- PERBAIKAN: Fungsi menerima onCompleteCallback ---
 export function startModelAnimation(
   isAnimatingOut,
   onMidpointCallback = null,
-  onCompleteCallback = null // <-- TAMBAHAN BARU
+  onCompleteCallback = null
 ) {
   if (!currentModel) {
     if (onMidpointCallback) {
@@ -48,7 +44,7 @@ export function startModelAnimation(
 
   transitionState.isAnimating = isAnimatingOut ? "out" : "in";
   transitionState.onMidpoint = onMidpointCallback;
-  transitionState.onComplete = onCompleteCallback; // <-- TAMBAHAN BARU
+  transitionState.onComplete = onCompleteCallback;
 
   if (isAnimatingOut) {
     transitionState.targetY = TABLE_HEIGHT - 1.5;
@@ -73,37 +69,24 @@ export function updateModelTransition(deltaTime) {
   if (Math.abs(currentY - targetY) < 0.01) {
     currentModel.position.y = targetY;
 
-    // --- AWAL PERBAIKAN ---
-    // Cek jika animasi 'out' selesai dan memiliki callback.
     if (transitionState.isAnimating === "out" && transitionState.onMidpoint) {
-      // Simpan callback-nya.
       const midpointCallback = transitionState.onMidpoint;
-
-      // Reset state animasi SEKARANG, SEBELUM memanggil callback.
       transitionState.isAnimating = false;
       transitionState.onMidpoint = null;
-
-      // Jalankan callback yang akan memulai animasi 'in' yang baru.
       midpointCallback();
-
-      // Hentikan eksekusi fungsi ini agar tidak ada state yang tertimpa.
       return;
     }
 
-    // Jika animasi 'in' yang selesai, jalankan onComplete.
     if (transitionState.isAnimating === "in" && transitionState.onComplete) {
       transitionState.onComplete();
     }
-    // --- AKHIR PERBAIKAN ---
 
-    // Reset state untuk kasus normal (animasi 'in' selesai, atau 'out' tanpa callback).
     transitionState.isAnimating = false;
     transitionState.onMidpoint = null;
     transitionState.onComplete = null;
   }
 }
 
-// --- PERBAIKAN: setupModel sekarang menerima startYOffset ---
 function setupModel(model, startYOffset = 0) {
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
@@ -133,15 +116,13 @@ function setupModel(model, startYOffset = 0) {
 
   const newMinY = newBox.min.y;
   const finalY = TABLE_HEIGHT - newMinY;
-  model.position.y = finalY + startYOffset; // <-- Variabel startYOffset sekarang terdefinisi
+  model.position.y = finalY + startYOffset;
   model.userData.finalY = finalY;
 
   currentModel = model;
   scene.add(currentModel);
 }
-// --- AKHIR PERBAIKAN ---
 
-// --- PERBAIKAN: loadComponentModel sekarang menerima onAnimationComplete ---
 export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
   if (activeLoad) {
     activeLoad.cancel();
@@ -153,7 +134,7 @@ export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
     console.log(`Mengambil model dari cache: ${url}`);
     const modelFromCache = modelCache[url].clone();
     setupModel(modelFromCache, startYOffset);
-    startModelAnimation(false, null, onAnimationComplete); // <-- Panggil animasi 'in' dengan callback
+    startModelAnimation(false, null, onAnimationComplete);
     return;
   }
 
@@ -164,7 +145,7 @@ export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
       modelCache[url] = gltf.scene;
       const newModel = gltf.scene.clone();
       setupModel(newModel, startYOffset);
-      startModelAnimation(false, null, onAnimationComplete); // <-- Panggil animasi 'in' dengan callback
+      startModelAnimation(false, null, onAnimationComplete);
       activeLoad = null;
     },
     undefined,
@@ -174,7 +155,6 @@ export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
     }
   );
 }
-// --- AKHIR PERBAIKAN ---
 
 export function unloadComponentModel() {
   if (currentModel) {
@@ -195,7 +175,6 @@ export function unloadComponentModel() {
   }
 }
 
-// ... Sisa file (startDragging, stopDragging, dll.) tetap sama ...
 export function startDragging(event) {
   const currentModel = getCurrentModel();
   if (!currentModel) return;
@@ -206,7 +185,6 @@ export function startDragging(event) {
   };
 }
 
-// Fungsi untuk menghentikan interaksi drag
 export function stopDragging() {
   isDragging = false;
 }
@@ -220,7 +198,6 @@ export function dragModel(event) {
   const deltaX = event.clientX - previousMousePosition.x;
   const deltaY = event.clientY - previousMousePosition.y;
 
-  // Rotasi berdasarkan pergerakan mouse
   currentModel.rotation.y += deltaX * 0.005;
   currentModel.rotation.x += deltaY * 0.005;
 
@@ -234,16 +211,16 @@ export function rotateModelWithVR(deltaX, deltaY) {
   const currentModel = getCurrentModel();
   if (!currentModel) return;
 
-  const rotationSpeed = 2.0; // Sesuaikan kecepatan rotasi jika perlu
+  const rotationSpeed = 2.0;
 
-  // Terapkan rotasi. Sumbu mungkin perlu disesuaikan tergantung orientasi model/controller
   currentModel.rotation.y += deltaX * rotationSpeed;
   currentModel.rotation.x += deltaY * rotationSpeed;
 }
-// Fungsi untuk mengambil model yang sedang aktif
+
 export function getCurrentModel() {
   return currentModel;
 }
+
 export function updateModelRotation() {
   if (currentModel && !isDragging) {
     currentModel.rotation.y += 0.005;

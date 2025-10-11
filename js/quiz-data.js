@@ -1,5 +1,3 @@
-// File: quiz-data.js
-
 export const quizData = [
   // == Introduction ==
   {

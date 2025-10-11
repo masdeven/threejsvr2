@@ -26,7 +26,7 @@ const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 export let navButtons = [];
 
-const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -4); // Z diubah dari -3 ke -3.5
+const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -4);
 const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
 
 export const GREETING_DATA = (playerName) => [
@@ -69,7 +69,7 @@ export function preloadAvatar() {
     loader.load(
       "assets/models/bot.glb",
       (gltf) => {
-        avatarModel = gltf; // Simpan seluruh gltf
+        avatarModel = gltf;
         resolve(avatarModel);
       },
       undefined,
@@ -100,9 +100,8 @@ export function getResolution() {
   if (isVRMode()) {
     return 512;
   } else {
-    const baseResolution = 480; // <-- INCREASED FROM 256
-    const dpr = Math.min(window.devicePixelRatio, 2); // <-- INCREASED FROM 2
-
+    const baseResolution = 480;
+    const dpr = Math.min(window.devicePixelRatio, 2);
     return baseResolution * dpr;
   }
 }
@@ -135,6 +134,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
   }
   return { pixelHeight: totalLines * lineHeight, lineCount: totalLines };
 }
+
 function createTypingText(text, width, options = {}, onComplete) {
   const {
     baseFontSize = 28,
@@ -159,7 +159,6 @@ function createTypingText(text, width, options = {}, onComplete) {
   const canvasWidth = width * resolution;
   const maxWidth = canvasWidth - padding * 2;
 
-  // Hitung tinggi total berdasarkan teks lengkap untuk ukuran kanvas yang benar
   const textMetrics = wrapText(ctx, text, 0, 0, maxWidth, lineHeight, false);
   const totalTextPixelHeight = textMetrics.pixelHeight;
 
@@ -177,15 +176,14 @@ function createTypingText(text, width, options = {}, onComplete) {
   const geometry = new THREE.PlaneGeometry(width, canvas.height / resolution);
   const mesh = new THREE.Mesh(geometry, material);
 
-  // Data untuk animasi
   let currentIndex = 0;
   let timeAccumulator = 0;
-  const typingSpeed = 20; // karakter per detik
+  const typingSpeed = 20;
 
   function update(deltaTime) {
     if (currentIndex >= text.length) {
       if (activeTypingAnimation === this) {
-        activeTypingAnimation = null; // Hentikan update setelah selesai
+        activeTypingAnimation = null;
         if (onComplete) onComplete();
       }
       return;
@@ -203,7 +201,6 @@ function createTypingText(text, width, options = {}, onComplete) {
       }
     }
 
-    // Gambar ulang kanvas dengan teks yang sudah dianimasikan
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = font;
     ctx.textAlign = "center";
@@ -225,11 +222,11 @@ function createTypingText(text, width, options = {}, onComplete) {
     texture.needsUpdate = true;
   }
 
-  // Ganti `activeTypingAnimation` dengan objek update yang baru
   activeTypingAnimation = { update };
 
   return mesh;
 }
+
 function createButton(
   text,
   action,
@@ -332,7 +329,6 @@ function createTextPanel(descriptions, width, options = {}) {
     ? descriptions
     : [descriptions];
 
-  // Pengaturan font dan resolusi (tetap sama)
   const BASE_FONT_SIZE_PX = 50;
   const vrFontScale = 1.1;
   const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
@@ -351,11 +347,9 @@ function createTextPanel(descriptions, width, options = {}) {
   canvas.width = canvasWidth;
   canvas.height = singlePagePixelHeight * descriptionsArray.length;
 
-  // Loop untuk menggambar setiap halaman deskripsi
   descriptionsArray.forEach((text, index) => {
     const pageOffsetY = index * singlePagePixelHeight;
 
-    // Gambar teks untuk halaman saat ini pada posisi Y yang benar
     ctx.font = font;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
@@ -380,7 +374,6 @@ function createTextPanel(descriptions, width, options = {}) {
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.anisotropy = 16;
-  // PENTING: Ulangi tekstur secara vertikal
   texture.wrapS = THREE.ClampToEdgeWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(1, 1 / descriptionsArray.length);
@@ -390,19 +383,17 @@ function createTextPanel(descriptions, width, options = {}) {
     transparent: true,
   });
 
-  // Geometri tetap menggunakan tinggi untuk satu halaman
   const geometry = new THREE.PlaneGeometry(width, fixedHeight);
   const mesh = new THREE.Mesh(geometry, material);
 
-  // Simpan data penting untuk animasi scroll
   mesh.userData.isScrollableText = true;
   mesh.userData.totalPages = descriptionsArray.length;
   mesh.userData.currentPage = 0;
   mesh.userData.targetOffsetY = 0;
-  // --- AKHIR PERUBAHAN LOGIKA ---
 
   return mesh;
 }
+
 export function clearUI() {
   activeTypingAnimation = null;
   [uiGroup, viewerUIGroup].forEach((group) => {
@@ -428,6 +419,7 @@ export function clearUI() {
     }
   });
 }
+
 function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -461,7 +453,6 @@ function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
-    // opacity: opacity,
   });
 
   const geometry = new THREE.PlaneGeometry(width, height);
@@ -483,10 +474,9 @@ export function updateAvatar(deltaTime, elapsedTime) {
     avatarMixer.update(deltaTime);
   }
   if (currentAvatar && currentAvatar.userData.initialY !== undefined) {
-    const hoverAmplitude = 0.04; // Seberapa tinggi/rendah gerakannya
-    const hoverSpeed = 1.5; // Seberapa cepat gerakannya
+    const hoverAmplitude = 0.04;
+    const hoverSpeed = 1.5;
 
-    // Hitung posisi Y baru menggunakan sinus untuk gerakan naik-turun yang mulus
     currentAvatar.position.y =
       currentAvatar.userData.initialY +
       Math.sin(elapsedTime * hoverSpeed) * hoverAmplitude;
@@ -503,26 +493,23 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  // --- AWAL PENAMBAHAN TOMBOL "X" ---
   const exitButtonSize = 0.22;
-  const padding = 0.15; // Jarak dari tepi panel
+  const padding = 0.15;
   const exitButton = createButton(
     "X",
-    "back_to_landing", // Aksi untuk langsung ke menu utama (landing page)
+    "back_to_landing",
     exitButtonSize,
     exitButtonSize,
-    "rgba(45, 55, 72, 0.7)", // Warna tombol yang subtle
+    "rgba(45, 55, 72, 0.7)",
     "circle"
   );
-  // Posisikan di sudut kanan atas panel
   exitButton.position.set(
     panelWidth / 2 - padding - exitButtonSize / 2,
     panelHeight / 2 - padding - exitButtonSize / 2,
-    0.02 // Sedikit di depan panel agar tidak tumpang tindih
+    0.02
   );
-  exitButton.renderOrder = 2; // Pastikan tombol render di atas panel
+  exitButton.renderOrder = 2;
   viewerUIGroup.add(exitButton);
-  // --- AKHIR PENAMBAHAN TOMBOL "X" ---
 
   const greetingTexts = GREETING_DATA(playerName);
   const currentGreeting = greetingTexts[greetingIndex];
@@ -577,6 +564,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 export function createLandingPage(playerName) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -679,13 +667,11 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
   const localCenterY = 0;
 
-  // --- PENYESUAIAN LAYOUT DIMULAI DI SINI ---
-  const radius = 3.5; // <-- DIUBAH: Radius sedikit diperlebar untuk memberi ruang
-  const angleSpan = Math.PI * 0.8; // <-- DIUBAH: Sudut kurva disesuaikan untuk 4 item
-  const itemsPerRow = 4; // <-- DIUBAH: Jumlah item per baris menjadi 4
+  const radius = 3.5;
+  const angleSpan = Math.PI * 0.8;
+  const itemsPerRow = 4;
   const rowHeight = 0.5;
   const localLookAtTarget = new THREE.Vector3(0, localCenterY, 5);
-  // --- PENYESUAIAN LAYOUT SELESAI ---
 
   const titleY = localCenterY + 0.8;
   const titleZ = -(radius - 2);
@@ -724,7 +710,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     const button = createButton(
       buttonLabel,
       isUnlocked ? `select_${index}` : "locked",
-      1.8, // <-- DIUBAH: Lebar tombol diperbesar
+      1.8,
       0.25,
       buttonColor
     );
@@ -796,11 +782,8 @@ export function createViewerPage(
   descriptionIndex = 0,
   highestComponentUnlocked = 0
 ) {
-  // --- AWAL PERUBAHAN ---
-  // Menggunakan konstanta posisi yang sudah didefinisikan di atas
   const uiBasePosition = VIEWER_UI_POSITION;
   const uiLookAtPosition = VIEWER_UI_LOOKAT;
-  // --- AKHIR PERUBAHAN ---
 
   clearViewerUI();
   navButtons = [];
@@ -834,7 +817,6 @@ export function createViewerPage(
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
 
-  // Inisialisasi posisi offset tekstur berdasarkan halaman awal
   const initialOffsetY =
     (component.description.length - 1 - descriptionIndex) /
     component.description.length;
@@ -996,27 +978,20 @@ export function createViewerPage(
 }
 
 export function clearViewerUI() {
-  // --- AWAL PERUBAHAN ---
-  // Iterasi mundur untuk menghapus objek dari grup dengan aman
   for (let i = viewerUIGroup.children.length - 1; i >= 0; i--) {
     const child = viewerUIGroup.children[i];
 
-    // Gunakan traverse untuk membersihkan semua mesh di dalam objek
-    // (ini penting untuk membersihkan model kompleks seperti avatar)
     child.traverse((object) => {
       if (object.isMesh) {
-        // Cek jika geometri dan material ada sebelum di-dispose
         object.geometry?.dispose();
 
         if (object.material) {
-          // Handle jika material adalah sebuah array (untuk model multi-material)
           if (Array.isArray(object.material)) {
             object.material.forEach((material) => {
               material.map?.dispose();
               material.dispose();
             });
           } else {
-            // Handle jika material tunggal
             object.material.map?.dispose();
             object.material.dispose();
           }
@@ -1024,10 +999,8 @@ export function clearViewerUI() {
       }
     });
 
-    // Hapus objek level atas dari grup setelah semua isinya dibersihkan
     viewerUIGroup.remove(child);
   }
-  // --- AKHIR PERUBAHAN ---
 }
 
 function createTitleLabel(text, width, height, color = TEXT_COLOR) {
@@ -1291,8 +1264,6 @@ export function createCompletionScreen(playerName) {
   return confetti;
 }
 
-// ui-creator.js
-
 export function createCreditsScreen(creditPages, pageIndex) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
@@ -1319,30 +1290,24 @@ export function createCreditsScreen(creditPages, pageIndex) {
   titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
-  // --- AWAL PERBAIKAN LOGIKA ---
   const DESC_PANEL_FIXED_HEIGHT = 1.1;
-  // 1. Kirim SEMUA halaman ke createTextPanel untuk digambar sekaligus
   const descPanel = createTextPanel(creditPages, 2.8, {
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
 
-  // 2. Atur posisi awal "viewport" tekstur
   const initialOffsetY =
     (creditPages.length - 1 - pageIndex) / creditPages.length;
   descPanel.material.map.offset.y = initialOffsetY;
   descPanel.userData.targetOffsetY = initialOffsetY;
   descPanel.userData.currentPage = pageIndex;
 
-  // 3. Tambahkan properti unik untuk identifikasi
   descPanel.userData.isCreditsPanel = true;
 
   const descPanelYOffset =
     titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.05;
   descPanel.position.set(0, descPanelYOffset, 0.01);
   viewerUIGroup.add(descPanel);
-  // --- AKHIR PERBAIKAN LOGIKA ---
 
-  // Logika untuk membuat tombol navigasi (tetap sama)
   const descNavY =
     descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.12;
   if (creditPages.length > 1) {
@@ -1405,15 +1370,15 @@ export function createCreditsScreen(creditPages, pageIndex) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
-  // --- ADJUSTMENT: Increased panel height to fit the new layout ---
   const totalPanelWidth = 4.8;
-  const totalPanelHeight = 2.4; // Increased from 2.0
+  const totalPanelHeight = 2.4;
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   mainPanel.renderOrder = 0;
@@ -1429,19 +1394,14 @@ export function createQuizScreen(currentQuestion, questionIndex) {
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  // --- NEW LAYOUT LOGIC STARTS HERE ---
-
-  // 1. Combine the question and all answer choices into a single text block.
-  // This ensures clean, non-interactive display.
   const questionText = currentQuestion.question;
   const answerChoicesText = currentQuestion.answers
-    .map((answer, index) => `${String.fromCharCode(65 + index)}. ${answer}`) // A, B, C, D
-    .join("\n"); // Add spacing between answers
+    .map((answer, index) => `${String.fromCharCode(65 + index)}. ${answer}`)
+    .join("\n");
 
   const fullQuizText = `${questionText}\n\n${answerChoicesText}`;
 
-  // 2. Create a single text panel for the question and answers.
-  const QUIZ_TEXT_PANEL_HEIGHT = 1.6; // Adjusted height for all text
+  const QUIZ_TEXT_PANEL_HEIGHT = 1.6;
   const quizTextPanel = createTextPanel(fullQuizText, 4.2, {
     fixedHeight: QUIZ_TEXT_PANEL_HEIGHT,
   });
@@ -1452,7 +1412,6 @@ export function createQuizScreen(currentQuestion, questionIndex) {
   quizTextPanel.renderOrder = 1;
   viewerUIGroup.add(quizTextPanel);
 
-  // 3. Create a horizontal row of simple A, B, C, D buttons at the bottom.
   const choiceButtonWidth = 0.6;
   const choiceButtonHeight = 0.3;
   const choiceGapX = 0.2;
@@ -1461,13 +1420,12 @@ export function createQuizScreen(currentQuestion, questionIndex) {
     (currentQuestion.answers.length - 1) * choiceGapX;
   const choiceStartX = -totalButtonsWidth / 2 + choiceButtonWidth / 2;
 
-  // Position the buttons near the bottom of the main panel
   const choiceButtonY = -totalPanelHeight / 2 + choiceButtonHeight / 2 + 0.15;
 
   currentQuestion.answers.forEach((_, i) => {
     const isCorrect = i === currentQuestion.correctAnswerIndex;
     const action = isCorrect ? "answer_correct" : "answer_incorrect";
-    const buttonLabel = String.fromCharCode(65 + i); // "A", "B", "C", "D"
+    const buttonLabel = String.fromCharCode(65 + i);
 
     const button = createButton(
       buttonLabel,
@@ -1481,8 +1439,6 @@ export function createQuizScreen(currentQuestion, questionIndex) {
     button.renderOrder = 1;
     viewerUIGroup.add(button);
   });
-
-  // --- NEW LAYOUT LOGIC ENDS HERE ---
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
@@ -1499,7 +1455,6 @@ export function createQuizResultScreen(
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
-  // DESIGN SYNC: Use the same panel dimensions as the quiz screen
   const totalPanelWidth = 4.8;
   const totalPanelHeight = 2.4;
   const mainPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
@@ -1507,37 +1462,32 @@ export function createQuizResultScreen(
   mainPanel.renderOrder = 0;
   viewerUIGroup.add(mainPanel);
 
-  // IMPROVED FEEDBACK: Make the title more conversational
   const titleHeight = 0.35;
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   const titleText = isCorrect
     ? "Excellent, that's correct!"
     : "Not quite. Here's the review:";
-  const titleColor = isCorrect ? "#28a745" : "#FFC107"; // Green for correct, Yellow for review
+  const titleColor = isCorrect ? "#28a745" : "#FFC107";
   const titleLabel = createTitleLabel(titleText, 4.0, titleHeight, titleColor);
   titleLabel.position.set(0, titleY, 0.01);
   titleLabel.renderOrder = 2;
   viewerUIGroup.add(titleLabel);
 
-  // Re-display the question for context.
   const questionText = `Question:\n${currentQuestion.question}`;
 
-  // Format all answer choices, clearly marking the correct one.
   const answerChoicesText = currentQuestion.answers
     .map((answer, index) => {
       const prefix = `${String.fromCharCode(65 + index)}. ${answer}`;
-      // Add a visual marker to the correct answer
       if (index === currentQuestion.correctAnswerIndex) {
         return `${prefix}  <-- Correct Answer`;
       }
       return prefix;
     })
-    .join("\n"); // Add spacing between answers for readability
+    .join("\n");
 
   const fullResultText = `${questionText}\n\n${answerChoicesText}`;
 
-  // Create a single, unified text panel for the review.
   const RESULT_TEXT_PANEL_HEIGHT = 1.5;
   const resultTextPanel = createTextPanel(fullResultText, 4.2, {
     fixedHeight: RESULT_TEXT_PANEL_HEIGHT,
@@ -1549,17 +1499,14 @@ export function createQuizResultScreen(
   resultTextPanel.renderOrder = 1;
   viewerUIGroup.add(resultTextPanel);
 
-  // --- PERUBAHAN DI SINI: Tombol navigasi yang lebih kecil di pojok kanan bawah ---
   const continueButtonWidth = 1.2;
   const continueButtonHeight = 0.25;
-  const padding = 0.15; // Jarak dari tepi panel
+  const padding = 0.15;
 
-  // Hitung posisi X dan Y untuk pojok kanan bawah
   const buttonY = -totalPanelHeight / 2 + continueButtonHeight / 2 + padding;
   const buttonX = totalPanelWidth / 2 - continueButtonWidth / 2 - padding;
 
   const isLastQuestion = questionIndex >= totalQuestions - 1;
-  // Teks tombol dibuat lebih ringkas
   const buttonText = isLastQuestion ? "Results >" : "Next >";
 
   const continueButton = createButton(
@@ -1569,15 +1516,14 @@ export function createQuizResultScreen(
     continueButtonHeight,
     ACCENT_COLOR
   );
-  // Atur posisi baru
   continueButton.position.set(buttonX, buttonY, 0.01);
   continueButton.renderOrder = 1;
   viewerUIGroup.add(continueButton);
-  // --- AKHIR PERUBAHAN ---
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -1668,7 +1614,7 @@ export function createQuizReportScreen(
 
   const exitButton = createButton(
     "X",
-    exitButtonAction, // Gunakan variabel aksi dinamis di sini
+    exitButtonAction,
     exitButtonSize,
     exitButtonSize,
     "rgba(45, 55, 72, 0.7)",
@@ -1696,11 +1642,8 @@ export function createQuizReportScreen(
 }
 
 export function createMiniQuizPage(component) {
-  // --- AWAL PERUBAHAN ---
-  // Menggunakan konstanta posisi yang sama
   const uiBasePosition = VIEWER_UI_POSITION;
   const uiLookAtPosition = VIEWER_UI_LOOKAT;
-  // --- AKHIR PERUBAHAN ---
 
   const totalPanelWidth = 4;
   const totalPanelHeight = 2.3;
@@ -1765,7 +1708,6 @@ export function createMiniQuizPage(component) {
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
-      // Gunakan posisi yang sama persis seperti di halaman viewer
       new THREE.Vector3(
         -totalPanelWidth / 2 - 0.3,
         totalPanelHeight / 2 - 0.2,
@@ -1779,11 +1721,8 @@ export function createMiniQuizPage(component) {
 }
 
 export function createMiniQuizResultPage(component, isCorrect) {
-  // --- AWAL PERUBAHAN ---
-  // Menggunakan konstanta posisi yang sama
   const uiBasePosition = VIEWER_UI_POSITION;
   const uiLookAtPosition = VIEWER_UI_LOOKAT;
-  // --- AKHIR PERUBAHAN ---
 
   const totalPanelWidth = 4;
   const totalPanelHeight = 2.3;
@@ -1850,7 +1789,6 @@ export function createMiniQuizResultPage(component, isCorrect) {
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
-      // Gunakan posisi yang sama persis seperti di halaman viewer
       new THREE.Vector3(
         -totalPanelWidth / 2 - 0.3,
         totalPanelHeight / 2 - 0.2,
@@ -1862,25 +1800,22 @@ export function createMiniQuizResultPage(component, isCorrect) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+
 export function createPostQuizChoiceScreen() {
   clearUI();
 
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
-  // --- PERUBAIKAN DIMULAI DI SINI ---
-
-  // 1. Tingkatkan tinggi panel agar cukup untuk semua elemen
   const panelWidth = 4.0;
-  const panelHeight = 1.4; // Diperbesar dari 1.2
+  const panelHeight = 1.4;
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  // 2. Atur ulang posisi vertikal elemen agar rapi dan simetris
   const titleLabel = createTitleLabel("Learning Session Complete", 3.5, 0.3);
 
-  titleLabel.position.set(0, 0.45, 0.01); // Digeser ke atas
+  titleLabel.position.set(0, 0.45, 0.01);
   viewerUIGroup.add(titleLabel);
 
   const buttonWidth = 3.2;
@@ -1893,7 +1828,7 @@ export function createPostQuizChoiceScreen() {
     buttonHeight,
     BG_COLOR
   );
-  learnAgainButton.position.set(0, 0.04, 0.01); // Posisi disesuaikan
+  learnAgainButton.position.set(0, 0.04, 0.01);
   viewerUIGroup.add(learnAgainButton);
 
   const mainMenuButton = createButton(
@@ -1903,7 +1838,7 @@ export function createPostQuizChoiceScreen() {
     buttonHeight,
     ACCENT_COLOR
   );
-  mainMenuButton.position.set(0, -0.38, 0.01); // Posisi disesuaikan
+  mainMenuButton.position.set(0, -0.38, 0.01);
   viewerUIGroup.add(mainMenuButton);
 
   if (avatarModel) {
@@ -1922,22 +1857,17 @@ export function createPostQuizChoiceScreen() {
 export function createModeSelectionPage() {
   clearUI();
 
-  // --- AWAL PERUBAHAN DESAIN ---
-
-  // 1. Menggunakan sistem posisi dan grup yang sama dengan Landing Page
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
-  // 2. Buat panel latar belakang yang solid
   const panelWidth = 4.0;
   const panelHeight = 1.3;
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
-  viewerUIGroup.add(mainPanel); // Tambahkan ke viewerUIGroup
+  viewerUIGroup.add(mainPanel);
 
-  // 3. Posisikan ulang semua elemen di atas panel
   const titleLabel = createTitleLabel("Choose Experience Mode", 3.8, 0.35);
-  titleLabel.position.set(0, 0.45, 0.01); // Atur posisi Y dan Z relatif terhadap panel
+  titleLabel.position.set(0, 0.45, 0.01);
   viewerUIGroup.add(titleLabel);
 
   const buttonWidth = 3.0;
@@ -1952,7 +1882,7 @@ export function createModeSelectionPage() {
     buttonHeight,
     ACCENT_COLOR
   );
-  browserButton.position.set(0, startY, 0.01); // Atur posisi Y dan Z
+  browserButton.position.set(0, startY, 0.01);
   viewerUIGroup.add(browserButton);
 
   const vrButton = createButton(
@@ -1960,18 +1890,14 @@ export function createModeSelectionPage() {
     "start_vr",
     buttonWidth,
     buttonHeight
-    // Warna default (BUTTON_COLOR) akan digunakan
   );
-  vrButton.position.set(0, startY - spacing, 0.01); // Atur posisi Y dan Z
+  vrButton.position.set(0, startY - spacing, 0.01);
   viewerUIGroup.add(vrButton);
 
-  // 4. Atur posisi akhir untuk keseluruhan grup UI
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
-
-  // 5. Logika fade-in tidak lagi diperlukan karena sudah konsisten
-  // --- AKHIR PERUBAHAN DESAIN ---
 }
+
 export function updateUIGroupPosition() {
   if (uiGroup.children.length > 0) {
     const distance = UI_DISTANCE;

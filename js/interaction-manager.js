@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { scene, camera, renderer, controls } from "./scene-setup.js";
-// --- MODIFIKASI ---
 import { getVRControllers, vrInteractionState } from "./vr-manager.js";
 import { uiGroup, viewerUIGroup, FONT, getResolution } from "./ui-creator.js";
 import {
@@ -8,11 +7,8 @@ import {
   stopDragging,
   dragModel,
   getCurrentModel,
-  // --- BARU ---
   rotateModelWithVR,
-  // --- AKHIR BARU ---
 } from "./model-loader.js";
-// --- MODIFIKASI ---
 import { isVRMode } from "./vr-manager.js";
 
 const raycaster = new THREE.Raycaster();
@@ -46,7 +42,6 @@ function getVRIntersectedObject(controller) {
   return null;
 }
 
-// --- BARU ---
 function getVRIntersectedModel(controller) {
   const currentModel = getCurrentModel();
   if (!currentModel) return null;
@@ -55,7 +50,6 @@ function getVRIntersectedModel(controller) {
   const intersects = raycaster.intersectObject(currentModel, true);
   return intersects.length > 0 ? intersects[0].object : null;
 }
-// --- AKHIR BARU ---
 
 function redrawButton(button, color, text = null) {
   const data = button.userData;
@@ -101,7 +95,6 @@ function redrawButton(button, color, text = null) {
   const TEXT_COLOR = "#FFFFFF";
   ctx.fillStyle = TEXT_COLOR;
 
-  // --- DITAMBAHKAN: Menggunakan logika font yang SAMA seperti createButton ---
   const vrFontScale = 1;
   const resolution = getResolution();
   const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
@@ -129,22 +122,21 @@ function redrawButton(button, color, text = null) {
 
   button.material.map.needsUpdate = true;
 }
+
 export function setButtonEnabled(button, enabled, text = null) {
   if (!button || !button.userData.isButton) return;
 
-  const DISABLED_COLOR = "#4A5568"; // Warna abu-abu untuk status nonaktif
+  const DISABLED_COLOR = "#4A5568";
   const data = button.userData;
 
   if (enabled) {
-    // Kembalikan ke status aktif
     data.action = data.originalAction || data.action;
-    data.colors.hover = "#4A5568"; // Aktifkan kembali efek hover
+    data.colors.hover = "#4A5568";
     redrawButton(button, data.colors.default, data.text);
   } else {
-    // Ubah ke status nonaktif
-    data.originalAction = data.action; // Simpan aksi asli
-    data.action = "locked"; // Matikan aksi
-    data.colors.hover = DISABLED_COLOR; // Matikan efek hover
+    data.originalAction = data.action;
+    data.action = "locked";
+    data.colors.hover = DISABLED_COLOR;
     redrawButton(button, DISABLED_COLOR, text || data.text);
   }
 }
@@ -173,21 +165,18 @@ function handleHover(intersectedObject) {
   lastIntersectedButton = intersectedObject;
 }
 
-// --- [BARU] Logika untuk menangani klik pada tombol scroll ---
 function handleScrollClick(action, scrollParent) {
   if (scrollParent && scrollParent.userData.isScrollable) {
     const { content, scrollBounds } = scrollParent.userData;
-    const scrollStep = 0.2; // Seberapa jauh sekali scroll
+    const scrollStep = 0.2;
 
     let newY = content.position.y;
     if (action === "scroll_up") {
       newY += scrollStep;
     } else {
-      // "scroll_down"
       newY -= scrollStep;
     }
 
-    // Batasi posisi scroll agar tidak keluar dari batas atas/bawah
     content.position.y = THREE.MathUtils.clamp(
       newY,
       scrollBounds.bottom,
@@ -195,6 +184,7 @@ function handleScrollClick(action, scrollParent) {
     );
   }
 }
+
 function onClick(event) {
   if (isVRMode()) return;
 
@@ -230,10 +220,9 @@ export function setupInteraction(callback) {
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
     const intersectedObject = getIntersectedObject(x, y);
-    handleHover(intersectedObject); // <- pakai logika hover lama
+    handleHover(intersectedObject);
   });
 
-  // --- AWAL MODIFIKASI ROTASI MANUAL ---
   const raycasterDrag = new THREE.Raycaster();
 
   targetElement.addEventListener("pointerdown", (event) => {
@@ -241,13 +230,11 @@ export function setupInteraction(callback) {
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
     const uiHit = getIntersectedObject(x, y);
     if (uiHit) {
-      // Pointer sedang di atas tombol, jangan mulai drag model
       return;
     }
     const currentModel = getCurrentModel();
     if (!currentModel) return;
 
-    // Cek apakah pointer mengenai model
     pointer.x = x;
     pointer.y = y;
     raycasterDrag.setFromCamera(pointer, camera);
@@ -255,27 +242,25 @@ export function setupInteraction(callback) {
     const intersects = raycasterDrag.intersectObject(currentModel, true);
 
     if (intersects.length > 0) {
-      controls.enabled = false; // Nonaktifkan OrbitControls
+      controls.enabled = false;
       startDragging(event);
     }
   });
 
   window.addEventListener("pointermove", (event) => {
-    dragModel(event); // Fungsi ini sudah memiliki pengecekan isDragging
+    dragModel(event);
   });
 
   window.addEventListener("pointerup", () => {
     if (!controls.enabled) {
-      controls.enabled = true; // Aktifkan kembali OrbitControls
+      controls.enabled = true;
     }
     stopDragging();
   });
 
   const controllers = getVRControllers();
   controllers.forEach((controller, index) => {
-    // --- MODIFIKASI ---
     controller.addEventListener("selectstart", () => {
-      // --- AWAL MODIFIKASI VR DRAG ---
       const state =
         index === 0
           ? vrInteractionState.controller1
@@ -285,9 +270,8 @@ export function setupInteraction(callback) {
       if (intersectedModel) {
         state.isGrabbing = true;
         state.startPosition.copy(controller.position);
-        return; // Hentikan eksekusi agar tidak memproses klik UI
+        return;
       }
-      // --- AKHIR MODIFIKASI VR DRAG ---
 
       const intersectedObject = getVRIntersectedObject(controller);
 
@@ -295,16 +279,14 @@ export function setupInteraction(callback) {
         const action = intersectedObject.userData.action;
         const scrollParent = intersectedObject.userData.scrollParent;
 
-        // --- PERBAIKAN DI SINI JUGA ---
         if (action === "scroll_up" || action === "scroll_down") {
-          handleScrollClick(action, scrollParent); // Panggil fungsi scroll untuk VR
+          handleScrollClick(action, scrollParent);
         } else if (interactionCallback && action) {
-          interactionCallback(action); // Kirim aksi lain ke main.js
+          interactionCallback(action);
         }
       }
     });
 
-    // --- MODIFIKASI selectend ---
     controller.addEventListener("selectend", () => {
       const state =
         index === 0
@@ -314,19 +296,17 @@ export function setupInteraction(callback) {
         state.isGrabbing = false;
       }
     });
-    // --- AKHIR MODIFIKASI selectend ---
   });
 }
 
 export function handleVRHover() {
   const controllers = getVRControllers();
   let intersectedInFrame = null;
-  // Jangan proses hover jika sedang grabbing
   if (
     vrInteractionState.controller1.isGrabbing ||
     vrInteractionState.controller2.isGrabbing
   ) {
-    handleHover(null); // Kosongkan hover
+    handleHover(null);
     return;
   }
   for (const controller of controllers) {
@@ -339,7 +319,6 @@ export function handleVRHover() {
   handleHover(intersectedInFrame);
 }
 
-// --- BARU ---
 export function handleVRDrag() {
   const controllers = getVRControllers();
 
@@ -355,9 +334,7 @@ export function handleVRDrag() {
 
       rotateModelWithVR(deltaX, deltaY);
 
-      // Perbarui posisi awal untuk frame berikutnya
       state.startPosition.copy(currentPosition);
     }
   });
 }
-// --- AKHIR BARU ---

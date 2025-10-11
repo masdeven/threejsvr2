@@ -4,21 +4,17 @@ import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { loadingManager } from "./loading-manager.js";
 import { loader as gltfLoader } from "./model-loader.js";
 
-// Scene
 export const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x101010);
 
-// Camera
 export const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
   100
 );
-// Posisikan kamera di pusat ruangan (posisi mata pengguna)
 camera.position.set(0, 1.6, 0);
 
-// Renderer
 export const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: "high-performance",
@@ -31,31 +27,20 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.6;
 document.getElementById("container").appendChild(renderer.domElement);
 
-// Controls
 export const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.enablePan = false; // Pastikan pan dinonaktifkan
-controls.enableZoom = false; // Nonaktifkan zoom
-
-// KUNCI PERBAIKAN: Atur target ke posisi yang sama dengan kamera
-// Ini akan membuat kamera berputar pada posisinya sendiri (menoleh)
+controls.enablePan = false;
+controls.enableZoom = false;
 controls.target.set(0, 1.6, 0);
-
-// Atur jarak zoom agar tidak bisa keluar dari ruangan
 controls.minDistance = 0.1;
 controls.maxDistance = 0.5;
-
-// Batasi rotasi vertikal agar terasa lebih alami
 controls.minPolarAngle = Math.PI / 4;
 controls.maxPolarAngle = (3 * Math.PI) / 4;
-
 controls.update();
 
-// Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 scene.add(ambientLight);
 
-// Environment
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 pmremGenerator.compileEquirectangularShader();
 
@@ -63,20 +48,15 @@ new RGBELoader(loadingManager)
   .setPath("assets/env/")
   .load("environment.hdr", function (texture) {
     const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-    pmremGenerator.dispose(); // Hapus generator setelah tidak digunakan
-
-    // Terapkan environment map yang sudah diproses
+    pmremGenerator.dispose();
     scene.environment = envMap;
-    scene.background = envMap; // Gunakan peta yang sama untuk background
+    scene.background = envMap;
   });
 
-// Load Environment Room Model
 gltfLoader.load(
   "assets/models/Ruangan_Optimal.glb",
   (gltf) => {
     const room = gltf.scene;
-    // --- TAMBAHKAN BARIS INI ---
-    // Geser ruangan ke belakang sejauh 2.5 meter pada sumbu Z
     room.position.set(0, 0, -2.5);
     scene.add(room);
     console.log("Model ruangan berhasil dimuat.");
@@ -87,7 +67,6 @@ gltfLoader.load(
   }
 );
 
-// Window Resize
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
