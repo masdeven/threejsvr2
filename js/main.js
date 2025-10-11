@@ -359,7 +359,14 @@ async function init() {
   // === 💾 AWAL LOGIKA PEMUATAN PROGRES ===
   const hasSavedProgress = loadProgress();
 
-  await Promise.all([preloadAvatar(), preloadAssets()]);
+  // 1. Muat avatar terlebih dahulu
+  await preloadAvatar();
+
+  // 2. Muat semua model .glb dan tunggu hingga selesai
+  await preloadModels();
+
+  // 3. Setelah model selesai, muat aset lainnya
+  await preloadOtherAssets();
 
   // === 🔁 Setelah preload selesai ===
   const splashScreen = document.getElementById("splash-screen");
@@ -539,53 +546,72 @@ function showNameInputScreen() {
   document.getElementById("name-input-overlay").classList.remove("hidden");
   nameInput.focus();
 }
-function preloadAssets() {
-  return new Promise((resolve, reject) => {
-    console.log("Preloading assets...");
 
-    const tempTextureLoader = new THREE.TextureLoader(loadingManager);
+function updateLoadingText(message) {
+  const loadingTextElement = document.getElementById("loading-text");
+  if (loadingTextElement) {
+    loadingTextElement.textContent = message;
+  }
+}
 
-    // 2. Buat promise untuk memuat tekstur logo
-    const texturePromise = new Promise((res) => {
-      // Cukup panggil .load(). Three.js akan otomatis menyimpan hasilnya di cache internal.
-      // Ketika UI nanti meminta gambar yang sama, gambar akan diambil dari cache.
-      tempTextureLoader.load(
-        "assets/images/logo-kampus.png",
-        () => {
-          console.log("Logo texture preloaded and cached.");
-          res(); // Selesaikan promise setelah gambar dimuat
+// Fungsi baru untuk memuat model secara terpisah
+function preloadModels() {
+  return new Promise((resolve) => {
+    updateLoadingText("Loading 3D models...");
+    const modelFiles = components
+      .filter((c) => c.modelFile)
+      .map((c) => c.modelFile);
+    let modelsLoaded = 0;
+    const totalModels = modelFiles.length;
+
+    if (totalModels === 0) {
+      resolve();
+      return;
+    }
+
+    modelFiles.forEach((file) => {
+      loader.load(
+        file,
+        (gltf) => {
+          modelCache[file] = gltf.scene; // Simpan ke cache
+          modelsLoaded++;
+          // Perbarui progress bar di sini jika diperlukan
+          loadingManager.onProgress(file, modelsLoaded, totalModels);
+          if (modelsLoaded === totalModels) {
+            console.log("All 3D models preloaded.");
+            resolve();
+          }
         },
         undefined,
         (err) => {
-          console.error("Failed to preload logo texture:", err);
-          res(); // Tetap selesaikan promise agar aplikasi tidak macet jika logo gagal dimuat
+          console.error(`Failed to load model: ${file}`, err);
+          modelsLoaded++; // Anggap selesai agar tidak macet
+          if (modelsLoaded === totalModels) {
+            resolve();
+          }
         }
       );
     });
+  });
+}
 
-    // --- Preload model ---
-    const modelPromises = components
-      .filter((c) => c.modelFile && !modelCache[c.modelFile])
-      .map(
-        (c) =>
-          new Promise((res, rej) => {
-            loader.load(
-              c.modelFile,
-              (gltf) => {
-                modelCache[c.modelFile] = gltf.scene;
-                console.log(`Model di-cache: ${c.modelFile}`);
-                res();
-              },
-              undefined,
-              (err) => {
-                console.error(`Failed to load model: ${c.modelFile}`, err);
-                res(); // tetap resolve agar tidak stuck
-              }
-            );
-          })
+// Fungsi baru untuk memuat aset lainnya (audio, tekstur)
+function preloadOtherAssets() {
+  return new Promise((resolve) => {
+    updateLoadingText("Loading audio and textures...");
+
+    // Daftar semua aset selain model
+    const tempTextureLoader = new THREE.TextureLoader(loadingManager);
+    const texturePromise = new Promise((res) => {
+      tempTextureLoader.load(
+        "assets/images/logo-kampus.png",
+        () => res(),
+        undefined,
+        () => res()
       );
+    });
+
     const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
-    // --- Preload audio ---
     const audioFilesToPreload = [
       "assets/audio/button_press.mp3",
       "assets/audio/button_confirm.mp3",
@@ -598,33 +624,25 @@ function preloadAssets() {
 
     const audioPromises = uniqueAudioFiles.map(
       (file) =>
-        new Promise((res, rej) => {
+        new Promise((res) => {
           audioLoader.load(
             file,
             (buffer) => {
               audioCache[file] = buffer;
-              console.log(`Audio di-cache: ${file}`);
               res();
             },
             undefined,
-            (err) => {
-              console.error(`Failed to load audio: ${file}`, err);
-              res(); // tetap resolve agar tidak stuck
-            }
+            () => res()
           );
         })
     );
 
-    // Tunggu semua model + audio selesai
-    Promise.all([...modelPromises, ...audioPromises, texturePromise]).then(
-      () => {
-        console.log("All assets including audio are loaded and cached!");
-        resolve();
-      }
-    );
+    Promise.all([texturePromise, ...audioPromises]).then(() => {
+      console.log("All other assets are loaded.");
+      resolve();
+    });
   });
 }
-
 function playSoundFromCache(audioObject, path, options = {}) {
   const { loop = false, volume = 1 } = options;
 
@@ -695,7 +713,6 @@ function playButtonConfirmAudio() {
   playOneShotSound("assets/audio/button_confirm.mp3", 0.5);
 }
 
-// --- AWAL PERUBAHAN ---
 // Fungsi baru untuk memutar audio sapaan saat ini
 function playCurrentGreetingAudio() {
   const greetingData = GREETING_DATA(playerName)[currentGreetingIndex];

@@ -18,15 +18,15 @@ loadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
   );
 };
 
-loadingManager.onLoad = function () {
-  console.log("Loading complete!");
-  splashScreen.classList.add("fade-out");
-  setTimeout(() => {
-    if (splashScreen.parentNode) {
-      splashScreen.parentNode.removeChild(splashScreen);
-    }
-  }, 500);
-};
+// loadingManager.onLoad = function () {
+//   console.log("Loading complete!");
+//   splashScreen.classList.add("fade-out");
+//   setTimeout(() => {
+//     if (splashScreen.parentNode) {
+//       splashScreen.parentNode.removeChild(splashScreen);
+//     }
+//   }, 500);
+// };
 
 loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
   const progress = (itemsLoaded / itemsTotal) * 100;
