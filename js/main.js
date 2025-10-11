@@ -613,10 +613,10 @@ function preloadOtherAssets() {
 
     const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
     const audioFilesToPreload = [
-      "assets/audio/button_press.mp3",
-      "assets/audio/button_confirm.mp3",
-      "assets/audio/completion.mp3",
-      "assets/audio/background_music.mp3",
+      "assets/audio/sfx/button_press.ogg",
+      "assets/audio/sfx/button_confirm.ogg",
+      "assets/audio/sfx/completion.ogg",
+      "assets/audio/music/background_music.ogg",
       ...components.filter((c) => c.audioFile).map((c) => c.audioFile),
       ...greetingAudioFiles,
     ];
@@ -706,11 +706,11 @@ function playComponentAudio(audioFile) {
 }
 
 function playButtonPressAudio() {
-  playOneShotSound("assets/audio/button_press.mp3", 0.5);
+  playOneShotSound("assets/audio/sfx/button_press.ogg", 0.5);
 }
 
 function playButtonConfirmAudio() {
-  playOneShotSound("assets/audio/button_confirm.mp3", 0.5);
+  playOneShotSound("assets/audio/sfx/button_confirm.ogg", 0.5);
 }
 
 // Fungsi baru untuk memutar audio sapaan saat ini
@@ -729,13 +729,17 @@ function startBackgroundMusic() {
     audioListener.context.resume();
   }
   if (backgroundSound.isPlaying) return;
-  playControlledSound(backgroundSound, "assets/audio/background_music.mp3", {
-    loop: true,
-    volume: 0.1,
-  });
+  playControlledSound(
+    backgroundSound,
+    "assets/audio/music/background_music.ogg",
+    {
+      loop: true,
+      volume: 0.1,
+    }
+  );
 }
 function playCompletionAudio() {
-  playControlledSound(completionSound, "assets/audio/completion.mp3", {
+  playControlledSound(completionSound, "assets/audio/sfx/completion.ogg", {
     volume: 0.5,
   });
 }

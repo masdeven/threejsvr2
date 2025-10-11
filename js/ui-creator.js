@@ -32,31 +32,31 @@ const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
 export const GREETING_DATA = (playerName) => [
   {
     text: `Hello, I'm Aria! It's great to meet you.\nWelcome to the WebXR Computer Lab application.`,
-    audioFile: "assets/audio/greetings/greeting_0.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_0.ogg",
   },
   {
     text: "Here, you can explore 3D models of computer hardware, try mini-quizzes, and test your knowledge in the final test.",
-    audioFile: "assets/audio/greetings/greeting_1.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_1.ogg",
   },
   {
     text: "Follow the material step-by-step. Each section includes a mini-quiz to test your knowledge before unlocking the next one.",
-    audioFile: "assets/audio/greetings/greeting_2.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_2.ogg",
   },
   {
     text: "Once you've finished all the topics, head to the 'Select Topic' menu to take the final test and evaluate your overall understanding.",
-    audioFile: "assets/audio/greetings/greeting_3.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_3.ogg",
   },
   {
     text: "After taking the final test, you can view your learning report in the 'Learning Report' menu to see your achievements and progress.",
-    audioFile: "assets/audio/greetings/greeting_4.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_4.ogg",
   },
   {
     text: "Oh, and don't forget! You can spin the 3D models around by hand to check out all the details. 😄",
-    audioFile: "assets/audio/greetings/greeting_5.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_5.ogg",
   },
   {
     text: "Happy learning, and hope you have fun!",
-    audioFile: "assets/audio/greetings/greeting_6.mp3",
+    audioFile: "assets/audio/narration/greeting/greeting_6.ogg",
   },
 ];
 
