@@ -728,87 +728,90 @@ function reloadCreditsScreen() {
 }
 
 function changeState(newState, options = {}) {
-  activeTextPanel = null;
-  activeCreditsPanel = null;
-  if (currentState === newState && newState !== AppState.VIEWER) {
-    return;
-  }
-  if (currentState === AppState.COMPLETION) {
-    stopConfettiEffect();
-    if (completionSound && completionSound.isPlaying) {
-      completionSound.stop();
+  requestAnimationFrame(() => {
+    activeTextPanel = null;
+    activeCreditsPanel = null;
+    if (currentState === newState && newState !== AppState.VIEWER) {
+      return;
     }
-  }
-  stopAudio();
-  isFadingInUI = false;
-  if (newState === AppState.MODE_SELECTION) {
-    isFadingInUI = true;
-  }
-  const viewerContextStates = new Set([
-    AppState.VIEWER,
-    AppState.MINI_QUIZ,
-    AppState.MINI_QUIZ_RESULT,
-  ]);
-
-  const isTransitioningWithinViewer =
-    viewerContextStates.has(currentState) && viewerContextStates.has(newState);
-
-  if (!isTransitioningWithinViewer) {
-    unloadComponentModel();
-  }
-
-  currentState = newState;
-
-  if (newState === AppState.AVATAR_GREETING) {
-    currentGreetingIndex = 0;
-  }
-
-  if (newState === AppState.COMPLETION) {
-    playCompletionAudio();
-  }
-
-  if (
-    newState === AppState.LANDING ||
-    newState === AppState.QUIZ_REPORT ||
-    newState === AppState.AVATAR_GREETING ||
-    newState === AppState.VIEWER ||
-    newState === AppState.MINI_QUIZ ||
-    newState === AppState.MINI_QUIZ_RESULT
-  ) {
-    toggleAvatarVisibility(true);
-  } else {
-    toggleAvatarVisibility(false);
-  }
-
-  refreshUI(options);
-  if (!isDragging && !isTransitioningWithinViewer) {
-    switch (newState) {
-      case AppState.MODE_SELECTION:
-      case AppState.AVATAR_GREETING:
-      case AppState.LANDING:
-      case AppState.MENU:
-      case AppState.HELP:
-      case AppState.QUIZ:
-      case AppState.QUIZ_RESULT:
-      case AppState.QUIZ_REPORT:
-      case AppState.QUIZ_POST_COMPLETION_REPORT:
-      case AppState.POST_QUIZ_CHOICE:
-      case AppState.COMPLETION:
-      case AppState.CREDITS:
-        controls.enabled = true;
-        camera.position.set(0, 1.6, 0.5);
-        controls.target.set(0, 1.6, 0);
-        break;
-
-      case AppState.VIEWER:
-      case AppState.MINI_QUIZ:
-      case AppState.MINI_QUIZ_RESULT:
-        controls.enabled = true;
-        camera.position.set(0, 1.6, 0.5);
-        controls.target.set(-0.3, 1.6, 0);
-        break;
+    if (currentState === AppState.COMPLETION) {
+      stopConfettiEffect();
+      if (completionSound && completionSound.isPlaying) {
+        completionSound.stop();
+      }
     }
-  }
+    stopAudio();
+    isFadingInUI = false;
+    if (newState === AppState.MODE_SELECTION) {
+      isFadingInUI = true;
+    }
+    const viewerContextStates = new Set([
+      AppState.VIEWER,
+      AppState.MINI_QUIZ,
+      AppState.MINI_QUIZ_RESULT,
+    ]);
+
+    const isTransitioningWithinViewer =
+      viewerContextStates.has(currentState) &&
+      viewerContextStates.has(newState);
+
+    if (!isTransitioningWithinViewer) {
+      unloadComponentModel();
+    }
+
+    currentState = newState;
+
+    if (newState === AppState.AVATAR_GREETING) {
+      currentGreetingIndex = 0;
+    }
+
+    if (newState === AppState.COMPLETION) {
+      playCompletionAudio();
+    }
+
+    if (
+      newState === AppState.LANDING ||
+      newState === AppState.QUIZ_REPORT ||
+      newState === AppState.AVATAR_GREETING ||
+      newState === AppState.VIEWER ||
+      newState === AppState.MINI_QUIZ ||
+      newState === AppState.MINI_QUIZ_RESULT
+    ) {
+      toggleAvatarVisibility(true);
+    } else {
+      toggleAvatarVisibility(false);
+    }
+
+    refreshUI(options);
+    if (!isDragging && !isTransitioningWithinViewer) {
+      switch (newState) {
+        case AppState.MODE_SELECTION:
+        case AppState.AVATAR_GREETING:
+        case AppState.LANDING:
+        case AppState.MENU:
+        case AppState.HELP:
+        case AppState.QUIZ:
+        case AppState.QUIZ_RESULT:
+        case AppState.QUIZ_REPORT:
+        case AppState.QUIZ_POST_COMPLETION_REPORT:
+        case AppState.POST_QUIZ_CHOICE:
+        case AppState.COMPLETION:
+        case AppState.CREDITS:
+          controls.enabled = true;
+          camera.position.set(0, 1.6, 0.5);
+          controls.target.set(0, 1.6, 0);
+          break;
+
+        case AppState.VIEWER:
+        case AppState.MINI_QUIZ:
+        case AppState.MINI_QUIZ_RESULT:
+          controls.enabled = true;
+          camera.position.set(0, 1.6, 0.5);
+          controls.target.set(-0.3, 1.6, 0);
+          break;
+      }
+    }
+  });
 }
 
 function handleInteraction(action) {
