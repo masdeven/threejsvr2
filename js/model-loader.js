@@ -120,49 +120,27 @@ function setupModelPosition(model, startYOffset = 0) {
   scene.add(currentModel);
 }
 
-export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
-  if (activeLoad) {
-    activeLoad.cancel();
-    activeLoad = null;
-  }
-
-  unloadComponentModel();
-
-  if (modelCache[url]) {
-    console.log(`âœ“ Mengambil model dari cache: ${url}`);
-    const modelFromCache = modelCache[url].clone();
-    setupModelPosition(modelFromCache, startYOffset);
+let currentAbort = null;
+export async function loadComponentModel(
+  url,
+  startYOffset = 0,
+  onAnimationComplete
+) {
+  if (currentAbort) currentAbort.abort();
+  currentAbort = new AbortController();
+  try {
+    const gltf = await loader.loadAsync(url, undefined, currentAbort.signal);
+    convertModelMaterials(gltf.scene);
+    preCompileModel(gltf.scene);
+    modelCache[url] = gltf.scene;
+    const newModel = gltf.scene.clone();
+    setupModelPosition(newModel, startYOffset);
     startModelAnimation(false, null, onAnimationComplete);
-    return;
+  } catch (e) {
+    if (e?.name !== "AbortError") console.error("Error loading model:", e);
+  } finally {
+    currentAbort = null;
   }
-
-  console.log(`â³ Memuat model baru: ${url}`);
-  activeLoad = loader.load(
-    url,
-    (gltf) => {
-      // âœ… Konversi material
-      convertModelMaterials(gltf.scene);
-
-      // âœ… Pre-compile shader SEBELUM disimpan ke cache
-      preCompileModel(gltf.scene);
-
-      // Simpan ke cache
-      modelCache[url] = gltf.scene;
-      console.log(
-        `âœ“ Model dimuat, shader compiled, disimpan ke cache: ${url}`
-      );
-
-      const newModel = gltf.scene.clone();
-      setupModelPosition(newModel, startYOffset);
-      startModelAnimation(false, null, onAnimationComplete);
-      activeLoad = null;
-    },
-    undefined,
-    (error) => {
-      console.error("âœ— Error loading model:", error);
-      activeLoad = null;
-    }
-  );
 }
 
 export function startModelAnimation(

@@ -322,6 +322,7 @@ async function init() {
   window.addEventListener("beforeunload", () => {
     console.log("ðŸ§¹ Cleaning up resources...");
     renderer.setAnimationLoop(null);
+    stopAnimation();
     stopAudio();
     if (backgroundSound && backgroundSound.isPlaying) {
       backgroundSound.stop();

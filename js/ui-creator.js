@@ -172,7 +172,7 @@ export function updateAvatarDropAnimation(deltaTime) {
 }
 
 export function getResolution() {
-  if (isVRMode) {
+  if (isVRMode()) {
     return 256;
   } else {
     const baseResolution = 240;
@@ -605,17 +605,21 @@ export function updateAvatar(deltaTime, elapsedTime) {
 }
 
 export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
-  const panelWidth = 4.0;
-  const panelHeight = 1.3;
+  // ✅ Selaras dengan Landing
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 3.5);
+
+  const panelWidth = 3.2;
+  const panelHeight = 1.1;
 
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  const exitButtonSize = 0.22;
-  const padding = 0.15;
+  // ✅ TOMBOL X DI LUAR KANAN ATAS (FLOATING)
+  const exitButtonSize = 0.2;
+  const exitOffsetX = 0.15; // Jarak dari edge panel ke luar
+  const exitOffsetY = 0.15; // Jarak dari top panel
 
   const exitButton = createButton(
     "X",
@@ -625,9 +629,11 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     "rgba(45, 55, 72, 0.7)",
     "circle"
   );
+
+  // Posisi: LUAR kanan atas panel
   exitButton.position.set(
-    panelWidth / 2 - padding - exitButtonSize / 2,
-    panelHeight / 2 - padding - exitButtonSize / 2,
+    panelWidth / 2 + exitOffsetX, // Pindah ke LUAR kanan (+)
+    panelHeight / 2 - exitOffsetY, // Tetap di atas
     0.02
   );
   exitButton.renderOrder = 2;
@@ -635,13 +641,13 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 
   const greetingTexts = GREETING_DATA(playerName);
   const currentGreeting = greetingTexts[greetingIndex];
+
   if (!currentGreeting) return;
 
   const isLastGreeting = greetingIndex >= greetingTexts.length - 1;
-  const buttonAction = isLastGreeting ? "continue_to_landing" : "next_greeting";
 
-  const primaryButtonWidth = 2.8;
-  const primaryButtonHeight = 0.32;
+  const primaryButtonWidth = 2.3;
+  const primaryButtonHeight = 0.28;
 
   const continueButton = createButton(
     isLastGreeting ? "Start Learning" : "Continue",
@@ -650,39 +656,37 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     primaryButtonHeight,
     ACCENT_COLOR
   );
-  continueButton.position.set(0, -0.35, 0.01);
+
+  continueButton.position.set(0, -0.28, 0.01);
   continueButton.visible = false;
   viewerUIGroup.add(continueButton);
 
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();
+
     const avatarFinalPosition = new THREE.Vector3(
-      -panelWidth / 2 - 0.2,
-      panelHeight / 2 - 0.2,
+      -panelWidth / 2 - 0.18,
+      panelHeight / 2 - 0.18,
       0.05
     );
 
-    // ✅ HANYA animate drop pada greeting pertama (index 0)
     const shouldAnimateDrop = greetingIndex === 0;
-
     setupAvatar(
       avatarInstance,
-      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(0.35, 0.35, 0.35),
       avatarFinalPosition,
-      shouldAnimateDrop // Drop animation hanya di greeting pertama
+      shouldAnimateDrop
     );
 
-    // ✅ Jika ada animasi drop, set callback
     if (shouldAnimateDrop) {
       avatarDropAnimation.onComplete = () => {
-        // Putar audio greeting
         if (window.playCurrentGreetingAudioCallback) {
           window.playCurrentGreetingAudioCallback();
         }
 
-        // Mulai typing animation
         if (currentGreeting.text) {
-          const textWidth = panelWidth * 0.85;
+          const textWidth = panelWidth * 0.88;
+
           const welcomeLabel = createTypingText(
             currentGreeting.text,
             textWidth,
@@ -698,18 +702,20 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
                 : "next_greeting";
             }
           );
-          welcomeLabel.position.set(0, 0.15, 0.01);
+
+          welcomeLabel.position.set(0, 0.12, 0.01);
           viewerUIGroup.add(welcomeLabel);
         }
       };
     } else {
-      // ✅ Jika TIDAK ada animasi drop, langsung putar audio dan typing
+      // Jika TIDAK ada animasi drop
       if (window.playCurrentGreetingAudioCallback) {
         window.playCurrentGreetingAudioCallback();
       }
 
       if (currentGreeting.text) {
-        const textWidth = panelWidth * 0.85;
+        const textWidth = panelWidth * 0.88;
+
         const welcomeLabel = createTypingText(
           currentGreeting.text,
           textWidth,
@@ -725,7 +731,8 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
               : "next_greeting";
           }
         );
-        welcomeLabel.position.set(0, 0.15, 0.01);
+
+        welcomeLabel.position.set(0, 0.12, 0.01);
         viewerUIGroup.add(welcomeLabel);
       }
     }
@@ -736,24 +743,28 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 }
 
 export function createLandingPage(playerName) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  // ✅ OPTIMASI: Dekatkan panel untuk comfort zone VR (1.75m adalah standar)
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5); // Dari -5 → -3.5
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 3.5); // Adjusted
 
-  const panelWidth = 4.0;
-  const panelHeight = 1.3;
+  // ✅ OPTIMASI: Kecilkan panel agar tidak overwhelming
+  const panelWidth = 3.2; // Dari 4.0 → 3.2 (20% lebih kecil)
+  const panelHeight = 1.1; // Dari 1.3 → 1.1 (15% lebih kecil)
+
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  const logoWidth = 0.3;
-  const logoHeight = 0.3;
+  // ✅ OPTIMASI: Kecilkan logo (proporsional dengan panel)
+  const logoWidth = 0.24; // Dari 0.3 → 0.24 (20% lebih kecil)
+  const logoHeight = 0.24; // Dari 0.3 → 0.24
   const logoPanel = createImagePanel(
     "assets/images/logo-kampus.png",
     logoWidth,
     logoHeight
   );
 
-  const paddingLogo = 0.1;
+  const paddingLogo = 0.08; // Dari 0.1 → 0.08 (lebih rapat)
   logoPanel.position.set(
     -panelWidth / 2 + logoWidth / 2 + paddingLogo,
     panelHeight / 2 - logoHeight / 2 - paddingLogo,
@@ -764,15 +775,22 @@ export function createLandingPage(playerName) {
 
   if (playerName) {
     const welcomeText = `Select Activity, ${playerName}`;
-    const welcomeLabel = createTitleLabel(welcomeText, 3.4, 0.35);
-    welcomeLabel.position.set(0.1, 0.45, 0.01);
+
+    // ✅ OPTIMASI: Kecilkan welcome text
+    const welcomeLabel = createTitleLabel(
+      welcomeText,
+      2.8, // Dari 3.4 → 2.8 (18% lebih kecil)
+      0.28 // Dari 0.35 → 0.28 (20% lebih kecil)
+    );
+    welcomeLabel.position.set(0.08, 0.35, 0.01); // Adjusted Y dari 0.45 → 0.35
     viewerUIGroup.add(welcomeLabel);
   }
 
-  const primaryButtonWidth = 2.8;
-  const primaryButtonHeight = 0.32;
-  const primarySpacingY = 0.4;
-  const primaryStartY = 0.1;
+  // ✅ OPTIMASI: Kecilkan button agar lebih proporsional
+  const primaryButtonWidth = 2.3; // Dari 2.8 → 2.3 (18% lebih kecil)
+  const primaryButtonHeight = 0.28; // Dari 0.32 → 0.28 (12% lebih kecil)
+  const primarySpacingY = 0.34; // Dari 0.4 → 0.34 (lebih rapat)
+  const primaryStartY = 0.05; // Dari 0.1 → 0.05 (turunkan sedikit)
 
   const primaryButtons = [
     { text: "Start Learning", action: "start_learning", color: ACCENT_COLOR },
@@ -787,12 +805,14 @@ export function createLandingPage(playerName) {
       primaryButtonHeight,
       btn.color
     );
+
     const buttonY = primaryStartY - index * primarySpacingY;
     button.position.set(0, buttonY, 0.01);
     viewerUIGroup.add(button);
   });
 
-  const creditButtonSize = 0.22;
+  // ✅ OPTIMASI: Kecilkan credit button
+  const creditButtonSize = 0.2; // Dari 0.22 → 0.2 (9% lebih kecil)
   const creditButton = createButton(
     "ⓘ",
     "show_credits",
@@ -801,19 +821,26 @@ export function createLandingPage(playerName) {
     "rgba(45, 55, 72, 0.7)",
     "circle"
   );
+
   const panelEdgeX = panelWidth / 2;
   const panelEdgeY = -panelHeight / 2;
-  const padding = 0.2;
+  const padding = 0.15; // Dari 0.2 → 0.15 (lebih rapat)
+
   creditButton.position.set(panelEdgeX - padding, panelEdgeY + padding, 0.02);
   creditButton.renderOrder = 1;
   viewerUIGroup.add(creditButton);
 
+  // ✅ OPTIMASI: Kecilkan avatar
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();
     setupAvatar(
       avatarInstance,
-      new THREE.Vector3(0.4, 0.4, 0.4),
-      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
+      new THREE.Vector3(0.35, 0.35, 0.35), // Dari 0.4 → 0.35 (12% lebih kecil)
+      new THREE.Vector3(
+        -panelWidth / 2 - 0.18, // Dari -0.2 → -0.18 (lebih dekat ke panel)
+        panelHeight / 2 - 0.18, // Dari -0.2 → -0.18
+        0.05
+      )
     );
   }
 
@@ -1467,8 +1494,10 @@ export function createCreditsScreen(creditPages, pageIndex) {
 
   clearViewerUI();
 
-  const totalPanelWidth = 3.2;
-  const totalPanelHeight = 1.8;
+  // ✅ SAMA dengan Learning Report
+  const totalPanelWidth = 4.8; // Learning Report: 4.8
+  const totalPanelHeight = 2.0; // Learning Report: 2.0
+
   const backgroundPanel = createUIPanel(
     totalPanelWidth,
     totalPanelHeight,
@@ -1479,16 +1508,20 @@ export function createCreditsScreen(creditPages, pageIndex) {
   backgroundPanel.position.set(0, 0, 0);
   viewerUIGroup.add(backgroundPanel);
 
-  const titleWidth = 2.8;
-  const titleHeight = 0.3;
+  // ✅ SAMA dengan Learning Report
+  const titleWidth = 4.0; // Learning Report: 4.0
+  const titleHeight = 0.35; // Learning Report: 0.35
   const titleLabel = createTitleLabel("About", titleWidth, titleHeight);
+
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
-  const DESC_PANEL_FIXED_HEIGHT = 1.1;
-  const descPanel = createTextPanel(creditPages, 2.8, {
+  // ✅ Text panel height disesuaikan
+  const DESC_PANEL_FIXED_HEIGHT = 1.0; // Lebih tinggi untuk konten About
+  const descPanel = createTextPanel(creditPages, 4.2, {
+    // Learning Report: 4.2
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
 
@@ -1497,20 +1530,22 @@ export function createCreditsScreen(creditPages, pageIndex) {
   descPanel.material.map.offset.y = initialOffsetY;
   descPanel.userData.targetOffsetY = initialOffsetY;
   descPanel.userData.currentPage = pageIndex;
-
   descPanel.userData.isCreditsPanel = true;
 
   const descPanelYOffset =
-    titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.05;
+    titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.1;
   descPanel.position.set(0, descPanelYOffset, 0.01);
   viewerUIGroup.add(descPanel);
 
+  // ✅ Navigation dengan spacing yang sama
   const descNavY =
-    descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.12;
+    descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.15;
+
   if (creditPages.length > 1) {
     const buttonWidth = 0.25;
-    const indicatorWidth = 0.6;
+    const indicatorWidth = 0.5;
     const padding = 0.1;
+
     const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
     const pageIndicator = createTitleLabel(
       pageIndicatorText,
@@ -1520,6 +1555,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
     pageIndicator.position.set(0, descNavY, 0.02);
     viewerUIGroup.add(pageIndicator);
 
+    // Next button
     const isLastPage = pageIndex >= creditPages.length - 1;
     const nextButtonX = indicatorWidth / 2 + padding + buttonWidth / 2;
     const nextDescButton = createButton(
@@ -1529,10 +1565,14 @@ export function createCreditsScreen(creditPages, pageIndex) {
       0.2,
       isLastPage ? "#4A5568" : BG_COLOR
     );
-    if (isLastPage) nextDescButton.userData.colors = null;
+    if (isLastPage) {
+      nextDescButton.userData.colors = null;
+      nextDescButton.userData.currentState = "disabled";
+    }
     nextDescButton.position.set(nextButtonX, descNavY, 0.01);
     viewerUIGroup.add(nextDescButton);
 
+    // Prev button
     const isFirstPage = pageIndex <= 0;
     const prevButtonX = -(indicatorWidth / 2 + padding + buttonWidth / 2);
     const prevDescButton = createButton(
@@ -1542,13 +1582,17 @@ export function createCreditsScreen(creditPages, pageIndex) {
       0.2,
       isFirstPage ? "#4A5568" : BG_COLOR
     );
-    if (isFirstPage) prevDescButton.userData.colors = null;
+    if (isFirstPage) {
+      prevDescButton.userData.colors = null;
+      prevDescButton.userData.currentState = "disabled";
+    }
     prevDescButton.position.set(prevButtonX, descNavY, 0.01);
     viewerUIGroup.add(prevDescButton);
   }
 
-  const exitButtonSize = 0.22;
-  const padding = 0.1;
+  // ✅ SAMA dengan Learning Report
+  const exitButtonSize = 0.25; // Learning Report: 0.25
+  const exitPadding = 0.15; // Learning Report: 0.15
   const exitButton = createButton(
     "X",
     "back_to_landing",
@@ -1557,12 +1601,27 @@ export function createCreditsScreen(creditPages, pageIndex) {
     "rgba(45, 55, 72, 0.7)",
     "circle"
   );
+
   exitButton.position.set(
-    totalPanelWidth / 2 - padding - exitButtonSize / 2,
-    totalPanelHeight / 2 - padding - exitButtonSize / 2,
+    totalPanelWidth / 2 - exitPadding - exitButtonSize / 2,
+    totalPanelHeight / 2 - exitPadding - exitButtonSize / 2,
     0.02
   );
   viewerUIGroup.add(exitButton);
+
+  // ✅ SAMA dengan Learning Report
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4), // Learning Report: 0.4
+      new THREE.Vector3(
+        -totalPanelWidth / 2 - 0.2, // Learning Report: -0.2
+        totalPanelHeight / 2 - 0.2, // Learning Report: -0.2
+        0.05
+      )
+    );
+  }
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
@@ -1784,8 +1843,8 @@ export function createQuizReportScreen(
     const reportText =
       "You must complete all materials and take the Final Test before viewing your report.";
     const reportBody = createBodyText(reportText, 4.2, {
-      baseFontSize: 42,
-      vrFontScale: 1.6,
+      baseFontSize: 25,
+      vrFontScale: 1.1,
     });
     reportBody.position.set(0, 0, 0.02);
     viewerUIGroup.add(reportBody);
@@ -2059,26 +2118,28 @@ export function createPostQuizChoiceScreen() {
 export function createModeSelectionPage() {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  // ✅ Selaras dengan Landing
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5); // -5 → -3.5
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 3.5);
 
-  const panelWidth = 4.0;
-  const panelHeight = 1.3;
+  const panelWidth = 3.2; // 4.0 → 3.2
+  const panelHeight = 1.1; // 1.3 → 1.1
+
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  const titleLabel = createTitleLabel("Choose Experience Mode", 3.8, 0.35);
-  titleLabel.position.set(0, 0.45, 0.01);
+  const titleLabel = createTitleLabel("Choose Experience Mode", 3.0, 0.3); // 3.8→3.0, 0.35→0.3
+  titleLabel.position.set(0, 0.35, 0.01); // 0.45 → 0.35
   viewerUIGroup.add(titleLabel);
 
-  const buttonWidth = 3.0;
-  const buttonHeight = 0.32;
-  const spacing = 0.4;
-  const startY = 0.05;
+  const buttonWidth = 2.3; // 3.0 → 2.3
+  const buttonHeight = 0.28; // 0.32 → 0.28
+  const spacing = 0.34; // 0.4 → 0.34
+  const startY = 0.02; // 0.05 → 0.02
 
   const browserButton = createButton(
-    "Mode Browser",
+    "Browser Mode", // "Mode Browser" → "Browser Mode"
     "start_browser",
     buttonWidth,
     buttonHeight,
@@ -2088,7 +2149,7 @@ export function createModeSelectionPage() {
   viewerUIGroup.add(browserButton);
 
   const vrButton = createButton(
-    "Mode VR",
+    "VR Mode", // "Mode VR" → "VR Mode"
     "start_vr",
     buttonWidth,
     buttonHeight
