@@ -92,16 +92,13 @@ loadingManager.onError = function (url) {
   if (spinner) spinner.style.display = "none";
 };
 
-// Helper untuk tracking manual progress per fase
 export function updateManualProgress(loaded, total, message = "") {
   const progress = (loaded / total) * 100;
-
   if (progressBar) {
     progressBar.style.width = progress + "%";
   }
-
   if (loadingText) {
     const baseMessage = message || currentLoadingPhase;
     loadingText.textContent = `${baseMessage} ${loaded}/${total}`;
   }
-}
+} // ✅ Tambahkan ini

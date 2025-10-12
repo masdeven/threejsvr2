@@ -1,15 +1,24 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { scene } from "./scene-setup.js";
-import { loadingManager } from "./loading-manager.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-export const loader = new GLTFLoader(loadingManager);
 let currentModel = null;
 let activeLoad = null;
 const TABLE_HEIGHT = 1;
 export let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 export const modelCache = {};
+export const loader = new GLTFLoader();
+
+// âœ… TAMBAHKAN: Store renderer reference
+let rendererRef = null;
+let cameraRef = null;
+
+// âœ… TAMBAHKAN: Function untuk set renderer
+export function setRendererForCompilation(renderer, camera) {
+  rendererRef = renderer;
+  cameraRef = camera;
+}
 
 let transitionState = {
   isAnimating: false,
@@ -25,6 +34,120 @@ export function setupKTX2Loader(ktx2Loader) {
 
 export function setupDRACOLoader(dracoLoader) {
   loader.setDRACOLoader(dracoLoader);
+}
+
+function convertModelMaterials(model) {
+  model.traverse((child) => {
+    if (child.isMesh) {
+      const oldMaterial = child.material;
+      if (oldMaterial.userData.isConverted) return;
+
+      const toonMaterial = new THREE.MeshBasicMaterial({
+        color: oldMaterial.color,
+        map: oldMaterial.map,
+      });
+
+      toonMaterial.userData.isConverted = true;
+      oldMaterial.dispose();
+      child.material = toonMaterial;
+    }
+  });
+}
+
+// âœ… TAMBAHKAN: Function untuk pre-compile shader
+function preCompileModel(model) {
+  if (!rendererRef || !cameraRef) {
+    console.warn("âš  Renderer not set for shader compilation");
+    return;
+  }
+
+  // Add model to scene temporarily (off-screen)
+  model.position.set(0, -1000, 0); // Far away, won't be visible
+  scene.add(model);
+
+  try {
+    // âœ… Pre-compile all shaders for this model
+    rendererRef.compile(model, cameraRef);
+    console.log("âœ“ Shader pre-compiled for model");
+  } catch (error) {
+    console.warn("âš  Shader compilation warning:", error);
+  }
+
+  // Remove from scene immediately
+  scene.remove(model);
+}
+
+function setupModelPosition(model, startYOffset = 0) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const scaleFactor = 0.8 / maxDim;
+  model.scale.setScalar(scaleFactor);
+
+  model.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+
+  const newBox = new THREE.Box3().setFromObject(model);
+  const center = newBox.getCenter(new THREE.Vector3());
+  model.position.x -= center.x;
+  model.position.z = -2.5 - center.z;
+
+  const newMinY = newBox.min.y;
+  const finalY = TABLE_HEIGHT - newMinY;
+  model.position.y = finalY + startYOffset;
+  model.userData.finalY = finalY;
+
+  currentModel = model;
+  scene.add(currentModel);
+}
+
+export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
+  if (activeLoad) {
+    activeLoad.cancel();
+    activeLoad = null;
+  }
+
+  unloadComponentModel();
+
+  if (modelCache[url]) {
+    console.log(`âœ“ Mengambil model dari cache: ${url}`);
+    const modelFromCache = modelCache[url].clone();
+    setupModelPosition(modelFromCache, startYOffset);
+    startModelAnimation(false, null, onAnimationComplete);
+    return;
+  }
+
+  console.log(`â³ Memuat model baru: ${url}`);
+  activeLoad = loader.load(
+    url,
+    (gltf) => {
+      // âœ… Konversi material
+      convertModelMaterials(gltf.scene);
+
+      // âœ… Pre-compile shader SEBELUM disimpan ke cache
+      preCompileModel(gltf.scene);
+
+      // Simpan ke cache
+      modelCache[url] = gltf.scene;
+      console.log(
+        `âœ“ Model dimuat, shader compiled, disimpan ke cache: ${url}`
+      );
+
+      const newModel = gltf.scene.clone();
+      setupModelPosition(newModel, startYOffset);
+      startModelAnimation(false, null, onAnimationComplete);
+      activeLoad = null;
+    },
+    undefined,
+    (error) => {
+      console.error("âœ— Error loading model:", error);
+      activeLoad = null;
+    }
+  );
 }
 
 export function startModelAnimation(
@@ -87,90 +210,9 @@ export function updateModelTransition(deltaTime) {
   }
 }
 
-function setupModel(model, startYOffset = 0) {
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-
-  const maxDim = Math.max(size.x, size.y, size.z);
-  const scaleFactor = 0.8 / maxDim;
-  model.scale.setScalar(scaleFactor);
-
-  model.traverse((child) => {
-    if (child.isMesh) {
-      const oldMaterial = child.material;
-      const toonMaterial = new THREE.MeshBasicMaterial({
-        color: oldMaterial.color,
-        map: oldMaterial.map,
-      });
-      child.material = toonMaterial;
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-
-  const newBox = new THREE.Box3().setFromObject(model);
-  const center = newBox.getCenter(new THREE.Vector3());
-
-  model.position.x -= center.x;
-  model.position.z = -2.5 - center.z;
-
-  const newMinY = newBox.min.y;
-  const finalY = TABLE_HEIGHT - newMinY;
-  model.position.y = finalY + startYOffset;
-  model.userData.finalY = finalY;
-
-  currentModel = model;
-  scene.add(currentModel);
-}
-
-export function loadComponentModel(url, startYOffset = 0, onAnimationComplete) {
-  if (activeLoad) {
-    activeLoad.cancel();
-    activeLoad = null;
-  }
-  unloadComponentModel();
-
-  if (modelCache[url]) {
-    console.log(`Mengambil model dari cache: ${url}`);
-    const modelFromCache = modelCache[url].clone();
-    setupModel(modelFromCache, startYOffset);
-    startModelAnimation(false, null, onAnimationComplete);
-    return;
-  }
-
-  console.log(`Memuat model baru: ${url}`);
-  activeLoad = loader.load(
-    url,
-    (gltf) => {
-      modelCache[url] = gltf.scene;
-      const newModel = gltf.scene.clone();
-      setupModel(newModel, startYOffset);
-      startModelAnimation(false, null, onAnimationComplete);
-      activeLoad = null;
-    },
-    undefined,
-    (error) => {
-      console.error("An error happened while loading the model:", error);
-      activeLoad = null;
-    }
-  );
-}
-
 export function unloadComponentModel() {
   if (currentModel) {
     scene.remove(currentModel);
-    currentModel.traverse((child) => {
-      if (child.isMesh) {
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) {
-          if (Array.isArray(child.material)) {
-            child.material.forEach((material) => material.dispose());
-          } else {
-            child.material.dispose();
-          }
-        }
-      }
-    });
     currentModel = null;
   }
 }
@@ -178,6 +220,7 @@ export function unloadComponentModel() {
 export function startDragging(event) {
   const currentModel = getCurrentModel();
   if (!currentModel) return;
+
   isDragging = true;
   previousMousePosition = {
     x: event.clientX,
@@ -212,7 +255,6 @@ export function rotateModelWithVR(deltaX, deltaY) {
   if (!currentModel) return;
 
   const rotationSpeed = 2.0;
-
   currentModel.rotation.y += deltaX * rotationSpeed;
   currentModel.rotation.x += deltaY * rotationSpeed;
 }

@@ -53,22 +53,24 @@ new RGBELoader(loadingManager)
     scene.background = envMap;
   });
 
-gltfLoader.load(
-  "assets/models/Ruangan_Optimal.glb",
-  (gltf) => {
-    const room = gltf.scene;
-    room.position.set(0, 0, -2.5);
-    scene.add(room);
-    console.log("Model ruangan berhasil dimuat.");
-  },
-  undefined,
-  (error) => {
-    console.error("Gagal memuat model ruangan:", error);
-  }
-);
-
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+export function loadRoom(gltfLoader) {
+  gltfLoader.load(
+    "assets/models/Ruangan_Optimal.glb",
+    (gltf) => {
+      const room = gltf.scene;
+      room.position.set(0, 0, -2.5);
+      scene.add(room);
+      console.log("Model ruangan berhasil dimuat.");
+    },
+    undefined,
+    (error) => {
+      console.error("Gagal memuat model ruangan:", error);
+    }
+  );
+}

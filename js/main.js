@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, camera, renderer, controls } from "./scene-setup.js";
+import { scene, camera, renderer, controls, loadRoom } from "./scene-setup.js";
 import { components } from "./component-data.js";
 import {
   createLandingPage,
@@ -40,6 +40,7 @@ import {
   startModelAnimation,
   updateModelTransition,
   getCurrentModel,
+  setRendererForCompilation,
 } from "./model-loader.js";
 import {
   setupInteraction,
@@ -64,8 +65,7 @@ import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 
 let audioListener, sound, backgroundSound, completionSound, greetingSound;
 let shuffledQuizData = [];
-
-const audioLoader = new THREE.AudioLoader(loadingManager);
+const audioLoader = new THREE.AudioLoader();
 let playerName = "";
 let currentQuestionIndex = 0;
 let quizScore = 0;
@@ -74,8 +74,8 @@ let highestComponentUnlocked = 0;
 let currentCreditIndex = 0;
 let isChangingComponent = false;
 let stats;
-let isChangingDescription = false; // ✅ Tambahkan ini
-let descriptionChangeTimeout = null; // ✅ Tambahkan ini
+let isChangingDescription = false; // âœ… Tambahkan ini
+let descriptionChangeTimeout = null; // âœ… Tambahkan ini
 const CHANGE_DEBOUNCE_TIME = 500;
 const clock = new THREE.Clock();
 let confettiEffect = null;
@@ -86,38 +86,49 @@ let lastFpsUpdate = 0;
 let fpsLabel = null;
 let currentGreetingIndex = 0;
 const audioCache = {};
+let animationFrameId = null;
 let isDebugVisible = false;
 const STORAGE_KEY = "webxr_learning_progress";
 
 function saveProgress() {
-  const progress = {
-    playerName: playerName,
-    highestComponentUnlocked: highestComponentUnlocked,
-    quizScore: quizScore,
-    hasAttemptedQuiz: hasAttemptedQuiz,
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  console.log("Progres disimpan:", progress);
+  try {
+    const progress = {
+      playerName: playerName,
+      highestComponentUnlocked: highestComponentUnlocked,
+      quizScore: quizScore,
+      hasAttemptedQuiz: hasAttemptedQuiz,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    console.log("Progres disimpan:", progress);
+  } catch (error) {
+    console.warn("âš  Gagal menyimpan progress:", error);
+    // Bisa tampilkan pesan ke user jika perlu
+  }
 }
 
 function loadProgress() {
-  const savedData = localStorage.getItem(STORAGE_KEY);
-  if (savedData) {
-    const progress = JSON.parse(savedData);
-    playerName = progress.playerName || "";
-    highestComponentUnlocked = progress.highestComponentUnlocked || 0;
-    quizScore = progress.quizScore || 0;
-    hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const progress = JSON.parse(savedData);
+      playerName = progress.playerName || "";
+      highestComponentUnlocked = progress.highestComponentUnlocked || 0;
+      quizScore = progress.quizScore || 0;
+      hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
 
-    for (let i = 0; i <= highestComponentUnlocked; i++) {
-      if (components[i]) {
-        components[i].unlocked = true;
+      for (let i = 0; i <= highestComponentUnlocked; i++) {
+        if (components[i]) {
+          components[i].unlocked = true;
+        }
       }
+      console.log("Progres dimuat:", progress);
+      return true;
     }
-    console.log("Progres dimuat:", progress);
-    return true;
+    return false;
+  } catch (error) {
+    console.warn("âš  Gagal memuat progress:", error);
+    return false;
   }
-  return false;
 }
 
 function resetProgress() {
@@ -304,6 +315,29 @@ async function init() {
   document.body.appendChild(stats.dom);
   stats.dom.style.display = "none";
 
+  window.addEventListener("beforeunload", () => {
+    console.log("ðŸ§¹ Cleaning up resources...");
+    renderer.setAnimationLoop(null);
+    stopAudio();
+    if (backgroundSound && backgroundSound.isPlaying) {
+      backgroundSound.stop();
+    }
+    if (completionSound && completionSound.isPlaying) {
+      completionSound.stop();
+    }
+    if (greetingSound && greetingSound.isPlaying) {
+      greetingSound.stop();
+    }
+    if (stats && stats.dom && stats.dom.parentNode) {
+      stats.dom.parentNode.removeChild(stats.dom);
+    }
+    if (confettiEffect && typeof confettiEffect.destroy === "function") {
+      confettiEffect.destroy();
+      confettiEffect = null;
+    }
+    console.log("âœ“ Cleanup complete");
+  });
+
   audioListener = new THREE.AudioListener();
   backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
@@ -321,6 +355,11 @@ async function init() {
   dracoLoader.setDecoderPath("assets/draco/");
   setupDRACOLoader(dracoLoader);
 
+  // âœ… TAMBAHKAN: Set renderer untuk shader compilation
+  setRendererForCompilation(renderer, camera);
+
+  loadRoom(loader);
+
   setupVR();
 
   renderer.xr.addEventListener("sessionstart", () => {
@@ -331,6 +370,7 @@ async function init() {
   });
 
   renderer.xr.addEventListener("sessionend", () => {
+    stopAudio();
     changeState(AppState.MENU);
   });
 
@@ -347,9 +387,7 @@ async function init() {
   const hasSavedProgress = loadProgress();
 
   await preloadAvatar();
-
-  await preloadModels();
-
+  await preloadModels(); // âœ… Shader akan di-compile di sini!
   await preloadOtherAssets();
 
   const splashScreen = document.getElementById("splash-screen");
@@ -511,7 +549,6 @@ function updateLoadingText(message) {
 function preloadModels() {
   return new Promise((resolve) => {
     setLoadingPhase(LoadingPhases.LOADING_HIGH);
-    updateLoadingText("Loading 3D models...");
 
     const modelFiles = components
       .filter((c) => c.modelFile)
@@ -523,7 +560,7 @@ function preloadModels() {
       return;
     }
 
-    // ✅ SEMUA model dimuat sekaligus (tidak ada lazy loading)
+    // âœ… SEMUA model dimuat sekaligus (tidak ada lazy loading)
     let modelsLoaded = 0;
     let modelsWithErrors = 0;
     const totalModels = modelFiles.length;
@@ -534,8 +571,19 @@ function preloadModels() {
           console.warn(`${modelsWithErrors} model(s) failed to load.`);
         }
 
-        console.log(`✓ All models loaded: ${modelsLoaded}/${totalModels}`);
+        // âœ… Cek apakah minimal 1 model berhasil dimuat
+        if (modelsLoaded === 0) {
+          console.error("âŒ CRITICAL: No models loaded successfully!");
+          // Tampilkan error ke user
+          const loadingText = document.getElementById("loading-text");
+          if (loadingText) {
+            loadingText.textContent =
+              "Failed to load 3D models. Please refresh.";
+          }
+          return; // Jangan resolve, biarkan app stuck di loading
+        }
 
+        console.log(`âœ“ All models loaded: ${modelsLoaded}/${totalModels}`);
         resolve();
       }
     };
@@ -548,7 +596,7 @@ function preloadModels() {
           modelCache[file] = gltf.scene;
           modelsLoaded++;
           console.log(
-            `✓ Model loaded: ${file} (${modelsLoaded}/${totalModels})`
+            `âœ“ Model loaded: ${file} (${modelsLoaded}/${totalModels})`
           );
 
           updateManualProgress(
@@ -561,7 +609,7 @@ function preloadModels() {
         },
         undefined,
         (error) => {
-          console.error(`✗ Failed to load model: ${file}`, error);
+          console.error(`âœ— Failed to load model: ${file}`, error);
           modelsWithErrors++;
 
           updateManualProgress(
@@ -582,25 +630,25 @@ function preloadOtherAssets() {
     setLoadingPhase(LoadingPhases.LOADING_MEDIUM);
     updateLoadingText("Loading textures and audio...");
 
-    const tempTextureLoader = new THREE.TextureLoader(loadingManager);
+    const tempTextureLoader = new THREE.TextureLoader(); // âœ… Hapus loadingManager
 
-    // ✅ Load texture (critical)
+    // âœ… Load texture (critical)
     const texturePromise = new Promise((res) => {
       tempTextureLoader.load(
         "assets/images/logo-kampus.png",
         () => {
-          console.log("✓ Texture loaded");
+          console.log("âœ“ Texture loaded");
           res();
         },
         undefined,
         () => {
-          console.warn("⚠ Texture failed to load");
+          console.warn("âš  Texture failed to load");
           res();
         }
       );
     });
 
-    // ✅ SEMUA audio dimuat di awal (tidak ada lazy loading)
+    // âœ… SEMUA audio dimuat di awal (tidak ada lazy loading)
     const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
 
     const allAudioFiles = [
@@ -628,12 +676,12 @@ function preloadOtherAssets() {
               audioCache[file] = buffer;
               audioLoaded++;
               console.log(
-                `✓ Audio loaded: ${file} (${audioLoaded}/${totalAudio})`
+                `âœ“ Audio loaded: ${file} (${audioLoaded}/${totalAudio})`
               );
 
               updateManualProgress(
                 audioLoaded + audioErrors,
-                totalAudio + 1, // +1 untuk texture
+                totalAudio,
                 "Loading audio files..."
               );
 
@@ -641,12 +689,12 @@ function preloadOtherAssets() {
             },
             undefined,
             () => {
-              console.warn(`⚠ Audio failed: ${file}`);
+              console.warn(`âš  Audio failed: ${file}`);
               audioErrors++;
 
               updateManualProgress(
                 audioLoaded + audioErrors,
-                totalAudio + 1,
+                totalAudio,
                 "Loading audio files..."
               );
 
@@ -657,7 +705,7 @@ function preloadOtherAssets() {
     );
 
     Promise.all([texturePromise, ...audioPromises]).then(() => {
-      console.log(`✓ All assets loaded. Audio: ${audioLoaded}/${totalAudio}`);
+      console.log(`âœ“ All assets loaded. Audio: ${audioLoaded}/${totalAudio}`);
       setLoadingPhase(LoadingPhases.COMPLETE);
       resolve();
     });
@@ -686,6 +734,13 @@ function playOneShotSound(path, volume = 1) {
     const oneShotSound = new THREE.Audio(audioListener);
     oneShotSound.setBuffer(buffer);
     oneShotSound.setVolume(volume);
+
+    // âœ… Cleanup setelah audio selesai
+    oneShotSound.onEnded = () => {
+      oneShotSound.disconnect();
+      camera.remove(oneShotSound);
+    };
+
     oneShotSound.play();
   }
 }
@@ -1073,11 +1128,11 @@ function handleInteraction(action) {
       }
       break;
     case "prev_description":
-      changeDescription("prev"); // ✅ Gunakan fungsi debounced
+      changeDescription("prev"); // âœ… Gunakan fungsi debounced
       break;
 
     case "next_description":
-      changeDescription("next"); // ✅ Gunakan fungsi debounced
+      changeDescription("next"); // âœ… Gunakan fungsi debounced
       break;
 
     case "next_component":
@@ -1151,10 +1206,11 @@ function handleInteraction(action) {
       startModelAnimation(true, onAnimationMidpointPrev);
       break;
     case "play_audio":
-      if (currentComponentIndex > -1) {
+      if (currentComponentIndex > -1 && components[currentComponentIndex]) {
         playComponentAudio(components[currentComponentIndex].audioFile);
       }
       break;
+
     default:
       if (action.startsWith("select_")) {
         if (isChangingComponent) return;
@@ -1174,13 +1230,21 @@ function handleInteraction(action) {
 
 function stopConfettiEffect() {
   if (confettiEffect) {
-    confettiEffect.destroy();
+    if (typeof confettiEffect.destroy === "function") {
+      confettiEffect.destroy();
+    }
     confettiEffect = null;
   }
 }
 
 function animate() {
-  renderer.setAnimationLoop(render);
+  animationFrameId = renderer.setAnimationLoop(render);
+}
+function stopAnimation() {
+  if (animationFrameId !== null) {
+    renderer.setAnimationLoop(null);
+    animationFrameId = null;
+  }
 }
 
 function render() {
