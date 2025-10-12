@@ -38,6 +38,7 @@ import {
   modelCache,
   startModelAnimation,
   updateModelTransition,
+  getCurrentModel,
 } from "./model-loader.js";
 import {
   setupInteraction,
@@ -500,16 +501,32 @@ function updateLoadingText(message) {
 function preloadModels() {
   return new Promise((resolve) => {
     updateLoadingText("Loading 3D models...");
+
     const modelFiles = components
       .filter((c) => c.modelFile)
       .map((c) => c.modelFile);
-    let modelsLoaded = 0;
-    const totalModels = modelFiles.length;
 
-    if (totalModels === 0) {
+    if (modelFiles.length === 0) {
+      console.log("No 3D models to preload.");
       resolve();
       return;
     }
+
+    let modelsLoaded = 0;
+    let modelsWithErrors = 0;
+    const totalModels = modelFiles.length;
+
+    const checkComplete = () => {
+      if (modelsLoaded + modelsWithErrors === totalModels) {
+        if (modelsWithErrors > 0) {
+          console.warn(`${modelsWithErrors} model(s) failed to load.`);
+        }
+        console.log(
+          `${modelsLoaded}/${totalModels} models loaded successfully.`
+        );
+        resolve();
+      }
+    };
 
     modelFiles.forEach((file) => {
       loader.load(
@@ -517,19 +534,28 @@ function preloadModels() {
         (gltf) => {
           modelCache[file] = gltf.scene;
           modelsLoaded++;
-          loadingManager.onProgress(file, modelsLoaded, totalModels);
-          if (modelsLoaded === totalModels) {
-            console.log("All 3D models preloaded.");
-            resolve();
+          console.log(`✓ Loaded: ${file} (${modelsLoaded}/${totalModels})`);
+
+          // Update progress bar
+          const progress =
+            ((modelsLoaded + modelsWithErrors) / totalModels) * 100;
+          const progressBar = document.getElementById("progress-bar");
+          const loadingText = document.getElementById("loading-text");
+
+          if (progressBar) {
+            progressBar.style.width = progress + "%";
           }
+          if (loadingText) {
+            loadingText.textContent = `Loading models... ${modelsLoaded}/${totalModels}`;
+          }
+
+          checkComplete();
         },
         undefined,
-        (err) => {
-          console.error(`Failed to load model: ${file}`, err);
-          modelsLoaded++;
-          if (modelsLoaded === totalModels) {
-            resolve();
-          }
+        (error) => {
+          console.error(`✗ Failed to load: ${file}`, error);
+          modelsWithErrors++;
+          checkComplete();
         }
       );
     });
@@ -1129,6 +1155,17 @@ function animate() {
 function render() {
   stats.update();
   const deltaTime = clock.getDelta();
+
+  const currentModel = getCurrentModel();
+
+  if (currentModel) {
+    currentModel.traverse((child) => {
+      if (child.isMesh) {
+        child.frustumCulled = true; // Pastikan aktif
+      }
+    });
+  }
+
   frameCount++;
   const now = performance.now();
   if (now - lastFpsUpdate >= 1000) {

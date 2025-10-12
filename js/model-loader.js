@@ -98,7 +98,7 @@ function setupModel(model, startYOffset = 0) {
   model.traverse((child) => {
     if (child.isMesh) {
       const oldMaterial = child.material;
-      const toonMaterial = new THREE.MeshToonMaterial({
+      const toonMaterial = new THREE.MeshBasicMaterial({
         color: oldMaterial.color,
         map: oldMaterial.map,
       });
