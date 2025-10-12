@@ -48,7 +48,13 @@ import {
   setButtonEnabled,
 } from "./interaction-manager.js";
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
-import { loadingManager } from "./loading-manager.js";
+import {
+  loadingManager,
+  setLoadingPhase,
+  LoadingPhases,
+  updateManualProgress,
+} from "./loading-manager.js";
+
 import { quizData } from "./quiz-data.js";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
@@ -504,6 +510,7 @@ function updateLoadingText(message) {
 
 function preloadModels() {
   return new Promise((resolve) => {
+    setLoadingPhase(LoadingPhases.LOADING_HIGH);
     updateLoadingText("Loading 3D models...");
 
     const modelFiles = components
@@ -516,6 +523,7 @@ function preloadModels() {
       return;
     }
 
+    // ✅ SEMUA model dimuat sekaligus (tidak ada lazy loading)
     let modelsLoaded = 0;
     let modelsWithErrors = 0;
     const totalModels = modelFiles.length;
@@ -525,40 +533,43 @@ function preloadModels() {
         if (modelsWithErrors > 0) {
           console.warn(`${modelsWithErrors} model(s) failed to load.`);
         }
-        console.log(
-          `${modelsLoaded}/${totalModels} models loaded successfully.`
-        );
+
+        console.log(`✓ All models loaded: ${modelsLoaded}/${totalModels}`);
+
         resolve();
       }
     };
 
-    modelFiles.forEach((file) => {
+    // Load semua model dengan prioritas berurutan
+    modelFiles.forEach((file, index) => {
       loader.load(
         file,
         (gltf) => {
           modelCache[file] = gltf.scene;
           modelsLoaded++;
-          console.log(`✓ Loaded: ${file} (${modelsLoaded}/${totalModels})`);
+          console.log(
+            `✓ Model loaded: ${file} (${modelsLoaded}/${totalModels})`
+          );
 
-          // Update progress bar
-          const progress =
-            ((modelsLoaded + modelsWithErrors) / totalModels) * 100;
-          const progressBar = document.getElementById("progress-bar");
-          const loadingText = document.getElementById("loading-text");
-
-          if (progressBar) {
-            progressBar.style.width = progress + "%";
-          }
-          if (loadingText) {
-            loadingText.textContent = `Loading models... ${modelsLoaded}/${totalModels}`;
-          }
+          updateManualProgress(
+            modelsLoaded + modelsWithErrors,
+            totalModels,
+            "Loading 3D models..."
+          );
 
           checkComplete();
         },
         undefined,
         (error) => {
-          console.error(`✗ Failed to load: ${file}`, error);
+          console.error(`✗ Failed to load model: ${file}`, error);
           modelsWithErrors++;
+
+          updateManualProgress(
+            modelsLoaded + modelsWithErrors,
+            totalModels,
+            "Loading 3D models..."
+          );
+
           checkComplete();
         }
       );
@@ -568,20 +579,31 @@ function preloadModels() {
 
 function preloadOtherAssets() {
   return new Promise((resolve) => {
-    updateLoadingText("Loading audio and textures...");
+    setLoadingPhase(LoadingPhases.LOADING_MEDIUM);
+    updateLoadingText("Loading textures and audio...");
 
     const tempTextureLoader = new THREE.TextureLoader(loadingManager);
+
+    // ✅ Load texture (critical)
     const texturePromise = new Promise((res) => {
       tempTextureLoader.load(
         "assets/images/logo-kampus.png",
-        () => res(),
+        () => {
+          console.log("✓ Texture loaded");
+          res();
+        },
         undefined,
-        () => res()
+        () => {
+          console.warn("⚠ Texture failed to load");
+          res();
+        }
       );
     });
 
+    // ✅ SEMUA audio dimuat di awal (tidak ada lazy loading)
     const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
-    const audioFilesToPreload = [
+
+    const allAudioFiles = [
       "assets/audio/sfx/button_press.ogg",
       "assets/audio/sfx/button_confirm.ogg",
       "assets/audio/sfx/completion.ogg",
@@ -589,8 +611,14 @@ function preloadOtherAssets() {
       ...components.filter((c) => c.audioFile).map((c) => c.audioFile),
       ...greetingAudioFiles,
     ];
-    const uniqueAudioFiles = [...new Set(audioFilesToPreload)];
 
+    const uniqueAudioFiles = [...new Set(allAudioFiles)];
+
+    let audioLoaded = 0;
+    let audioErrors = 0;
+    const totalAudio = uniqueAudioFiles.length;
+
+    // Load semua audio
     const audioPromises = uniqueAudioFiles.map(
       (file) =>
         new Promise((res) => {
@@ -598,43 +626,42 @@ function preloadOtherAssets() {
             file,
             (buffer) => {
               audioCache[file] = buffer;
+              audioLoaded++;
+              console.log(
+                `✓ Audio loaded: ${file} (${audioLoaded}/${totalAudio})`
+              );
+
+              updateManualProgress(
+                audioLoaded + audioErrors,
+                totalAudio + 1, // +1 untuk texture
+                "Loading audio files..."
+              );
+
               res();
             },
             undefined,
-            () => res()
+            () => {
+              console.warn(`⚠ Audio failed: ${file}`);
+              audioErrors++;
+
+              updateManualProgress(
+                audioLoaded + audioErrors,
+                totalAudio + 1,
+                "Loading audio files..."
+              );
+
+              res();
+            }
           );
         })
     );
 
     Promise.all([texturePromise, ...audioPromises]).then(() => {
-      console.log("All other assets are loaded.");
+      console.log(`✓ All assets loaded. Audio: ${audioLoaded}/${totalAudio}`);
+      setLoadingPhase(LoadingPhases.COMPLETE);
       resolve();
     });
   });
-}
-
-function playSoundFromCache(audioObject, path, options = {}) {
-  const { loop = false, volume = 1 } = options;
-
-  if (audioObject && audioObject.isPlaying) {
-    audioObject.stop();
-  }
-
-  const buffer = audioCache[path];
-  if (buffer) {
-    audioObject.setBuffer(buffer);
-    audioObject.setLoop(loop);
-    audioObject.setVolume(volume);
-    audioObject.play();
-  } else {
-    audioLoader.load(path, (buf) => {
-      audioCache[path] = buf;
-      audioObject.setBuffer(buf);
-      audioObject.setLoop(loop);
-      audioObject.setVolume(volume);
-      audioObject.play();
-    });
-  }
 }
 
 function playControlledSound(audioObject, path, options = {}) {

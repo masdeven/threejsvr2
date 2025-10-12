@@ -6,30 +6,51 @@ const loadingText = document.getElementById("loading-text");
 
 export const loadingManager = new THREE.LoadingManager();
 
-// ✅ TAMBAHKAN: Variable untuk timeout
+// Tracking system untuk loading
 let loadingTimeout;
 const LOADING_TIMEOUT = 30000; // 30 detik
 
-// ✅ UPDATE: onStart dengan timeout
+// Fase loading yang terstruktur
+export const LoadingPhases = {
+  INITIALIZING: "initializing",
+  LOADING_HIGH: "loading_high",
+  LOADING_MEDIUM: "loading_medium",
+  COMPLETE: "complete",
+};
+
+let currentLoadingPhase = LoadingPhases.INITIALIZING;
+
+export function setLoadingPhase(phase) {
+  currentLoadingPhase = phase;
+  updateLoadingPhaseText();
+}
+
+function updateLoadingPhaseText() {
+  if (!loadingText) return;
+
+  const phaseMessages = {
+    [LoadingPhases.INITIALIZING]: "Initializing application...",
+    [LoadingPhases.LOADING_HIGH]: "Loading 3D models...",
+    [LoadingPhases.LOADING_MEDIUM]: "Loading additional content...",
+    [LoadingPhases.COMPLETE]: "Ready!",
+  };
+
+  loadingText.textContent = phaseMessages[currentLoadingPhase] || "Loading...";
+}
+
 loadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
   console.log(
-    "Started loading file: " +
-      url +
-      ".\nLoaded " +
-      itemsLoaded +
-      " of " +
-      itemsTotal +
-      " files."
+    `[${currentLoadingPhase}] Loading: ${url} (${itemsLoaded}/${itemsTotal})`
   );
 
-  // Set timeout - reset setiap kali ada file baru dimuat
+  // Reset timeout setiap file baru
   clearTimeout(loadingTimeout);
   loadingTimeout = setTimeout(() => {
     console.error("Loading timeout exceeded!");
     if (loadingText) {
       loadingText.innerText = "Loading timeout. Silakan refresh halaman.";
     }
-    // Sembunyikan spinner
+
     const spinner = document.querySelector(".spinner");
     if (spinner) spinner.style.display = "none";
   }, LOADING_TIMEOUT);
@@ -37,29 +58,50 @@ loadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
 
 loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
   const progress = (itemsLoaded / itemsTotal) * 100;
-  progressBar.style.width = progress + "%";
-  loadingText.textContent = `Initializing ${itemsLoaded} / ${itemsTotal}...`;
+  if (progressBar) {
+    progressBar.style.width = progress + "%";
+  }
+
+  if (loadingText) {
+    loadingText.textContent = `${currentLoadingPhase} ${itemsLoaded} / ${itemsTotal}...`;
+  }
+
+  console.log(`Progress: ${progress.toFixed(1)}% - ${url}`);
 };
 
-// ✅ TAMBAHKAN: onLoad untuk clear timeout saat semua asset berhasil dimuat
 loadingManager.onLoad = function () {
   clearTimeout(loadingTimeout);
-  console.log("All assets loaded successfully!");
+  console.log("✓ All assets in current phase loaded successfully!");
+
+  if (currentLoadingPhase !== LoadingPhases.COMPLETE) {
+    console.log(`Phase ${currentLoadingPhase} complete`);
+  }
 };
 
-// ✅ UPDATE: onError dengan clear timeout
 loadingManager.onError = function (url) {
-  clearTimeout(loadingTimeout); // Clear timeout saat ada error
-  console.error("There was an error loading " + url);
+  clearTimeout(loadingTimeout);
+  console.error("✗ Error loading: " + url);
 
-  const loadingText = document.getElementById("loading-text");
   if (loadingText) {
     loadingText.innerText = `Gagal memuat: ${url}\nCoba muat ulang halaman.`;
   }
 
-  const progressBar = document.getElementById("progress-bar");
   if (progressBar) progressBar.style.display = "none";
 
   const spinner = document.querySelector(".spinner");
   if (spinner) spinner.style.display = "none";
 };
+
+// Helper untuk tracking manual progress per fase
+export function updateManualProgress(loaded, total, message = "") {
+  const progress = (loaded / total) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = progress + "%";
+  }
+
+  if (loadingText) {
+    const baseMessage = message || currentLoadingPhase;
+    loadingText.textContent = `${baseMessage} ${loaded}/${total}`;
+  }
+}
