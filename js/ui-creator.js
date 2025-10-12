@@ -25,7 +25,21 @@ let avatarDropAnimation = {
   onComplete: null,
 };
 
-export let activeTypingAnimation = null;
+let activeTypingAnimation = null;
+
+// ✅ TAMBAHKAN fungsi setter dan getter
+export function setActiveTypingAnimation(animation) {
+  activeTypingAnimation = animation;
+}
+
+export function getActiveTypingAnimation() {
+  return activeTypingAnimation;
+}
+
+export function clearActiveTypingAnimation() {
+  activeTypingAnimation = null;
+  console.log("✓ Typing animation cleared");
+}
 
 const BG_COLOR = "#2D3748";
 const TEXT_COLOR = "#FFFFFF";
@@ -113,6 +127,21 @@ function setupAvatar(model, scale, position, shouldAnimate = false) {
     action.play();
   }
 }
+// ✅ Tambahkan fungsi untuk stop avatar drop animation
+export function stopAvatarDropAnimation() {
+  if (avatarDropAnimation.isAnimating) {
+    avatarDropAnimation.isAnimating = false;
+    avatarDropAnimation.onComplete = null; // Clear callback
+
+    // Set ke posisi final langsung
+    if (currentAvatar && currentAvatar.userData.initialY !== undefined) {
+      currentAvatar.position.y = currentAvatar.userData.initialY;
+    }
+
+    console.log("✓ Avatar drop animation stopped");
+  }
+}
+
 export function updateAvatarDropAnimation(deltaTime) {
   if (!avatarDropAnimation.isAnimating || !currentAvatar) return;
 
@@ -181,6 +210,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
   return { pixelHeight: totalLines * lineHeight, lineCount: totalLines };
 }
 
+// Di ui-creator.js, modifikasi createTypingText
 function createTypingText(text, width, options = {}, onComplete) {
   const {
     baseFontSize = 14,
@@ -191,7 +221,6 @@ function createTypingText(text, width, options = {}, onComplete) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
-
   const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
 
   const finalFontSize = Math.round(
@@ -199,8 +228,8 @@ function createTypingText(text, width, options = {}, onComplete) {
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
-  ctx.font = font;
 
+  ctx.font = font;
   const padding = 7.5;
   const canvasWidth = width * resolution;
   const maxWidth = canvasWidth - padding * 2;
@@ -227,10 +256,20 @@ function createTypingText(text, width, options = {}, onComplete) {
   let timeAccumulator = 0;
   const typingSpeed = 20;
 
+  // ✅ Pre-render setup untuk mengurangi pekerjaan di loop
+  ctx.font = font;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "#E2E8F0";
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
   function update(deltaTime) {
     if (currentIndex >= text.length) {
-      if (activeTypingAnimation === this) {
-        activeTypingAnimation = null;
+      if (getActiveTypingAnimation() === this) {
+        clearActiveTypingAnimation(); // ✅ Gunakan setter
         if (onComplete) onComplete();
       }
       return;
@@ -239,38 +278,37 @@ function createTypingText(text, width, options = {}, onComplete) {
     timeAccumulator += deltaTime;
     const interval = 1 / typingSpeed;
 
+    // ✅ Batch update: hanya update setiap N karakter untuk mengurangi GPU upload
+    let shouldUpdate = false;
     while (timeAccumulator >= interval) {
       currentIndex++;
       timeAccumulator -= interval;
+      shouldUpdate = true;
       if (currentIndex > text.length) {
         currentIndex = text.length;
         break;
       }
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = font;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillStyle = "#E2E8F0";
-    ctx.shadowColor = "rgba(0,0,0,0.8)";
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    wrapText(
-      ctx,
-      text.substring(0, currentIndex),
-      canvas.width / 2,
-      padding / 2,
-      maxWidth,
-      lineHeight,
-      true
-    );
-    texture.needsUpdate = true;
+    // ✅ Hanya render jika ada perubahan
+    if (shouldUpdate) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      wrapText(
+        ctx,
+        text.substring(0, currentIndex),
+        canvas.width / 2,
+        padding / 2,
+        maxWidth,
+        lineHeight,
+        true
+      );
+
+      texture.needsUpdate = true;
+    }
   }
 
-  activeTypingAnimation = { update };
-
+  setActiveTypingAnimation({ update });
   return mesh;
 }
 
@@ -450,26 +488,40 @@ function createTextPanel(descriptions, width, options = {}) {
 }
 
 export function clearUI() {
-  activeTypingAnimation = null;
+  // ✅ Stop typing animation SEBELUM clear UI
+  clearActiveTypingAnimation();
+
+  // ✅ Stop avatar drop animation
+  stopAvatarDropAnimation();
+
   [uiGroup, viewerUIGroup].forEach((group) => {
     for (let i = group.children.length - 1; i >= 0; i--) {
       const child = group.children[i];
+
       child.traverse((object) => {
         if (object.isMesh) {
-          object.geometry?.dispose();
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+
           if (object.material) {
             if (Array.isArray(object.material)) {
               object.material.forEach((material) => {
-                material.map?.dispose();
+                if (material.map) {
+                  material.map.dispose();
+                }
                 material.dispose();
               });
             } else {
-              object.material.map?.dispose();
+              if (object.material.map) {
+                object.material.map.dispose();
+              }
               object.material.dispose();
             }
           }
         }
       });
+
       group.remove(child);
     }
   });

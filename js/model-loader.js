@@ -36,7 +36,7 @@ export function setupDRACOLoader(dracoLoader) {
   loader.setDRACOLoader(dracoLoader);
 }
 
-function convertModelMaterials(model) {
+export function convertModelMaterials(model) {
   model.traverse((child) => {
     if (child.isMesh) {
       const oldMaterial = child.material;
@@ -54,50 +54,65 @@ function convertModelMaterials(model) {
   });
 }
 
-// âœ… TAMBAHKAN: Function untuk pre-compile shader
-function preCompileModel(model) {
+// ✅ PERBAIKAN: Function untuk pre-compile shader
+export function preCompileModel(model) {
   if (!rendererRef || !cameraRef) {
-    console.warn("âš  Renderer not set for shader compilation");
+    console.warn("⚠ Renderer not set for shader compilation");
     return;
   }
+
+  // ✅ Simpan posisi original
+  const originalPosition = model.position.clone();
+  const originalRotation = model.rotation.clone();
+  const originalScale = model.scale.clone();
 
   // Add model to scene temporarily (off-screen)
   model.position.set(0, -1000, 0); // Far away, won't be visible
   scene.add(model);
 
   try {
-    // âœ… Pre-compile all shaders for this model
+    // ✅ Pre-compile all shaders for this model
     rendererRef.compile(model, cameraRef);
-    console.log("âœ“ Shader pre-compiled for model");
+    console.log("✓ Shader pre-compiled for model");
   } catch (error) {
-    console.warn("âš  Shader compilation warning:", error);
+    console.warn("⚠ Shader compilation warning:", error);
   }
 
   // Remove from scene immediately
   scene.remove(model);
+
+  // ✅ Kembalikan transformasi ke nilai original
+  model.position.copy(originalPosition);
+  model.rotation.copy(originalRotation);
+  model.scale.copy(originalScale);
 }
 
+// Di model-loader.js
 function setupModelPosition(model, startYOffset = 0) {
+  // ✅ OPTIMASI: Hitung bounding box sekali, lalu scale, baru hitung lagi
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
   const scaleFactor = 0.8 / maxDim;
   model.scale.setScalar(scaleFactor);
 
+  // ✅ Set properti rendering sekali saat setup
   model.traverse((child) => {
     if (child.isMesh) {
       child.castShadow = true;
       child.receiveShadow = true;
+      child.frustumCulled = true; // ✅ Set di sini, bukan di render loop
     }
   });
 
-  const newBox = new THREE.Box3().setFromObject(model);
-  const center = newBox.getCenter(new THREE.Vector3());
+  // ✅ Sekarang hitung box setelah scaling (hanya sekali lagi)
+  box.setFromObject(model); // Reuse box object
+  const center = box.getCenter(new THREE.Vector3());
+
   model.position.x -= center.x;
   model.position.z = -2.5 - center.z;
 
-  const newMinY = newBox.min.y;
-  const finalY = TABLE_HEIGHT - newMinY;
+  const finalY = TABLE_HEIGHT - box.min.y;
   model.position.y = finalY + startYOffset;
   model.userData.finalY = finalY;
 

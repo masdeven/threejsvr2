@@ -22,11 +22,13 @@ import {
   updateAvatar,
   toggleAvatarVisibility,
   preloadAvatar,
-  activeTypingAnimation,
   uiGroup,
   GREETING_DATA,
   navButtons,
   updateAvatarDropAnimation,
+  getActiveTypingAnimation, // ✅ Tambahkan
+  clearActiveTypingAnimation, // ✅ Tambahkan
+  stopAvatarDropAnimation,
 } from "./ui-creator.js";
 import {
   loader,
@@ -41,6 +43,8 @@ import {
   updateModelTransition,
   getCurrentModel,
   setRendererForCompilation,
+  convertModelMaterials, // ✅ Tambahkan
+  preCompileModel, // ✅ Tambahkan
 } from "./model-loader.js";
 import {
   setupInteraction,
@@ -549,75 +553,55 @@ function updateLoadingText(message) {
 function preloadModels() {
   return new Promise((resolve) => {
     setLoadingPhase(LoadingPhases.LOADING_HIGH);
-
     const modelFiles = components
       .filter((c) => c.modelFile)
       .map((c) => c.modelFile);
 
     if (modelFiles.length === 0) {
-      console.log("No 3D models to preload.");
       resolve();
       return;
     }
 
-    // âœ… SEMUA model dimuat sekaligus (tidak ada lazy loading)
     let modelsLoaded = 0;
     let modelsWithErrors = 0;
     const totalModels = modelFiles.length;
 
     const checkComplete = () => {
       if (modelsLoaded + modelsWithErrors === totalModels) {
-        if (modelsWithErrors > 0) {
-          console.warn(`${modelsWithErrors} model(s) failed to load.`);
-        }
-
-        // âœ… Cek apakah minimal 1 model berhasil dimuat
-        if (modelsLoaded === 0) {
-          console.error("âŒ CRITICAL: No models loaded successfully!");
-          // Tampilkan error ke user
-          const loadingText = document.getElementById("loading-text");
-          if (loadingText) {
-            loadingText.textContent =
-              "Failed to load 3D models. Please refresh.";
-          }
-          return; // Jangan resolve, biarkan app stuck di loading
-        }
-
-        console.log(`âœ“ All models loaded: ${modelsLoaded}/${totalModels}`);
         resolve();
       }
     };
 
-    // Load semua model dengan prioritas berurutan
     modelFiles.forEach((file, index) => {
       loader.load(
         file,
         (gltf) => {
-          modelCache[file] = gltf.scene;
-          modelsLoaded++;
-          console.log(
-            `âœ“ Model loaded: ${file} (${modelsLoaded}/${totalModels})`
-          );
+          // ✅ TAMBAHKAN: Konversi material sebelum cache
+          convertModelMaterials(gltf.scene);
 
+          // ✅ TAMBAHKAN: Pre-compile shader sebelum cache
+          preCompileModel(gltf.scene);
+
+          // ✅ Simpan model yang sudah dioptimasi ke cache
+          modelCache[file] = gltf.scene;
+
+          modelsLoaded++;
           updateManualProgress(
             modelsLoaded + modelsWithErrors,
             totalModels,
             "Loading 3D models..."
           );
-
           checkComplete();
         },
         undefined,
         (error) => {
-          console.error(`âœ— Failed to load model: ${file}`, error);
+          console.error(`Failed to load model ${file}`, error);
           modelsWithErrors++;
-
           updateManualProgress(
             modelsLoaded + modelsWithErrors,
             totalModels,
             "Loading 3D models..."
           );
-
           checkComplete();
         }
       );
@@ -793,12 +777,21 @@ function playCompletionAudio() {
 }
 
 function stopAudio() {
+  // ✅ Stop component narration audio
   if (sound && sound.isPlaying) {
     sound.stop();
     sound.userData.path = null;
   }
+
+  // ✅ Stop greeting audio
   if (greetingSound && greetingSound.isPlaying) {
     greetingSound.stop();
+    console.log("✓ Greeting audio stopped");
+  }
+
+  // ✅ Stop completion audio (jika ada)
+  if (completionSound && completionSound.isPlaying) {
+    completionSound.stop();
   }
 }
 
@@ -845,6 +838,16 @@ function changeState(newState, options = {}) {
     if (currentState === newState && newState !== AppState.VIEWER) {
       return;
     }
+    if (
+      currentState === AppState.AVATAR_GREETING &&
+      newState !== AppState.AVATAR_GREETING
+    ) {
+      stopAudio(); // Stop greeting audio
+      clearActiveTypingAnimation(); // ✅ Gunakan fungsi
+      stopAvatarDropAnimation(); // Stop avatar animation
+      console.log("✓ Avatar greeting cleanup complete");
+    }
+
     if (currentState === AppState.COMPLETION) {
       stopConfettiEffect();
       if (completionSound && completionSound.isPlaying) {
@@ -1041,6 +1044,7 @@ function handleInteraction(action) {
       refreshUI();
       break;
     case "continue_to_landing":
+      stopAudio();
       changeState(AppState.LANDING);
       break;
     case "start_learning":
@@ -1064,6 +1068,11 @@ function handleInteraction(action) {
       startModelAnimation(true, onAnimationMidpointBackToMenu);
       break;
     case "back_to_landing":
+      if (currentState === AppState.AVATAR_GREETING) {
+        stopAudio();
+        clearActiveTypingAnimation(); // ✅ Gunakan fungsi
+        stopAvatarDropAnimation();
+      }
       changeState(AppState.LANDING);
       break;
     case "show_quiz":
@@ -1253,20 +1262,20 @@ function render() {
 
   const currentModel = getCurrentModel();
 
-  if (currentModel) {
-    currentModel.traverse((child) => {
-      if (child.isMesh) {
-        child.frustumCulled = true; // Pastikan aktif
-      }
-    });
-  }
-
   frameCount++;
   const now = performance.now();
-  if (now - lastFpsUpdate >= 1000) {
+
+  // ✅ Update FPS setiap 500ms (dari 1000ms) untuk responsivitas lebih baik
+  if (now - lastFpsUpdate >= 500) {
+    // Atau 1000 jika lebih prefer
     fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
     frameCount = 0;
     lastFpsUpdate = now;
+
+    // ✅ Hanya update label jika debug visible
+    if (isDebugVisible) {
+      updateFpsLabel(fpsLabel, fps);
+    }
   }
   if (isFadingInUI) {
     let allFadedIn = true;
@@ -1287,8 +1296,9 @@ function render() {
   updateScrollAnimation(activeTextPanel, deltaTime);
   updateScrollAnimation(activeCreditsPanel, deltaTime);
 
-  if (activeTypingAnimation) {
-    activeTypingAnimation.update(deltaTime);
+  const typingAnim = getActiveTypingAnimation();
+  if (typingAnim) {
+    typingAnim.update(deltaTime);
   }
 
   if (isDebugVisible) {
