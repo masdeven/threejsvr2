@@ -60,7 +60,7 @@ function redrawButton(button, color, text = null) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const buttonResolution = getResolution() * 2;
+  const buttonResolution = getResolution();
   const shape = width === height ? "circle" : "roundedRectangle";
   ctx.fillStyle = color;
 
@@ -72,7 +72,7 @@ function redrawButton(button, color, text = null) {
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
     ctx.fill();
   } else {
-    const radius = 20 * (buttonResolution / getResolution());
+    const radius = 10 * (buttonResolution / getResolution());
     ctx.beginPath();
     ctx.moveTo(radius, 0);
     ctx.lineTo(canvas.width - radius, 0);
@@ -99,10 +99,9 @@ function redrawButton(button, color, text = null) {
   const resolution = getResolution();
   const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
 
-  let baseFontSize = height * resolution * 1;
-
+  let baseFontSize = height * resolution * 0.5; // Dari 1 → 0.55
   if (shape === "circle") {
-    baseFontSize *= 1.2;
+    baseFontSize *= 1.2; // Dari 1.2 → 1.0
   }
 
   const finalFontSize = Math.floor(
@@ -127,17 +126,25 @@ export function setButtonEnabled(button, enabled, text = null) {
   if (!button || !button.userData.isButton) return;
 
   const DISABLED_COLOR = "#4A5568";
+  const BGCOLOR = "#2D3748"; // Tambahkan konstanta ini
   const data = button.userData;
 
   if (enabled) {
+    // Enable button - restore functionality
     data.action = data.originalAction || data.action;
-    data.colors.hover = "#4A5568";
+    data.colors = {
+      default: data.colors?.default || BGCOLOR,
+      hover: "#4A5568",
+    };
     redrawButton(button, data.colors.default, data.text);
+    button.userData.currentState = "default";
   } else {
+    // Disable button - remove hover capability
     data.originalAction = data.action;
     data.action = "locked";
-    data.colors.hover = DISABLED_COLOR;
+    data.colors = null; // Set null agar tidak bisa hover
     redrawButton(button, DISABLED_COLOR, text || data.text);
+    button.userData.currentState = "disabled";
   }
 }
 
@@ -145,23 +152,28 @@ function handleHover(intersectedObject) {
   if (lastIntersectedButton && lastIntersectedButton !== intersectedObject) {
     if (
       lastIntersectedButton.userData.isButton &&
-      lastIntersectedButton.userData.colors
+      lastIntersectedButton.userData.colors &&
+      lastIntersectedButton.userData.currentState !== "default"
     ) {
       redrawButton(
         lastIntersectedButton,
         lastIntersectedButton.userData.colors.default
       );
+      lastIntersectedButton.userData.currentState = "default";
     }
   }
 
   if (intersectedObject && intersectedObject !== lastIntersectedButton) {
     if (
       intersectedObject.userData.isButton &&
-      intersectedObject.userData.colors
+      intersectedObject.userData.colors &&
+      intersectedObject.userData.currentState !== "hover"
     ) {
       redrawButton(intersectedObject, intersectedObject.userData.colors.hover);
+      intersectedObject.userData.currentState = "hover";
     }
   }
+
   lastIntersectedButton = intersectedObject;
 }
 

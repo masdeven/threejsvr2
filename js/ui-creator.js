@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, camera } from "./scene-setup.js";
+import { scene, camera, renderer } from "./scene-setup.js";
 import { components } from "./component-data.js";
 import { isVRMode } from "./vr-manager.js";
 import { quizData } from "./quiz-data.js";
@@ -97,10 +97,10 @@ function setupAvatar(model, scale, position) {
 }
 
 export function getResolution() {
-  if (isVRMode()) {
-    return 512;
+  if (isVRMode) {
+    return 256;
   } else {
-    const baseResolution = 480;
+    const baseResolution = 240;
     const dpr = Math.min(window.devicePixelRatio, 2);
     return baseResolution * dpr;
   }
@@ -137,7 +137,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, draw = true) {
 
 function createTypingText(text, width, options = {}, onComplete) {
   const {
-    baseFontSize = 28,
+    baseFontSize = 14,
     vrFontScale = 1.5,
     lineHeightScale = 1.2,
   } = options;
@@ -155,7 +155,7 @@ function createTypingText(text, width, options = {}, onComplete) {
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
   ctx.font = font;
 
-  const padding = 15;
+  const padding = 7.5;
   const canvasWidth = width * resolution;
   const maxWidth = canvasWidth - padding * 2;
 
@@ -166,7 +166,8 @@ function createTypingText(text, width, options = {}, onComplete) {
   canvas.height = totalTextPixelHeight + padding;
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 16;
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -237,7 +238,7 @@ function createButton(
 ) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  const buttonResolution = getResolution() * 2;
+  const buttonResolution = getResolution(); // Hilangkan * 2
 
   canvas.width = width * buttonResolution;
   canvas.height = height * buttonResolution;
@@ -252,7 +253,7 @@ function createButton(
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
     ctx.fill();
   } else {
-    const radius = 20 * (buttonResolution / getResolution());
+    const radius = 10 * (buttonResolution / getResolution());
     ctx.beginPath();
     ctx.moveTo(radius, 0);
     ctx.lineTo(canvas.width - radius, 0);
@@ -278,10 +279,10 @@ function createButton(
   const resolution = getResolution();
   const fontStyle = shape === "circle" ? "normal" : FONT.split(" ")[0];
 
-  let baseFontSize = height * resolution * 1;
+  let baseFontSize = height * resolution * 0.5;
 
   if (shape === "circle") {
-    baseFontSize *= 1.2;
+    baseFontSize *= 1.2; // Dari 1.2 → 1.0
   }
 
   const finalFontSize = Math.floor(
@@ -296,7 +297,10 @@ function createButton(
   ctx.fillText(text, canvas.width / 2, canvas.height / 2 + verticalOffset);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 16;
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -314,6 +318,7 @@ function createButton(
     text: text,
     colors: { default: bgColor, hover: "#4A5568" },
     canvasContext: ctx,
+    currentState: "default", // State tracking
   };
 
   return mesh;
@@ -329,15 +334,15 @@ function createTextPanel(descriptions, width, options = {}) {
     ? descriptions
     : [descriptions];
 
-  const BASE_FONT_SIZE_PX = 50;
+  const BASEFONTSIZEPX = 25;
   const vrFontScale = 1.1;
   const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
   const finalFontSize = Math.round(
-    isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX * dpr
+    isVRMode() ? BASEFONTSIZEPX * vrFontScale : BASEFONTSIZEPX * dpr
   );
   const lineHeight = Math.round(finalFontSize * 1.2);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
-  const padding = 25;
+  const padding = 12.5;
   const resolution = getResolution();
   ctx.font = font;
   const canvasWidth = width * resolution;
@@ -373,7 +378,11 @@ function createTextPanel(descriptions, width, options = {}) {
   ctx.shadowColor = "transparent";
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 16;
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   texture.wrapS = THREE.ClampToEdgeWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(1, 1 / descriptionsArray.length);
@@ -450,6 +459,11 @@ function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
   ctx.fill();
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -532,20 +546,29 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.add(continueButton);
 
   if (currentGreeting.text) {
+    // Calculate responsive width (85% of panel width with padding)
+    const textWidth = panelWidth * 0.85; // 4.0 * 0.85 = 3.4
+
+    // Optimized font size for greeting text
+    const greetingFontSize = 25; // Reduced from 50 to 18
+
     const welcomeLabel = createTypingText(
       currentGreeting.text,
-      3.2,
+      textWidth, // ✅ 3.4 dengan padding memadai
       {
-        baseFontSize: 50,
+        baseFontSize: greetingFontSize, // ✅ 18 proporsional
         vrFontScale: 1.1,
-        lineHeightScale: 1.3,
+        lineHeightScale: 1.2, // ✅ 1.2 lebih compact
       },
       () => {
         continueButton.visible = true;
         continueButton.userData.action = buttonAction;
       }
     );
-    welcomeLabel.position.set(0, 0.25, 0.01);
+
+    // Adjusted position for smaller text
+    const textYPosition = 0.15; // ✅ 0.15 lebih centered
+    welcomeLabel.position.set(0, textYPosition, 0.01);
     viewerUIGroup.add(welcomeLabel);
   } else {
     continueButton.visible = true;
@@ -653,6 +676,11 @@ export function createLandingPage(playerName) {
 
 function createImagePanel(imageUrl, width, height) {
   const texture = textureLoader.load(imageUrl);
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -849,11 +877,16 @@ export function createViewerPage(
       0.2,
       isLastPage ? "#4A5568" : BG_COLOR
     );
-    if (isLastPage) nextDescButton.userData.colors = null;
+    if (isLastPage) {
+      nextDescButton.userData.colors = null;
+      nextDescButton.userData.currentState = "disabled"; // ✅ Tambahkan
+    }
     const nextButtonX = currentX - buttonWidth / 2;
     nextDescButton.position.set(nextButtonX, descNavY, 0.01);
     nextDescButton.renderOrder = 1;
     viewerUIGroup.add(nextDescButton);
+    navButtons.push(nextDescButton);
+
     currentX = nextButtonX - buttonWidth / 2 - padding;
 
     const pageIndicatorText = `${descriptionIndex + 1} / ${
@@ -879,11 +912,15 @@ export function createViewerPage(
       0.2,
       isFirstPage ? "#4A5568" : BG_COLOR
     );
-    if (isFirstPage) prevDescButton.userData.colors = null;
+    if (isFirstPage) {
+      prevDescButton.userData.colors = null;
+      prevDescButton.userData.currentState = "disabled"; // ✅ Tambahkan
+    }
     const prevButtonX = currentX - buttonWidth / 2;
     prevDescButton.position.set(prevButtonX, descNavY, 0.01);
     prevDescButton.renderOrder = 1;
     viewerUIGroup.add(prevDescButton);
+    navButtons.push(prevDescButton);
   }
 
   const navButtonWidth = 1.2;
@@ -1029,6 +1066,11 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -1063,7 +1105,11 @@ function createSubtitleLabel(text, width, height) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 16;
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -1074,7 +1120,7 @@ function createSubtitleLabel(text, width, height) {
 
 function createBodyText(text, width, options = {}) {
   const {
-    baseFontSize = 50,
+    baseFontSize = 25,
     vrFontScale = 1.1,
     lineHeightScale = 1.2,
   } = options;
@@ -1091,7 +1137,7 @@ function createBodyText(text, width, options = {}) {
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   ctx.font = `${finalFontSize}px Arial, sans-serif`;
 
-  const padding = 15;
+  const padding = 7.5;
   const canvasWidth = width * resolution;
   const maxWidth = canvasWidth - padding * 2;
 
@@ -1122,7 +1168,11 @@ function createBodyText(text, width, options = {}) {
   );
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 16;
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -1546,6 +1596,11 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -1931,6 +1986,11 @@ export function createFpsLabel() {
   context.fillText("0", canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,

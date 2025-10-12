@@ -66,6 +66,8 @@ let highestComponentUnlocked = 0;
 let currentCreditIndex = 0;
 let isChangingComponent = false;
 let stats;
+let isChangingDescription = false; // ✅ Tambahkan ini
+let descriptionChangeTimeout = null; // ✅ Tambahkan ini
 const CHANGE_DEBOUNCE_TIME = 500;
 const clock = new THREE.Clock();
 let confettiEffect = null;
@@ -379,15 +381,12 @@ function reloadViewerNavigation() {
   if (!component) return;
 
   clearViewerUI();
-
   createViewerPage(
     component,
     currentComponentIndex,
     currentDescriptionIndex,
     highestComponentUnlocked
   );
-
-  updateActiveTextPanelTarget();
 }
 
 function updateActiveCreditsPanelTarget() {
@@ -807,11 +806,85 @@ function changeState(newState, options = {}) {
         case AppState.MINI_QUIZ_RESULT:
           controls.enabled = true;
           camera.position.set(0, 1.6, 0.5);
-          controls.target.set(-0.3, 1.6, 0);
+          controls.target.set(-0.2, 1.6, 0);
           break;
       }
     }
   });
+}
+
+function changeDescription(direction) {
+  // Guard: prevent multiple simultaneous changes
+  if (isChangingComponent || isChangingDescription) {
+    return;
+  }
+
+  const component = components[currentComponentIndex];
+  if (!component) return;
+
+  // Calculate new index based on direction
+  let newIndex = currentDescriptionIndex;
+
+  if (direction === "prev") {
+    if (currentDescriptionIndex > 0) {
+      newIndex = currentDescriptionIndex - 1;
+    } else {
+      return; // Already at first page
+    }
+  } else if (direction === "next") {
+    if (currentDescriptionIndex < component.description.length - 1) {
+      newIndex = currentDescriptionIndex + 1;
+    } else {
+      return; // Already at last page
+    }
+  }
+
+  // Set flag to prevent concurrent changes
+  isChangingDescription = true;
+  currentDescriptionIndex = newIndex;
+
+  // Disable description navigation buttons immediately
+  navButtons.forEach((btn) => {
+    const action = btn.userData.action;
+    if (action === "prev_description" || action === "next_description") {
+      setButtonEnabled(btn, false);
+    }
+  });
+
+  // Clear any existing timeout (debouncing)
+  if (descriptionChangeTimeout) {
+    clearTimeout(descriptionChangeTimeout);
+  }
+
+  // Update scroll animation target immediately for smooth transition
+  updateActiveTextPanelTarget();
+
+  // Debounce the UI reload to prevent rapid consecutive calls
+  descriptionChangeTimeout = setTimeout(() => {
+    reloadViewerNavigation();
+
+    // Reset flag
+    isChangingDescription = false;
+
+    // Re-enable buttons based on new position
+    const comp = components[currentComponentIndex];
+    if (comp) {
+      navButtons.forEach((btn) => {
+        const action = btn.userData.action;
+
+        if (action === "prev_description") {
+          const canGoPrev = currentDescriptionIndex > 0;
+          setButtonEnabled(btn, canGoPrev);
+        } else if (action === "next_description") {
+          const canGoNext =
+            currentDescriptionIndex < comp.description.length - 1;
+          setButtonEnabled(btn, canGoNext);
+        }
+      });
+    }
+
+    descriptionChangeTimeout = null;
+  }, 150); // 150ms debounce delay
 }
 
 function handleInteraction(action) {
@@ -943,22 +1016,11 @@ function handleInteraction(action) {
       }
       break;
     case "prev_description":
-      if (currentDescriptionIndex > 0) {
-        currentDescriptionIndex--;
-        updateActiveTextPanelTarget();
-        reloadViewerNavigation();
-      }
+      changeDescription("prev"); // ✅ Gunakan fungsi debounced
       break;
+
     case "next_description":
-      const currentComp = components[currentComponentIndex];
-      if (
-        currentComp &&
-        currentDescriptionIndex < currentComp.description.length - 1
-      ) {
-        currentDescriptionIndex++;
-        updateActiveTextPanelTarget();
-        reloadViewerNavigation();
-      }
+      changeDescription("next"); // ✅ Gunakan fungsi debounced
       break;
 
     case "next_component":
