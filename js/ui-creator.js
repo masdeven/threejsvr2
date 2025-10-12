@@ -16,6 +16,14 @@ scene.add(viewerUIGroup);
 let avatarMixer;
 let currentAvatar = null;
 let avatarModel = null;
+let avatarDropAnimation = {
+  isAnimating: false,
+  startY: 0,
+  targetY: 0,
+  currentY: 0,
+  speed: 3.5,
+  onComplete: null,
+};
 
 export let activeTypingAnimation = null;
 
@@ -81,7 +89,7 @@ export function preloadAvatar() {
   });
 }
 
-function setupAvatar(model, scale, position) {
+function setupAvatar(model, scale, position, shouldAnimate = false) {
   currentAvatar = model;
   model.scale.set(scale.x, scale.y, scale.z);
   model.position.set(position.x, position.y, position.z);
@@ -89,10 +97,48 @@ function setupAvatar(model, scale, position) {
   model.userData.initialY = position.y;
   viewerUIGroup.add(model);
 
+  if (shouldAnimate) {
+    // Set posisi awal lebih tinggi untuk efek jatuh
+    const dropHeight = 2.5;
+    model.position.y = position.y + dropHeight;
+    avatarDropAnimation.isAnimating = true;
+    avatarDropAnimation.startY = model.position.y;
+    avatarDropAnimation.targetY = position.y;
+    avatarDropAnimation.currentY = model.position.y;
+  }
+
   if (avatarModel.animations && avatarModel.animations.length) {
     avatarMixer = new THREE.AnimationMixer(model);
     const action = avatarMixer.clipAction(avatarModel.animations[0]);
     action.play();
+  }
+}
+export function updateAvatarDropAnimation(deltaTime) {
+  if (!avatarDropAnimation.isAnimating || !currentAvatar) return;
+
+  const currentY = avatarDropAnimation.currentY;
+  const targetY = avatarDropAnimation.targetY;
+  const speed = avatarDropAnimation.speed;
+
+  // Lerp dengan easing untuk efek yang lebih natural
+  avatarDropAnimation.currentY = THREE.MathUtils.lerp(
+    currentY,
+    targetY,
+    speed * deltaTime
+  );
+
+  currentAvatar.position.y = avatarDropAnimation.currentY;
+
+  // Cek jika sudah mencapai target
+  if (Math.abs(currentY - targetY) < 0.01) {
+    currentAvatar.position.y = targetY;
+    avatarDropAnimation.isAnimating = false;
+
+    // Trigger callback setelah animasi selesai
+    if (avatarDropAnimation.onComplete) {
+      avatarDropAnimation.onComplete();
+      avatarDropAnimation.onComplete = null;
+    }
   }
 }
 
@@ -484,13 +530,22 @@ export function toggleAvatarVisibility(visible) {
 }
 
 export function updateAvatar(deltaTime, elapsedTime) {
+  // Update animasi jatuh terlebih dahulu
+  updateAvatarDropAnimation(deltaTime);
+
+  // Update mixer untuk animasi karakter
   if (avatarMixer) {
     avatarMixer.update(deltaTime);
   }
-  if (currentAvatar && currentAvatar.userData.initialY !== undefined) {
+
+  // Hover animation (hanya jika tidak sedang drop)
+  if (
+    currentAvatar &&
+    currentAvatar.userData.initialY !== undefined &&
+    !avatarDropAnimation.isAnimating
+  ) {
     const hoverAmplitude = 0.04;
     const hoverSpeed = 1.5;
-
     currentAvatar.position.y =
       currentAvatar.userData.initialY +
       Math.sin(elapsedTime * hoverSpeed) * hoverAmplitude;
@@ -500,15 +555,16 @@ export function updateAvatar(deltaTime, elapsedTime) {
 export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
-
   const panelWidth = 4.0;
   const panelHeight = 1.3;
+
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
   const exitButtonSize = 0.22;
   const padding = 0.15;
+
   const exitButton = createButton(
     "X",
     "back_to_landing",
@@ -534,6 +590,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 
   const primaryButtonWidth = 2.8;
   const primaryButtonHeight = 0.32;
+
   const continueButton = createButton(
     isLastGreeting ? "Start Learning" : "Continue",
     null,
@@ -545,43 +602,81 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   continueButton.visible = false;
   viewerUIGroup.add(continueButton);
 
-  if (currentGreeting.text) {
-    // Calculate responsive width (85% of panel width with padding)
-    const textWidth = panelWidth * 0.85; // 4.0 * 0.85 = 3.4
-
-    // Optimized font size for greeting text
-    const greetingFontSize = 25; // Reduced from 50 to 18
-
-    const welcomeLabel = createTypingText(
-      currentGreeting.text,
-      textWidth, // ✅ 3.4 dengan padding memadai
-      {
-        baseFontSize: greetingFontSize, // ✅ 18 proporsional
-        vrFontScale: 1.1,
-        lineHeightScale: 1.2, // ✅ 1.2 lebih compact
-      },
-      () => {
-        continueButton.visible = true;
-        continueButton.userData.action = buttonAction;
-      }
-    );
-
-    // Adjusted position for smaller text
-    const textYPosition = 0.15; // ✅ 0.15 lebih centered
-    welcomeLabel.position.set(0, textYPosition, 0.01);
-    viewerUIGroup.add(welcomeLabel);
-  } else {
-    continueButton.visible = true;
-    continueButton.userData.action = buttonAction;
-  }
-
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();
+    const avatarFinalPosition = new THREE.Vector3(
+      -panelWidth / 2 - 0.2,
+      panelHeight / 2 - 0.2,
+      0.05
+    );
+
+    // ✅ HANYA animate drop pada greeting pertama (index 0)
+    const shouldAnimateDrop = greetingIndex === 0;
+
     setupAvatar(
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
-      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
+      avatarFinalPosition,
+      shouldAnimateDrop // Drop animation hanya di greeting pertama
     );
+
+    // ✅ Jika ada animasi drop, set callback
+    if (shouldAnimateDrop) {
+      avatarDropAnimation.onComplete = () => {
+        // Putar audio greeting
+        if (window.playCurrentGreetingAudioCallback) {
+          window.playCurrentGreetingAudioCallback();
+        }
+
+        // Mulai typing animation
+        if (currentGreeting.text) {
+          const textWidth = panelWidth * 0.85;
+          const welcomeLabel = createTypingText(
+            currentGreeting.text,
+            textWidth,
+            {
+              baseFontSize: 25,
+              vrFontScale: 1.1,
+              lineHeightScale: 1.2,
+            },
+            () => {
+              continueButton.visible = true;
+              continueButton.userData.action = isLastGreeting
+                ? "continue_to_landing"
+                : "next_greeting";
+            }
+          );
+          welcomeLabel.position.set(0, 0.15, 0.01);
+          viewerUIGroup.add(welcomeLabel);
+        }
+      };
+    } else {
+      // ✅ Jika TIDAK ada animasi drop, langsung putar audio dan typing
+      if (window.playCurrentGreetingAudioCallback) {
+        window.playCurrentGreetingAudioCallback();
+      }
+
+      if (currentGreeting.text) {
+        const textWidth = panelWidth * 0.85;
+        const welcomeLabel = createTypingText(
+          currentGreeting.text,
+          textWidth,
+          {
+            baseFontSize: 25,
+            vrFontScale: 1.1,
+            lineHeightScale: 1.2,
+          },
+          () => {
+            continueButton.visible = true;
+            continueButton.userData.action = isLastGreeting
+              ? "continue_to_landing"
+              : "next_greeting";
+          }
+        );
+        welcomeLabel.position.set(0, 0.15, 0.01);
+        viewerUIGroup.add(welcomeLabel);
+      }
+    }
   }
 
   viewerUIGroup.position.copy(uiBasePosition);

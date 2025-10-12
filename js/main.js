@@ -26,6 +26,7 @@ import {
   uiGroup,
   GREETING_DATA,
   navButtons,
+  updateAvatarDropAnimation,
 } from "./ui-creator.js";
 import {
   loader,
@@ -168,7 +169,6 @@ function refreshUI(options = {}) {
       break;
     case AppState.AVATAR_GREETING:
       createAvatarGreetingPage(playerName, currentGreetingIndex);
-      playCurrentGreetingAudio();
       break;
     case AppState.LANDING:
       createLandingPage(playerName);
@@ -225,6 +225,10 @@ function refreshUI(options = {}) {
       break;
   }
 }
+
+window.playCurrentGreetingAudioCallback = function () {
+  playCurrentGreetingAudio();
+};
 
 function showViewer(index, options = {}) {
   const { isTransitioning = false } = options;
