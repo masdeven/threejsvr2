@@ -50,7 +50,7 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 | **Keyboard**       | [CGTrader](https://www.cgtrader.com/free-3d-models/electronics/computer/mechanical-keybord)                                 | autho                  | Royalty Free No Ai License |
 | **Mouse**          | [Sketchfab](https://sketchfab.com/3d-models/mouse-ef4c6dfb6de44d0c9bd200a64c8c1a73)                                         | Mukhesh                | CC BY 4.0                  |
 | **Printer**        | [Sketchfab](https://sketchfab.com/3d-models/epson-printer-model-752da10ef09a4f4782aa6c38a82f4b26)                           | zafry                  | CC BY 4.0                  |
-| **Storage**        | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
+| **Storage**        | [Sketchfab](https://sketchfab.com/3d-models/ssd-noname-sata-5a182a80361f407e965adaaee077e3cd)                               | Хлюпич Cardona         | CC BY 4.0                  |
 | **Motherboard**    | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
 | **CPU**            | [Sketchfab](https://sketchfab.com/3d-models/am4-cpu-free-912c9c42d2dc40fe95574345aae51ea0)                                  | Igor.Jop               | CC BY 4.0                  |
 | **Kartu Jaringan** | [Sketchfab](https://sketchfab.com/3d-models/network-interface-card-191c8ad40de2430980b879615aa0d2e3)                        | ARComputerFundamentals | CC BY 4.0                  |

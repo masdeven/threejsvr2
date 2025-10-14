@@ -31,6 +31,7 @@ export const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.enablePan = false;
 controls.enableZoom = false;
+controls.rotateSpeed = 0.25;
 controls.target.set(0, 1.6, 0);
 controls.minDistance = 0.1;
 controls.maxDistance = 0.5;
