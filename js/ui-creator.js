@@ -494,6 +494,12 @@ export function clearUI() {
   // ✅ Stop avatar drop animation
   stopAvatarDropAnimation();
 
+  if (avatarMixer) {
+    avatarMixer.stopAllAction();
+    avatarMixer.uncacheRoot(avatarMixer.getRoot());
+    avatarMixer = null;
+  }
+
   [uiGroup, viewerUIGroup].forEach((group) => {
     for (let i = group.children.length - 1; i >= 0; i--) {
       const child = group.children[i];
@@ -1785,10 +1791,23 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
 
-  canvas.width = size * resolution;
+  // ✅ PERBAIKAN: Calculate font size first
+  const fontSize = Math.floor(size * resolution * 0.5);
+  ctx.font = `bold ${fontSize}px "Arial Rounded MT Bold", Arial, sans-serif`;
+
+  // ✅ PERBAIKAN: Measure text to get actual width needed
+  const textMetrics = ctx.measureText(text);
+  const textWidth = textMetrics.width;
+
+  // ✅ PERBAIKAN: Add padding (20% on each side)
+  const paddingX = textWidth * 0.2;
+  const canvasWidth = Math.ceil(textWidth + paddingX * 2);
+
+  // Canvas height tetap based on size
+  canvas.width = canvasWidth;
   canvas.height = size * resolution;
 
-  const fontSize = Math.floor(size * resolution * 0.5);
+  // ✅ PERBAIKAN: Re-apply font after canvas resize
   ctx.font = `bold ${fontSize}px "Arial Rounded MT Bold", Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -1812,7 +1831,12 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
     transparent: true,
   });
 
-  const geometry = new THREE.PlaneGeometry(size, size);
+  // ✅ PERBAIKAN: PlaneGeometry width based on actual canvas aspect ratio
+  const aspect = canvas.width / canvas.height;
+  const planeHeight = size;
+  const planeWidth = planeHeight * aspect;
+
+  const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
   return new THREE.Mesh(geometry, material);
 }
 
@@ -1822,12 +1846,12 @@ export function createQuizReportScreen(
   isPostCompletion = false
 ) {
   clearUI();
-
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.8;
   const panelHeight = 2.0;
+
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
@@ -1840,11 +1864,13 @@ export function createQuizReportScreen(
   viewerUIGroup.add(titleLabel);
 
   if (!hasAttempted) {
+    // ✅ UBAH: Gunakan createTextPanel dengan fixedHeight
     const reportText =
       "You must complete all materials and take the Final Test before viewing your report.";
-    const reportBody = createBodyText(reportText, 4.2, {
-      baseFontSize: 25,
-      vrFontScale: 1.1,
+
+    const LOCKED_TEXT_HEIGHT = 0.6; // Height yang cukup untuk 2-3 baris
+    const reportBody = createTextPanel(reportText, 4.2, {
+      fixedHeight: LOCKED_TEXT_HEIGHT,
     });
     reportBody.position.set(0, 0, 0.02);
     viewerUIGroup.add(reportBody);
@@ -1856,16 +1882,16 @@ export function createQuizReportScreen(
     scoreTitle.position.set(0, 0.4, 0.02);
     viewerUIGroup.add(scoreTitle);
 
-    const scoreDisplay = createScoreLabel(finalScore.toFixed(0), 1.0);
+    const scoreDisplay = createScoreLabel(`${finalScore.toFixed(0)}%`, 1.0);
     scoreDisplay.position.set(0, -0.1, 0.01);
     viewerUIGroup.add(scoreDisplay);
 
     const detailText = `You answered ${score} out of ${totalQuestions} questions correctly.`;
-
     const reportBody = createBodyText(detailText, 4.2);
     reportBody.position.set(0, -0.6, 0.02);
     viewerUIGroup.add(reportBody);
   }
+
   const exitButtonAction = isPostCompletion
     ? "show_post_quiz_choice"
     : "back_to_landing";
@@ -1881,7 +1907,6 @@ export function createQuizReportScreen(
     "rgba(45, 55, 72, 0.7)",
     "circle"
   );
-
   exitButton.position.set(
     panelWidth / 2 - padding - exitButtonSize / 2,
     panelHeight / 2 - padding - exitButtonSize / 2,

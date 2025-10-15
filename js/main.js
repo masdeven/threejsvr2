@@ -289,6 +289,9 @@ window.playCurrentGreetingAudioCallback = function () {
   playCurrentGreetingAudio();
 };
 
+// ===============================================================
+// START PERBAIKAN UTAMA
+// ===============================================================
 function showViewer(index, options = {}) {
   const { isTransitioning = false } = options;
   const component = components[index];
@@ -299,28 +302,7 @@ function showViewer(index, options = {}) {
 
   clearUI();
 
-  if (component.modelFile) {
-    const onModelReady = () => {
-      if (isTransitioning) {
-        isChangingComponent = false;
-        navButtons.forEach((btn) => setButtonEnabled(btn, true));
-      }
-    };
-
-    if (isTransitioning) {
-      loadComponentModel(component.modelFile, -1.5, onModelReady);
-    } else {
-      loadComponentModel(component.modelFile, 0);
-    }
-  } else {
-    if (isTransitioning) {
-      setTimeout(() => {
-        isChangingComponent = false;
-        navButtons.forEach((btn) => setButtonEnabled(btn, true));
-      }, CHANGE_DEBOUNCE_TIME);
-    }
-  }
-
+  // 1. Buat UI viewer yang baru.
   createViewerPage(
     component,
     currentComponentIndex,
@@ -328,7 +310,36 @@ function showViewer(index, options = {}) {
     highestComponentUnlocked
   );
   activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
+
+  // 2. JIKA sedang dalam mode transisi, nonaktifkan SEMUA tombol interaktif.
+  if (isTransitioning) {
+    navButtons.forEach((btn) => {
+      // ✅ Logika diperluas untuk mencakup semua tombol interaktif di viewer
+      setButtonEnabled(btn, false, "...");
+    });
+  }
+
+  // 3. Definisikan callback yang akan dijalankan setelah model & animasi selesai.
+  const onModelReady = () => {
+    if (isTransitioning) {
+      isChangingComponent = false;
+      // Gambar ulang UI. Karena `isChangingComponent` sudah false,
+      // semua tombol akan aktif kembali secara otomatis.
+      reloadViewerNavigation();
+    }
+  };
+
+  // 4. Mulai proses loading model.
+  if (component.modelFile) {
+    loadComponentModel(component.modelFile, -1.5, onModelReady);
+  } else {
+    // Jika tidak ada model, jalankan callback setelah jeda singkat.
+    setTimeout(onModelReady, CHANGE_DEBOUNCE_TIME);
+  }
 }
+// ===============================================================
+// END PERBAIKAN UTAMA
+// ===============================================================
 
 function checkOrientation() {
   const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
