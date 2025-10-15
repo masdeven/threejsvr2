@@ -8,7 +8,11 @@ const TABLE_HEIGHT = 1;
 export let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 export const modelCache = {};
+export const preloadLoader = new GLTFLoader(THREE.DefaultLoadingManager);
 export const loader = new GLTFLoader();
+
+let dracoLoaderInstance = null;
+let ktx2LoaderInstance = null;
 
 // âœ… TAMBAHKAN: Store renderer reference
 let rendererRef = null;
@@ -29,11 +33,15 @@ let transitionState = {
 };
 
 export function setupKTX2Loader(ktx2Loader) {
+  ktx2LoaderInstance = ktx2Loader;
   loader.setKTX2Loader(ktx2Loader);
+  preloadLoader.setKTX2Loader(ktx2Loader);
 }
 
 export function setupDRACOLoader(dracoLoader) {
+  dracoLoaderInstance = dracoLoader;
   loader.setDRACOLoader(dracoLoader);
+  preloadLoader.setDRACOLoader(dracoLoader);
 }
 
 export function convertModelMaterials(model) {

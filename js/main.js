@@ -26,9 +26,11 @@ import {
   GREETING_DATA,
   navButtons,
   updateAvatarDropAnimation,
-  getActiveTypingAnimation, // ✅ Tambahkan
-  clearActiveTypingAnimation, // ✅ Tambahkan
+  getActiveTypingAnimation,
+  clearActiveTypingAnimation,
   stopAvatarDropAnimation,
+  // Jika ada fungsi sanitasi, tambahkan di sini
+  // sanitizeHtml
 } from "./ui-creator.js";
 import {
   loader,
@@ -43,8 +45,9 @@ import {
   updateModelTransition,
   getCurrentModel,
   setRendererForCompilation,
-  convertModelMaterials, // ✅ Tambahkan
-  preCompileModel, // ✅ Tambahkan
+  convertModelMaterials,
+  preCompileModel,
+  preloadLoader,
 } from "./model-loader.js";
 import {
   setupInteraction,
@@ -67,6 +70,12 @@ import Stats from "three/addons/libs/stats.module.js";
 import { creditsData } from "./credits-data.js";
 import { debugGroup, createFpsLabel, updateFpsLabel } from "./ui-creator.js";
 
+// --- Konstanta ---
+const STORAGE_KEY = "webxr_learning_progress";
+const CHANGE_DEBOUNCE_TIME = 500;
+const LOADING_TIMEOUT = 60000; // 60 detik untuk koneksi lambat
+
+// --- State ---
 let audioListener, sound, backgroundSound, completionSound, greetingSound;
 let shuffledQuizData = [];
 const audioLoader = new THREE.AudioLoader();
@@ -78,9 +87,8 @@ let highestComponentUnlocked = 0;
 let currentCreditIndex = 0;
 let isChangingComponent = false;
 let stats;
-let isChangingDescription = false; // âœ… Tambahkan ini
-let descriptionChangeTimeout = null; // âœ… Tambahkan ini
-const CHANGE_DEBOUNCE_TIME = 500;
+let isChangingDescription = false;
+let descriptionChangeTimeout = null;
 const clock = new THREE.Clock();
 let confettiEffect = null;
 let fps = 0;
@@ -92,63 +100,8 @@ let currentGreetingIndex = 0;
 const audioCache = {};
 let animationFrameId = null;
 let isDebugVisible = false;
-const STORAGE_KEY = "webxr_learning_progress";
-
-function saveProgress() {
-  try {
-    const progress = {
-      playerName: playerName,
-      highestComponentUnlocked: highestComponentUnlocked,
-      quizScore: quizScore,
-      hasAttemptedQuiz: hasAttemptedQuiz,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    console.log("Progres disimpan:", progress);
-  } catch (error) {
-    console.warn("âš  Gagal menyimpan progress:", error);
-    // Bisa tampilkan pesan ke user jika perlu
-  }
-}
-
-function loadProgress() {
-  try {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      const progress = JSON.parse(savedData);
-      playerName = progress.playerName || "";
-      highestComponentUnlocked = progress.highestComponentUnlocked || 0;
-      quizScore = progress.quizScore || 0;
-      hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
-
-      for (let i = 0; i <= highestComponentUnlocked; i++) {
-        if (components[i]) {
-          components[i].unlocked = true;
-        }
-      }
-      console.log("Progres dimuat:", progress);
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.warn("âš  Gagal memuat progress:", error);
-    return false;
-  }
-}
-
-function resetProgress() {
-  localStorage.removeItem(STORAGE_KEY);
-
-  playerName = "";
-  highestComponentUnlocked = 0;
-  quizScore = 0;
-  hasAttemptedQuiz = false;
-
-  components.forEach((comp, index) => {
-    comp.unlocked = index === 0;
-  });
-
-  console.log("Progres telah direset.");
-}
+const loadingTimeouts = new Map();
+const audioTimeouts = new Map();
 
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
@@ -175,6 +128,91 @@ let currentDescriptionIndex = 0;
 let activeTextPanel = null;
 let activeCreditsPanel = null;
 
+// --- Fungsi Utilitas ---
+function sanitizeInput(str) {
+  // Basic sanitization untuk input pengguna
+  if (typeof str !== "string") return "";
+  const temp = document.createElement("div");
+  temp.textContent = str;
+  return temp.textContent || temp.innerText || "";
+}
+
+function logError(message, error) {
+  console.error(message, error);
+  // Kirim ke server jika perlu
+  // sendErrorToServer(message, error);
+}
+
+function clearAllTimeouts() {
+  if (descriptionChangeTimeout) {
+    clearTimeout(descriptionChangeTimeout);
+    descriptionChangeTimeout = null;
+  }
+  // Clear semua loading timeouts yang mungkin masih berjalan
+  loadingTimeouts.forEach((id) => clearTimeout(id));
+  loadingTimeouts.clear();
+  audioTimeouts.forEach((id) => clearTimeout(id));
+  audioTimeouts.clear();
+}
+
+// --- Manajemen Progres ---
+function saveProgress() {
+  try {
+    const progress = {
+      playerName: playerName,
+      highestComponentUnlocked: highestComponentUnlocked,
+      quizScore: quizScore,
+      hasAttemptedQuiz: hasAttemptedQuiz,
+    };
+    // Enkripsi sederhana bisa ditambahkan di sini jika diperlukan
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    console.log("Progres disimpan:", progress);
+  } catch (error) {
+    logError("Gagal menyimpan progress:", error);
+  }
+}
+
+function loadProgress() {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const progress = JSON.parse(savedData);
+      playerName = progress.playerName || "";
+      highestComponentUnlocked = progress.highestComponentUnlocked || 0;
+      quizScore = progress.quizScore || 0;
+      hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
+
+      for (let i = 0; i <= highestComponentUnlocked; i++) {
+        if (components[i]) {
+          components[i].unlocked = true;
+        }
+      }
+      console.log("Progres dimuat:", progress);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    logError("Gagal memuat progress:", error);
+    return false;
+  }
+}
+
+function resetProgress() {
+  localStorage.removeItem(STORAGE_KEY);
+
+  playerName = "";
+  highestComponentUnlocked = 0;
+  quizScore = 0;
+  hasAttemptedQuiz = false;
+
+  components.forEach((comp, index) => {
+    comp.unlocked = index === 0;
+  });
+
+  console.log("Progres telah direset.");
+}
+
+// --- Fungsi UI ---
 function onVRSessionEnded() {
   unloadComponentModel();
   controls.enabled = true;
@@ -311,6 +349,7 @@ function checkOrientation() {
   }
 }
 
+// --- Inisialisasi ---
 async function init() {
   checkOrientation();
   window.addEventListener("resize", checkOrientation);
@@ -320,7 +359,7 @@ async function init() {
   stats.dom.style.display = "none";
 
   window.addEventListener("beforeunload", () => {
-    console.log("ðŸ§¹ Cleaning up resources...");
+    console.log("🧹 Cleaning up resources...");
     renderer.setAnimationLoop(null);
     stopAnimation();
     stopAudio();
@@ -340,7 +379,8 @@ async function init() {
       confettiEffect.destroy();
       confettiEffect = null;
     }
-    console.log("âœ“ Cleanup complete");
+    clearAllTimeouts(); // Bersihkan semua timeout
+    console.log("✓ Cleanup complete");
   });
 
   audioListener = new THREE.AudioListener();
@@ -360,7 +400,6 @@ async function init() {
   dracoLoader.setDecoderPath("assets/draco/");
   setupDRACOLoader(dracoLoader);
 
-  // âœ… TAMBAHKAN: Set renderer untuk shader compilation
   setRendererForCompilation(renderer, camera);
 
   loadRoom(loader);
@@ -392,7 +431,7 @@ async function init() {
   const hasSavedProgress = loadProgress();
 
   await preloadAvatar();
-  await preloadModels(); // âœ… Shader akan di-compile di sini!
+  await preloadModels();
   await preloadOtherAssets();
 
   const splashScreen = document.getElementById("splash-screen");
@@ -420,6 +459,7 @@ async function init() {
   animate();
 }
 
+// --- Update UI ---
 function updateActiveTextPanelTarget() {
   activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
   if (activeTextPanel) {
@@ -458,6 +498,7 @@ function reloadCreditsNavigation() {
   activeCreditsPanel = scene.getObjectByProperty("isCreditsPanel", true);
 }
 
+// --- Event Listener HTML ---
 function setupHTMLEvents() {
   const welcomeNextBtn = document.getElementById("welcome-next-button");
   const nameContinueBtn = document.getElementById("continue-button");
@@ -498,7 +539,11 @@ function setupHTMLEvents() {
 
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
-    const nameValue = nameInput.value.trim();
+    let nameValue = nameInput.value.trim();
+
+    // Sanitasi input nama
+    nameValue = sanitizeInput(nameValue);
+
     const nameOverlay = document.getElementById("name-input-overlay");
 
     if (nameValue === "") {
@@ -511,7 +556,7 @@ function setupHTMLEvents() {
       return;
     }
 
-    playerName = nameInput.value.trim() || "Tamu";
+    playerName = nameValue || "Tamu";
     saveProgress();
     const fadeOutDuration = 500;
 
@@ -551,6 +596,7 @@ function updateLoadingText(message) {
   }
 }
 
+// --- Preload Asset ---
 function preloadModels() {
   return new Promise((resolve) => {
     setLoadingPhase(LoadingPhases.LOADING_HIGH);
@@ -568,24 +614,41 @@ function preloadModels() {
     const totalModels = modelFiles.length;
 
     const checkComplete = () => {
-      if (modelsLoaded + modelsWithErrors === totalModels) {
+      if (modelsLoaded + modelsWithErrors >= totalModels) {
         resolve();
       }
     };
 
-    modelFiles.forEach((file, index) => {
-      loader.load(
+    modelFiles.forEach((file) => {
+      const timeoutId = setTimeout(() => {
+        logError(
+          `Timeout memuat model: ${file}`,
+          new Error("Model load timeout")
+        );
+        modelsWithErrors++;
+        loadingTimeouts.delete(file);
+        updateManualProgress(
+          modelsLoaded + modelsWithErrors,
+          totalModels,
+          "Loading 3D models..."
+        );
+        checkComplete();
+      }, LOADING_TIMEOUT);
+
+      loadingTimeouts.set(file, timeoutId);
+
+      // ✅ GUNAKAN preloadLoader yang TIDAK terhubung ke loadingManager
+      preloadLoader.load(
         file,
         (gltf) => {
-          // ✅ TAMBAHKAN: Konversi material sebelum cache
+          const tid = loadingTimeouts.get(file);
+          if (tid) {
+            clearTimeout(tid);
+            loadingTimeouts.delete(file);
+          }
           convertModelMaterials(gltf.scene);
-
-          // ✅ TAMBAHKAN: Pre-compile shader sebelum cache
           preCompileModel(gltf.scene);
-
-          // ✅ Simpan model yang sudah dioptimasi ke cache
           modelCache[file] = gltf.scene;
-
           modelsLoaded++;
           updateManualProgress(
             modelsLoaded + modelsWithErrors,
@@ -596,7 +659,12 @@ function preloadModels() {
         },
         undefined,
         (error) => {
-          console.error(`Failed to load model ${file}`, error);
+          const tid = loadingTimeouts.get(file);
+          if (tid) {
+            clearTimeout(tid);
+            loadingTimeouts.delete(file);
+          }
+          logError(`Failed to load model ${file}`, error);
           modelsWithErrors++;
           updateManualProgress(
             modelsLoaded + modelsWithErrors,
@@ -615,25 +683,26 @@ function preloadOtherAssets() {
     setLoadingPhase(LoadingPhases.LOADING_MEDIUM);
     updateLoadingText("Loading textures and audio...");
 
-    const tempTextureLoader = new THREE.TextureLoader(); // âœ… Hapus loadingManager
+    const tempTextureLoader = new THREE.TextureLoader();
 
-    // âœ… Load texture (critical)
     const texturePromise = new Promise((res) => {
       tempTextureLoader.load(
         "assets/images/logo-kampus.png",
         () => {
-          console.log("âœ“ Texture loaded");
+          console.log("✓ Texture loaded");
           res();
         },
         undefined,
         () => {
-          console.warn("âš  Texture failed to load");
+          logError(
+            "Texture failed to load: assets/images/logo-kampus.png",
+            new Error("Texture load error")
+          );
           res();
         }
       );
     });
 
-    // âœ… SEMUA audio dimuat di awal (tidak ada lazy loading)
     const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
 
     const allAudioFiles = [
@@ -651,17 +720,38 @@ function preloadOtherAssets() {
     let audioErrors = 0;
     const totalAudio = uniqueAudioFiles.length;
 
-    // Load semua audio
     const audioPromises = uniqueAudioFiles.map(
       (file) =>
         new Promise((res) => {
+          const timeoutId = setTimeout(() => {
+            logError(
+              `Timeout memuat audio: ${file}`,
+              new Error("Audio load timeout")
+            );
+            audioTimeouts.delete(file);
+            audioErrors++;
+            updateManualProgress(
+              audioLoaded + audioErrors,
+              totalAudio,
+              "Loading audio files..."
+            );
+            res();
+          }, LOADING_TIMEOUT);
+
+          audioTimeouts.set(file, timeoutId);
+
           audioLoader.load(
             file,
             (buffer) => {
+              const tid = audioTimeouts.get(file);
+              if (tid) {
+                clearTimeout(tid);
+                audioTimeouts.delete(file);
+              }
               audioCache[file] = buffer;
               audioLoaded++;
               console.log(
-                `âœ“ Audio loaded: ${file} (${audioLoaded}/${totalAudio})`
+                `✓ Audio loaded: ${file} (${audioLoaded}/${totalAudio})`
               );
 
               updateManualProgress(
@@ -674,7 +764,12 @@ function preloadOtherAssets() {
             },
             undefined,
             () => {
-              console.warn(`âš  Audio failed: ${file}`);
+              const tid = audioTimeouts.get(file);
+              if (tid) {
+                clearTimeout(tid);
+                audioTimeouts.delete(file);
+              }
+              logError(`Audio failed: ${file}`, new Error("Audio load error"));
               audioErrors++;
 
               updateManualProgress(
@@ -690,13 +785,14 @@ function preloadOtherAssets() {
     );
 
     Promise.all([texturePromise, ...audioPromises]).then(() => {
-      console.log(`âœ“ All assets loaded. Audio: ${audioLoaded}/${totalAudio}`);
+      console.log(`✓ All assets loaded. Audio: ${audioLoaded}/${totalAudio}`);
       setLoadingPhase(LoadingPhases.COMPLETE);
       resolve();
     });
   });
 }
 
+// --- Audio ---
 function playControlledSound(audioObject, path, options = {}) {
   const { loop = false, volume = 1 } = options;
 
@@ -720,7 +816,6 @@ function playOneShotSound(path, volume = 1) {
     oneShotSound.setBuffer(buffer);
     oneShotSound.setVolume(volume);
 
-    // âœ… Cleanup setelah audio selesai
     oneShotSound.onEnded = () => {
       oneShotSound.disconnect();
       camera.remove(oneShotSound);
@@ -778,19 +873,16 @@ function playCompletionAudio() {
 }
 
 function stopAudio() {
-  // ✅ Stop component narration audio
   if (sound && sound.isPlaying) {
     sound.stop();
     sound.userData.path = null;
   }
 
-  // ✅ Stop greeting audio
   if (greetingSound && greetingSound.isPlaying) {
     greetingSound.stop();
     console.log("✓ Greeting audio stopped");
   }
 
-  // ✅ Stop completion audio (jika ada)
   if (completionSound && completionSound.isPlaying) {
     completionSound.stop();
   }
@@ -832,6 +924,7 @@ function reloadCreditsScreen() {
   createCreditsScreen(creditsData, currentCreditIndex);
 }
 
+// --- Manajemen State ---
 function changeState(newState, options = {}) {
   requestAnimationFrame(() => {
     activeTextPanel = null;
@@ -843,9 +936,9 @@ function changeState(newState, options = {}) {
       currentState === AppState.AVATAR_GREETING &&
       newState !== AppState.AVATAR_GREETING
     ) {
-      stopAudio(); // Stop greeting audio
-      clearActiveTypingAnimation(); // ✅ Gunakan fungsi
-      stopAvatarDropAnimation(); // Stop avatar animation
+      stopAudio();
+      clearActiveTypingAnimation();
+      stopAvatarDropAnimation();
       console.log("✓ Avatar greeting cleanup complete");
     }
 
@@ -930,7 +1023,6 @@ function changeState(newState, options = {}) {
 }
 
 function changeDescription(direction) {
-  // Guard: prevent multiple simultaneous changes
   if (isChangingComponent || isChangingDescription) {
     return;
   }
@@ -938,28 +1030,25 @@ function changeDescription(direction) {
   const component = components[currentComponentIndex];
   if (!component) return;
 
-  // Calculate new index based on direction
   let newIndex = currentDescriptionIndex;
 
   if (direction === "prev") {
     if (currentDescriptionIndex > 0) {
       newIndex = currentDescriptionIndex - 1;
     } else {
-      return; // Already at first page
+      return;
     }
   } else if (direction === "next") {
     if (currentDescriptionIndex < component.description.length - 1) {
       newIndex = currentDescriptionIndex + 1;
     } else {
-      return; // Already at last page
+      return;
     }
   }
 
-  // Set flag to prevent concurrent changes
   isChangingDescription = true;
   currentDescriptionIndex = newIndex;
 
-  // Disable description navigation buttons immediately
   navButtons.forEach((btn) => {
     const action = btn.userData.action;
     if (action === "prev_description" || action === "next_description") {
@@ -967,22 +1056,17 @@ function changeDescription(direction) {
     }
   });
 
-  // Clear any existing timeout (debouncing)
   if (descriptionChangeTimeout) {
     clearTimeout(descriptionChangeTimeout);
   }
 
-  // Update scroll animation target immediately for smooth transition
   updateActiveTextPanelTarget();
 
-  // Debounce the UI reload to prevent rapid consecutive calls
   descriptionChangeTimeout = setTimeout(() => {
     reloadViewerNavigation();
 
-    // Reset flag
     isChangingDescription = false;
 
-    // Re-enable buttons based on new position
     const comp = components[currentComponentIndex];
     if (comp) {
       navButtons.forEach((btn) => {
@@ -1000,9 +1084,10 @@ function changeDescription(direction) {
     }
 
     descriptionChangeTimeout = null;
-  }, 150); // 150ms debounce delay
+  }, 150);
 }
 
+// --- Interaksi ---
 function handleInteraction(action) {
   const confirmActions = [
     "start_browser",
@@ -1071,7 +1156,7 @@ function handleInteraction(action) {
     case "back_to_landing":
       if (currentState === AppState.AVATAR_GREETING) {
         stopAudio();
-        clearActiveTypingAnimation(); // ✅ Gunakan fungsi
+        clearActiveTypingAnimation();
         stopAvatarDropAnimation();
       }
       changeState(AppState.LANDING);
@@ -1138,11 +1223,11 @@ function handleInteraction(action) {
       }
       break;
     case "prev_description":
-      changeDescription("prev"); // âœ… Gunakan fungsi debounced
+      changeDescription("prev");
       break;
 
     case "next_description":
-      changeDescription("next"); // âœ… Gunakan fungsi debounced
+      changeDescription("next");
       break;
 
     case "next_component":
@@ -1247,6 +1332,7 @@ function stopConfettiEffect() {
   }
 }
 
+// --- Loop Render ---
 function animate() {
   animationFrameId = renderer.setAnimationLoop(render);
 }
@@ -1266,14 +1352,11 @@ function render() {
   frameCount++;
   const now = performance.now();
 
-  // ✅ Update FPS setiap 500ms (dari 1000ms) untuk responsivitas lebih baik
   if (now - lastFpsUpdate >= 500) {
-    // Atau 1000 jika lebih prefer
     fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
     frameCount = 0;
     lastFpsUpdate = now;
 
-    // ✅ Hanya update label jika debug visible
     if (isDebugVisible) {
       updateFpsLabel(fpsLabel, fps);
     }
