@@ -94,8 +94,14 @@ let confettiEffect = null;
 let fps = 0;
 let isFadingInUI = false;
 let frameCount = 0;
-let lastFpsUpdate = 0;
+let lastFpsUpdate = performance.now();
 let fpsLabel = null;
+if (debugGroup.parent === camera) {
+  camera.remove(debugGroup);
+}
+if (!debugGroup.parent) {
+  scene.add(debugGroup);
+}
 let currentGreetingIndex = 0;
 const audioCache = {};
 let animationFrameId = null;
@@ -433,9 +439,10 @@ async function init() {
   setupHTMLEvents();
 
   window.addEventListener("keydown", (event) => {
-    if (event.key.toLowerCase() === "q") {
+    if (event.key === "q" || event.key === "Q") {
       isDebugVisible = !isDebugVisible;
-      stats.dom.style.display = isDebugVisible ? "block" : "none";
+      debugGroup.visible = isDebugVisible;
+      console.log("Debug panel:", isDebugVisible ? "visible" : "hidden");
     }
   });
 
@@ -462,9 +469,9 @@ async function init() {
   }
 
   fpsLabel = createFpsLabel();
+  debugGroup.visible = false;
   fpsLabel.position.set(-0.4, 0.3, -0.7);
   debugGroup.add(fpsLabel);
-  debugGroup.visible = false;
   scene.add(debugGroup);
 
   animate();
@@ -1397,8 +1404,10 @@ function render() {
   }
 
   if (isDebugVisible) {
-    debugGroup.position.copy(camera.position);
-    debugGroup.quaternion.copy(camera.quaternion);
+    // Gunakan posisi tetap untuk desktop dan VR
+    const tablePosition = new THREE.Vector3(1, 0.8, -2.0);
+    debugGroup.position.copy(tablePosition);
+    debugGroup.lookAt(camera.position);
     updateFpsLabel(fpsLabel, fps);
   }
 
