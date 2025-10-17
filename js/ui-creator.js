@@ -837,9 +837,9 @@ export function createLandingPage(playerName) {
   });
 
   // ✅ OPTIMASI: Kecilkan credit button
-  const creditButtonSize = 0.2; // Dari 0.22 → 0.2 (9% lebih kecil)
+  const creditButtonSize = 0.15; // Dari 0.22 → 0.2 (9% lebih kecil)
   const creditButton = createButton(
-    "ⓘ",
+    "i",
     "show_credits",
     creditButtonSize,
     creditButtonSize,
