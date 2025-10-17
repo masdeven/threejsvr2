@@ -533,7 +533,13 @@ export function clearUI() {
   });
 }
 
-function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
+function createUIPanel(
+  width,
+  height,
+  radius,
+  color = "#1A202C",
+  opacity = 0.85
+) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const panelResolution = getResolution();
@@ -582,6 +588,7 @@ function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
+    opacity: opacity,
     transparent: true,
   });
 
@@ -1509,38 +1516,35 @@ export function createCompletionScreen(playerName) {
 export function createCreditsScreen(creditPages, pageIndex) {
   const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
-
   clearViewerUI();
 
-  // ✅ SAMA dengan Learning Report
-  const totalPanelWidth = 4.8; // Learning Report: 4.8
-  const totalPanelHeight = 2.0; // Learning Report: 2.0
+  const totalPanelWidth = 4.8;
+  const totalPanelHeight = 2.0;
 
+  // PERBAIKAN 1: Radius dari 0.05 → 0.1 (sama dengan Report)
   const backgroundPanel = createUIPanel(
     totalPanelWidth,
     totalPanelHeight,
-    0.05,
+    0.1, // ← UBAH dari 0.05 menjadi 0.1
     "#1A202C",
-    0.9
+    0.85 // ← UBAH dari 0.9 menjadi 0.85 (sama dengan Report)
   );
   backgroundPanel.position.set(0, 0, 0);
   viewerUIGroup.add(backgroundPanel);
 
-  // ✅ SAMA dengan Learning Report
-  const titleWidth = 4.0; // Learning Report: 4.0
-  const titleHeight = 0.35; // Learning Report: 0.35
+  // Title sama
+  const titleWidth = 4.0;
+  const titleHeight = 0.35;
   const titleLabel = createTitleLabel("About", titleWidth, titleHeight);
-
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
-  // ✅ Text panel height disesuaikan
-  const DESC_PANEL_FIXED_HEIGHT = 1.0; // Lebih tinggi untuk konten About
+  // PERBAIKAN 2: Text panel height dari 1.0 → 0.8 (lebih optimal)
+  const DESCPANELFIXEDHEIGHT = 0.8; // ← UBAH dari 1.0 menjadi 0.8
   const descPanel = createTextPanel(creditPages, 4.2, {
-    // Learning Report: 4.2
-    fixedHeight: DESC_PANEL_FIXED_HEIGHT,
+    fixedHeight: DESCPANELFIXEDHEIGHT,
   });
 
   const initialOffsetY =
@@ -1555,7 +1559,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
   descPanel.position.set(0, descPanelYOffset, 0.01);
   viewerUIGroup.add(descPanel);
 
-  // ✅ Navigation dengan spacing yang sama
+  // Navigation buttons - sama seperti sebelumnya
   const descNavY =
     descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.15;
 
@@ -2176,7 +2180,7 @@ export function createModeSelectionPage() {
   const startY = 0.02; // 0.05 → 0.02
 
   const browserButton = createButton(
-    "Browser Mode", // "Mode Browser" → "Browser Mode"
+    "Mode Desktop", // "Mode Browser" → "Browser Mode"
     "start_browser",
     buttonWidth,
     buttonHeight,
@@ -2186,7 +2190,7 @@ export function createModeSelectionPage() {
   viewerUIGroup.add(browserButton);
 
   const vrButton = createButton(
-    "VR Mode", // "Mode VR" → "VR Mode"
+    "Mode VR", // "Mode VR" → "VR Mode"
     "start_vr",
     buttonWidth,
     buttonHeight

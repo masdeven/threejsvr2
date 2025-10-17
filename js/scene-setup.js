@@ -62,7 +62,7 @@ window.addEventListener("resize", () => {
 
 export function loadRoom(gltfLoader) {
   gltfLoader.load(
-    "assets/models/Ruangan_Optimal.glb",
+    "assets/models/room.glb",
     (gltf) => {
       const room = gltf.scene;
       room.position.set(0, 0, -2.5);

@@ -50,13 +50,13 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 | **Keyboard**       | [CGTrader](https://www.cgtrader.com/free-3d-models/electronics/computer/mechanical-keybord)                                 | autho                  | Royalty Free No Ai License |
 | **Mouse**          | [Sketchfab](https://sketchfab.com/3d-models/mouse-ef4c6dfb6de44d0c9bd200a64c8c1a73)                                         | Mukhesh                | CC BY 4.0                  |
 | **Printer**        | [Sketchfab](https://sketchfab.com/3d-models/epson-printer-model-752da10ef09a4f4782aa6c38a82f4b26)                           | zafry                  | CC BY 4.0                  |
-| **Storage**        | [Sketchfab](https://sketchfab.com/3d-models/ssd-noname-sata-5a182a80361f407e965adaaee077e3cd)                               | Хлюпич Cardona         | CC BY 4.0                  |
+| **Storage**        | [Sketchfab](https://sketchfab.com/3d-models/ssd-noname-sata-5a182a80361f407e965adaaee077e3cd)                               | Хлюпич                 | CC BY 4.0                  |
 | **Motherboard**    | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
 | **CPU**            | [Sketchfab](https://sketchfab.com/3d-models/am4-cpu-free-912c9c42d2dc40fe95574345aae51ea0)                                  | Igor.Jop               | CC BY 4.0                  |
 | **Kartu Jaringan** | [Sketchfab](https://sketchfab.com/3d-models/network-interface-card-191c8ad40de2430980b879615aa0d2e3)                        | ARComputerFundamentals | CC BY 4.0                  |
 | **GPU**            | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
 | **RAM**            | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
-| **Flask Drive**    | [Sketchfab](https://sketchfab.com/3d-models/usb-flashdrive-0e6df3d1f2c44bf3a68b728bcf0157e8)                                | Hardy Noer             | CC BY 4.0                  |
+| **Flask Drive**    | [Sketchfab](https://sketchfab.com/3d-models/flash-drive-ecc57ae0430f4786845a6f76ae924268)                                   | Blender3D              | CC BY 4.0                  |
 | **Avatar**         | [Sketchfab](https://sketchfab.com/3d-models/low-poly-guardian-8df18d89b3354cd88c2fea99c2c2048a)                             | Akash Sisodiya         | CC BY 4.0                  |
 | **Ruangan**        | [Sketchfab](https://sketchfab.com/3d-models/vr-gallery-1e087aa25dc742e680accb15249bd6be)                                    | Maxim Mavrichev        | CC BY 4.0                  |
 
