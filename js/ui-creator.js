@@ -542,21 +542,33 @@ function createUIPanel(width, height, radius, color = "#1A202C", opacity = 1) {
   canvas.height = height * panelResolution;
 
   const r = radius * panelResolution;
+
+  // Pastikan radius tidak melebihi setengah dari lebar atau tinggi
+  const maxWidthRadius = (width * panelResolution) / 2;
+  const maxHeightRadius = (height * panelResolution) / 2;
+  const clampedR = Math.min(r, maxWidthRadius, maxHeightRadius);
+
   ctx.beginPath();
-  ctx.moveTo(r, 0);
-  ctx.lineTo(canvas.width - r, 0);
-  ctx.quadraticCurveTo(canvas.width, 0, canvas.width, r);
-  ctx.lineTo(canvas.width, canvas.height - r);
-  ctx.quadraticCurveTo(
-    canvas.width,
-    canvas.height,
-    canvas.width - r,
-    canvas.height
-  );
-  ctx.lineTo(r, canvas.height);
-  ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
-  ctx.lineTo(0, r);
-  ctx.quadraticCurveTo(0, 0, r, 0);
+  // Mulai dari titik di bawah sudut kiri atas
+  ctx.arc(clampedR, clampedR, clampedR, Math.PI, Math.PI * 1.5); // Kiri Atas
+  ctx.lineTo(canvas.width - clampedR, 0); // Garis ke kanan
+  ctx.arc(
+    canvas.width - clampedR,
+    clampedR,
+    clampedR,
+    Math.PI * 1.5,
+    Math.PI * 2
+  ); // Kanan Atas
+  ctx.lineTo(canvas.width, canvas.height - clampedR); // Garis ke bawah
+  ctx.arc(
+    canvas.width - clampedR,
+    canvas.height - clampedR,
+    clampedR,
+    0,
+    Math.PI * 0.5
+  ); // Kanan Bawah
+  ctx.lineTo(clampedR, canvas.height); // Garis ke kiri
+  ctx.arc(clampedR, canvas.height - clampedR, clampedR, Math.PI * 0.5, Math.PI); // Kiri Bawah
   ctx.closePath();
 
   ctx.fillStyle = color;
