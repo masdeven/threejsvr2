@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 let currentModel = null;
 let activeLoad = null;
-const TABLE_HEIGHT = 1;
+const TABLE_HEIGHT = 1.2;
 export let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 export const modelCache = {};
@@ -102,7 +102,7 @@ function setupModelPosition(model, startYOffset = 0) {
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z);
-  const scaleFactor = 0.8 / maxDim;
+  const scaleFactor = 0.7 / maxDim;
   model.scale.setScalar(scaleFactor);
 
   // ✅ Set properti rendering sekali saat setup

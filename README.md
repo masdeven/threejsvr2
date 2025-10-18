@@ -58,7 +58,7 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 | **RAM**            | [Sketchfab](https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49)                          | Daniel Cardona         | CC BY 4.0                  |
 | **Flask Drive**    | [Sketchfab](https://sketchfab.com/3d-models/flash-drive-ecc57ae0430f4786845a6f76ae924268)                                   | Blender3D              | CC BY 4.0                  |
 | **Avatar**         | [Sketchfab](https://sketchfab.com/3d-models/low-poly-guardian-8df18d89b3354cd88c2fea99c2c2048a)                             | Akash Sisodiya         | CC BY 4.0                  |
-| **Ruangan**        | [Sketchfab](https://sketchfab.com/3d-models/vr-gallery-1e087aa25dc742e680accb15249bd6be)                                    | Maxim Mavrichev        | CC BY 4.0                  |
+| **Ruangan**        | [Sketchfab](https://sketchfab.com/3d-models/vr-round-art-gallery-3af1b679f52042fc9c40c901a6fed81b)                          | Maxim Mavrichev        | CC BY 4.0                  |
 
 > Perlu diketahui: Semua model 3D digunakan di bawah lisensi masing-masing. Atribusi diberikan sesuai dengan persyaratan platform.
 

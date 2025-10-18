@@ -890,7 +890,7 @@ function createImagePanel(imageUrl, width, height) {
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -4);
+  const uiBasePosition = new THREE.Vector3(0, 1.7, -3.5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
   const localCenterY = 0;
 
@@ -1202,8 +1202,8 @@ export function createViewerPage(
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
       new THREE.Vector3(
-        -totalPanelWidth / 2 - 0.3,
-        totalPanelHeight / 2 - 0.2,
+        -totalPanelWidth / 2 - 0.1,
+        totalPanelHeight / 2 - 0.1,
         0.05
       )
     );
@@ -1461,7 +1461,7 @@ function createConfettiEffect() {
 export function createCompletionScreen(playerName) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.0;
@@ -1514,7 +1514,7 @@ export function createCompletionScreen(playerName) {
 }
 
 export function createCreditsScreen(creditPages, pageIndex) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
   clearViewerUI();
 
@@ -1652,7 +1652,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
 export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const totalPanelWidth = 4.8;
@@ -1730,7 +1730,7 @@ export function createQuizResultScreen(
 ) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const totalPanelWidth = 4.8;
@@ -1862,7 +1862,7 @@ export function createQuizReportScreen(
   isPostCompletion = false
 ) {
   clearUI();
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.8;
@@ -2011,8 +2011,8 @@ export function createMiniQuizPage(component) {
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
       new THREE.Vector3(
-        -totalPanelWidth / 2 - 0.3,
-        totalPanelHeight / 2 - 0.2,
+        -totalPanelWidth / 2 - 0.1,
+        totalPanelHeight / 2 - 0.1,
         0.05
       )
     );
@@ -2092,8 +2092,8 @@ export function createMiniQuizResultPage(component, isCorrect) {
       avatarInstance,
       new THREE.Vector3(0.4, 0.4, 0.4),
       new THREE.Vector3(
-        -totalPanelWidth / 2 - 0.3,
-        totalPanelHeight / 2 - 0.2,
+        -totalPanelWidth / 2 - 0.1,
+        totalPanelHeight / 2 - 0.1,
         0.05
       )
     );
@@ -2106,7 +2106,7 @@ export function createMiniQuizResultPage(component, isCorrect) {
 export function createPostQuizChoiceScreen() {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
 
   const panelWidth = 4.0;
