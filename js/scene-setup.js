@@ -66,16 +66,6 @@ export function loadRoom(gltfLoader) {
     (gltf) => {
       const room = gltf.scene;
       room.position.set(0, 0, -2.5);
-
-      room.traverse((child) => {
-        if (child.isMesh) {
-          // Set toneMapped untuk material ruangan
-          if (child.material) {
-            child.material.toneMapped = true; // Terpengaruh tone mapping
-          }
-        }
-      });
-
       scene.add(room);
       console.log("Model ruangan berhasil dimuat.");
     },
