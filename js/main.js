@@ -428,6 +428,8 @@ async function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMappingExposure = 1.2;
+    camera.position.set(0, 1.6, -1); // Lebih dekat 1.5 meter ke depan
+    camera.updateMatrixWorld();
     changeState(AppState.AVATAR_GREETING);
   });
 
