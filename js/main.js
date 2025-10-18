@@ -554,7 +554,6 @@ function setupHTMLEvents() {
   welcomeNextBtn.addEventListener("click", () => {
     document.getElementById("welcome-overlay").classList.add("hidden");
     showNameInputScreen();
-    startBackgroundMusic();
   });
 
   nameContinueBtn.addEventListener("click", () => {
@@ -594,6 +593,7 @@ function setupHTMLEvents() {
         vrButton.remove();
       }
       document.getElementById("container").classList.remove("hidden");
+      startBackgroundMusic();
       changeState(AppState.MODE_SELECTION);
     }, fadeOutDuration);
   });

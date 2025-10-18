@@ -159,14 +159,14 @@ body {
 }
 
 .input-container input[type="text"]:focus {
-  border-color: var(--accent);
+  border-color: var(--primary);
 }
 
 .input-container input[type="text"]:focus ~ .label,
 .input-container input[type="text"]:valid ~ .label {
   top: calc(var(--unit) * -3);
   font-size: 0.75rem;
-  color: var(--accent);
+  color: var(--primary);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -448,6 +448,6 @@ body {
 .overlay-button:focus,
 .input-container input[type="text"]:focus,
 .floating-button:focus {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
