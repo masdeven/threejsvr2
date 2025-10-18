@@ -41,7 +41,10 @@ export function clearActiveTypingAnimation() {
   console.log("✓ Typing animation cleared");
 }
 
-const BG_COLOR = "#2D3748";
+const BG_COLOR = "#000000ff";
+const BTN_COLOR_PRIMARY = "#00000088";
+const BTN_COLOR_SECONDARY = "#4b4b4b8a";
+const BTN_COLOR_HOVER = "#2727278a";
 const TEXT_COLOR = "#FFFFFF";
 const ACCENT_COLOR = "#3182CE";
 const UI_DISTANCE = 2.5;
@@ -261,10 +264,10 @@ function createTypingText(text, width, options = {}, onComplete) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillStyle = "#E2E8F0";
-  ctx.shadowColor = "rgba(0,0,0,0.8)";
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
+  // ctx.shadowColor = "rgba(0,0,0,0.8)";
+  // ctx.shadowBlur = 6;
+  // ctx.shadowOffsetX = 2;
+  // ctx.shadowOffsetY = 2;
 
   function update(deltaTime) {
     if (currentIndex >= text.length) {
@@ -317,7 +320,7 @@ function createButton(
   action,
   width = 1,
   height = 0.25,
-  bgColor = BG_COLOR,
+  bgColor = BTN_COLOR_PRIMARY,
   shape = "roundedRectangle"
 ) {
   const canvas = document.createElement("canvas");
@@ -329,30 +332,38 @@ function createButton(
 
   ctx.fillStyle = bgColor;
 
+  // ✅ PERBAIKAN: Tingkatkan padding dari 2 menjadi 4
+  const padding = 0;
+
   if (shape === "circle") {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = Math.min(canvas.width, canvas.height) / 2;
+    // ✅ PERBAIKAN: Kurangi radius dengan padding
+    const radius = Math.min(canvas.width, canvas.height) / 2 - padding;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
     ctx.fill();
   } else {
-    const radius = 10 * (buttonResolution / getResolution());
+    // ✅ PERBAIKAN: Terapkan padding 4px pada rounded rectangle
+    const r = 10 * (buttonResolution / getResolution()); // r = radius sudut (tetap 10)
+    const x = padding;
+    const y = padding;
+    const w = canvas.width - padding * 2; // lebar gambar dikurangi padding
+    const h = canvas.height - padding * 2; // tinggi gambar dikurangi padding
+
+    // Pastikan radius sudut tidak lebih besar dari setengah lebar/tinggi
+    const clampedR = Math.min(r, w / 2, h / 2);
+
     ctx.beginPath();
-    ctx.moveTo(radius, 0);
-    ctx.lineTo(canvas.width - radius, 0);
-    ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
-    ctx.lineTo(canvas.width, canvas.height - radius);
-    ctx.quadraticCurveTo(
-      canvas.width,
-      canvas.height,
-      canvas.width - radius,
-      canvas.height
-    );
-    ctx.lineTo(radius, canvas.height);
-    ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
-    ctx.lineTo(0, radius);
-    ctx.quadraticCurveTo(0, 0, radius, 0);
+    ctx.moveTo(x + clampedR, y);
+    ctx.lineTo(x + w - clampedR, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + clampedR);
+    ctx.lineTo(x + w, y + h - clampedR);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - clampedR, y + h);
+    ctx.lineTo(x + clampedR, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - clampedR);
+    ctx.lineTo(x, y + clampedR);
+    ctx.quadraticCurveTo(x, y, x + clampedR, y);
     ctx.closePath();
     ctx.fill();
   }
@@ -389,7 +400,7 @@ function createButton(
   const material = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
-    alphaTest: 0.5,
+    // alphaTest: 0.5, // Tetap dihapus
     depthWrite: false,
   });
 
@@ -400,7 +411,7 @@ function createButton(
     isButton: true,
     action: action,
     text: text,
-    colors: { default: bgColor, hover: "#4A5568" },
+    colors: { default: bgColor, hover: BTN_COLOR_HOVER },
     canvasContext: ctx,
     currentState: "default", // State tracking
   };
@@ -443,10 +454,10 @@ function createTextPanel(descriptions, width, options = {}) {
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillStyle = TEXT_COLOR;
-    ctx.shadowColor = "rgba(0,0,0,0.6)";
-    ctx.shadowBlur = 3;
-    ctx.shadowOffsetX = 1;
-    ctx.shadowOffsetY = 1;
+    // ctx.shadowColor = "rgba(0,0,0,0.6)";
+    // ctx.shadowBlur = 3;
+    // ctx.shadowOffsetX = 1;
+    // ctx.shadowOffsetY = 1;
 
     wrapText(
       ctx,
@@ -533,13 +544,7 @@ export function clearUI() {
   });
 }
 
-function createUIPanel(
-  width,
-  height,
-  radius,
-  color = "#1A202C",
-  opacity = 0.85
-) {
+function createUIPanel(width, height, radius, color = BG_COLOR, opacity = 0.7) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const panelResolution = getResolution();
@@ -651,7 +656,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     "back_to_landing",
     exitButtonSize,
     exitButtonSize,
-    "rgba(45, 55, 72, 0.7)",
+    BTN_COLOR_PRIMARY,
     "circle"
   );
 
@@ -679,7 +684,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     null,
     primaryButtonWidth,
     primaryButtonHeight,
-    ACCENT_COLOR
+    BTN_COLOR_PRIMARY
   );
 
   continueButton.position.set(0, -0.28, 0.01);
@@ -818,8 +823,16 @@ export function createLandingPage(playerName) {
   const primaryStartY = 0.05; // Dari 0.1 → 0.05 (turunkan sedikit)
 
   const primaryButtons = [
-    { text: "Start Learning", action: "start_learning", color: ACCENT_COLOR },
-    { text: "Learning Report", action: "show_quiz_report", color: BG_COLOR },
+    {
+      text: "Start Learning",
+      action: "start_learning",
+      color: BTN_COLOR_PRIMARY,
+    },
+    {
+      text: "Learning Report",
+      action: "show_quiz_report",
+      color: BTN_COLOR_SECONDARY,
+    },
   ];
 
   primaryButtons.forEach((btn, index) => {
@@ -843,7 +856,7 @@ export function createLandingPage(playerName) {
     "show_credits",
     creditButtonSize,
     creditButtonSize,
-    "rgba(45, 55, 72, 0.7)",
+    BTN_COLOR_SECONDARY,
     "circle"
   );
 
@@ -908,7 +921,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     titleBgWidth,
     titleBgHeight,
     0.05,
-    "#1A202C",
+    BG_COLOR,
     0.9
   );
   titleBackground.position.set(0, titleY, titleZ);
@@ -929,11 +942,9 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     const angle = startAngle + col * angleStep;
     const isUnlocked = comp.unlocked;
 
-    const buttonLabel = isUnlocked
-      ? `${index + 1}. ${comp.label}`
-      : "🔒 Locked";
+    const buttonLabel = isUnlocked ? `${index + 1}. ${comp.label}` : "Locked";
 
-    const buttonColor = isUnlocked ? "#1A202C" : "#4A5568";
+    const buttonColor = isUnlocked ? BTN_COLOR_PRIMARY : BTN_COLOR_SECONDARY;
     const button = createButton(
       buttonLabel,
       isUnlocked ? `select_${index}` : "locked",
@@ -963,7 +974,7 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
     "back_to_landing",
     2.2,
     0.3,
-    ACCENT_COLOR
+    BG_COLOR
   );
   exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
   exitButton.lookAt(localLookAtTarget);
@@ -973,15 +984,15 @@ export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   if (!allComponentsUnlocked) {
     quizButtonLabel = "Final Test > (Locked)";
     quizButtonAction = "locked";
-    quizButtonColor = "#4A5568";
+    quizButtonColor = BTN_COLOR_SECONDARY;
   } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
     quizButtonLabel = "Final Test >";
     quizButtonAction = "show_quiz";
-    quizButtonColor = "#dc3545";
+    quizButtonColor = BTN_COLOR_PRIMARY;
   } else {
     quizButtonLabel = "Learning Report >";
     quizButtonAction = "show_quiz_report";
-    quizButtonColor = "#28a745";
+    quizButtonColor = BG_COLOR;
   }
   const quizButton = createButton(
     quizButtonLabel,
@@ -1021,8 +1032,8 @@ export function createViewerPage(
     totalPanelWidth,
     totalPanelHeight,
     0.05,
-    "#1A202C",
-    0.9
+    "#000000ff",
+    0.7
   );
   backgroundPanel.position.set(0, 0, 0);
   backgroundPanel.renderOrder = 0;
@@ -1074,7 +1085,7 @@ export function createViewerPage(
       isLastPage ? "locked" : "next_description",
       buttonWidth,
       0.2,
-      isLastPage ? "#4A5568" : BG_COLOR
+      isLastPage ? BTN_COLOR_SECONDARY : BTN_COLOR_PRIMARY
     );
     if (isLastPage) {
       nextDescButton.userData.colors = null;
@@ -1109,7 +1120,7 @@ export function createViewerPage(
       isFirstPage ? "locked" : "prev_description",
       buttonWidth,
       0.2,
-      isFirstPage ? "#4A5568" : BG_COLOR
+      isFirstPage ? BTN_COLOR_SECONDARY : BTN_COLOR_PRIMARY
     );
     if (isFirstPage) {
       prevDescButton.userData.colors = null;
@@ -1173,7 +1184,7 @@ export function createViewerPage(
     "back_to_menu",
     actionButtonSize,
     actionButtonSize,
-    BG_COLOR,
+    BTN_COLOR_PRIMARY,
     "circle"
   );
   const menuY = totalPanelHeight / 2 - actionButtonSize / 2;
@@ -1187,7 +1198,7 @@ export function createViewerPage(
     "play_audio",
     actionButtonSize,
     actionButtonSize,
-    BG_COLOR,
+    BTN_COLOR_PRIMARY,
     "circle"
   );
   const audioY = menuY - actionButtonSize - buttonSpacing;
@@ -1256,10 +1267,10 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  ctx.shadowColor = "rgba(0,0,0,0.7)";
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 3;
-  ctx.shadowOffsetY = 3;
+  // ctx.shadowColor = "rgba(0,0,0,0.7)";
+  // ctx.shadowBlur = 6;
+  // ctx.shadowOffsetX = 3;
+  // ctx.shadowOffsetY = 3;
 
   ctx.fillStyle = color;
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -1296,10 +1307,10 @@ function createSubtitleLabel(text, width, height) {
   ctx.textBaseline = "middle";
   ctx.fillStyle = "#E2E8F0";
 
-  ctx.shadowColor = "rgba(0,0,0,0.8)";
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
+  // ctx.shadowColor = "rgba(0,0,0,0.8)";
+  // ctx.shadowBlur = 6;
+  // ctx.shadowOffsetX = 2;
+  // ctx.shadowOffsetY = 2;
 
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
@@ -1351,10 +1362,10 @@ function createBodyText(text, width, options = {}) {
   ctx.textBaseline = "top";
   ctx.fillStyle = "#E2E8F0";
 
-  ctx.shadowColor = "rgba(0,0,0,0.8)";
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
+  // ctx.shadowColor = "rgba(0,0,0,0.8)";
+  // ctx.shadowBlur = 6;
+  // ctx.shadowOffsetX = 2;
+  // ctx.shadowOffsetY = 2;
 
   wrapText(
     ctx,
@@ -1466,13 +1477,7 @@ export function createCompletionScreen(playerName) {
 
   const panelWidth = 4.0;
   const panelHeight = 1.8;
-  const mainPanel = createUIPanel(
-    panelWidth,
-    panelHeight,
-    0.1,
-    "#1A202C",
-    0.95
-  );
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
@@ -1492,7 +1497,7 @@ export function createCompletionScreen(playerName) {
     "back_to_menu",
     3.0,
     0.3,
-    ACCENT_COLOR
+    BTN_COLOR_PRIMARY
   );
   quizButton.position.set(0, -0.6, 0.01);
   viewerUIGroup.add(quizButton);
@@ -1525,9 +1530,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
   const backgroundPanel = createUIPanel(
     totalPanelWidth,
     totalPanelHeight,
-    0.1, // ← UBAH dari 0.05 menjadi 0.1
-    "#1A202C",
-    0.85 // ← UBAH dari 0.9 menjadi 0.85 (sama dengan Report)
+    0.1 // ← UBAH dari 0.05 menjadi 0.1
   );
   backgroundPanel.position.set(0, 0, 0);
   viewerUIGroup.add(backgroundPanel);
@@ -1585,7 +1588,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
       isLastPage ? "locked" : "next_credit",
       buttonWidth,
       0.2,
-      isLastPage ? "#4A5568" : BG_COLOR
+      isLastPage ? BTN_COLOR_SECONDARY : BTN_COLOR_PRIMARY
     );
     if (isLastPage) {
       nextDescButton.userData.colors = null;
@@ -1602,7 +1605,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
       isFirstPage ? "locked" : "prev_credit",
       buttonWidth,
       0.2,
-      isFirstPage ? "#4A5568" : BG_COLOR
+      isFirstPage ? BTN_COLOR_SECONDARY : BTN_COLOR_PRIMARY
     );
     if (isFirstPage) {
       prevDescButton.userData.colors = null;
@@ -1620,7 +1623,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
     "back_to_landing",
     exitButtonSize,
     exitButtonSize,
-    "rgba(45, 55, 72, 0.7)",
+    BTN_COLOR_SECONDARY,
     "circle"
   );
 
@@ -1792,7 +1795,7 @@ export function createQuizResultScreen(
     "next_question",
     continueButtonWidth,
     continueButtonHeight,
-    ACCENT_COLOR
+    BTN_COLOR_PRIMARY
   );
   continueButton.position.set(buttonX, buttonY, 0.01);
   continueButton.renderOrder = 1;
@@ -1828,10 +1831,10 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  ctx.shadowColor = "rgba(0,0,0,0.7)";
-  ctx.shadowBlur = 8;
-  ctx.shadowOffsetX = 4;
-  ctx.shadowOffsetY = 4;
+  // ctx.shadowColor = "rgba(0,0,0,0.7)";
+  // ctx.shadowBlur = 8;
+  // ctx.shadowOffsetX = 4;
+  // ctx.shadowOffsetY = 4;
 
   ctx.fillStyle = color;
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -1920,7 +1923,7 @@ export function createQuizReportScreen(
     exitButtonAction,
     exitButtonSize,
     exitButtonSize,
-    "rgba(45, 55, 72, 0.7)",
+    BTN_COLOR_SECONDARY,
     "circle"
   );
   exitButton.position.set(
@@ -1953,8 +1956,8 @@ export function createMiniQuizPage(component) {
     totalPanelWidth,
     totalPanelHeight,
     0.05,
-    "#1A202C",
-    0.9
+    "#000000ff",
+    0.7
   );
   backgroundPanel.position.set(0, 0, 0);
   backgroundPanel.renderOrder = 0;
@@ -1962,7 +1965,7 @@ export function createMiniQuizPage(component) {
 
   const titleWidth = 2.8;
   const titleHeight = 0.35;
-  const titleLabel = createTitleLabel("Mini Kuis", titleWidth, titleHeight);
+  const titleLabel = createTitleLabel("Mini Quiz", titleWidth, titleHeight);
   const topPadding = 0.1;
   const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
   titleLabel.position.set(0, titleY, 0.02);
@@ -1990,8 +1993,8 @@ export function createMiniQuizPage(component) {
     const isCorrect = index === currentQuestion.correctAnswerIndex;
     const action = isCorrect ? "mini_quiz_correct" : "mini_quiz_incorrect";
 
-    const colors = ["#28a745", "#dc3545"];
-    const buttonColor = colors[index] || ACCENT_COLOR;
+    const colors = [BTN_COLOR_PRIMARY, BTN_COLOR_SECONDARY];
+    const buttonColor = colors[index] || BTN_COLOR_PRIMARY;
 
     const button = createButton(
       answer,
@@ -2032,8 +2035,8 @@ export function createMiniQuizResultPage(component, isCorrect) {
     totalPanelWidth,
     totalPanelHeight,
     0.05,
-    "#1A202C",
-    0.9
+    BG_COLOR,
+    0.7
   );
   backgroundPanel.position.set(0, 0, 0);
   backgroundPanel.renderOrder = 0;
@@ -2080,7 +2083,7 @@ export function createMiniQuizResultPage(component, isCorrect) {
     "continue_after_mini_quiz",
     navButtonWidth,
     navButtonHeight,
-    ACCENT_COLOR
+    BTN_COLOR_PRIMARY
   );
   continueButton.position.set(0, navY, 0.01);
   continueButton.renderOrder = 1;
@@ -2138,7 +2141,7 @@ export function createPostQuizChoiceScreen() {
     "back_to_landing",
     buttonWidth,
     buttonHeight,
-    ACCENT_COLOR
+    BTN_COLOR_PRIMARY
   );
   mainMenuButton.position.set(0, -0.38, 0.01);
   viewerUIGroup.add(mainMenuButton);
@@ -2184,7 +2187,7 @@ export function createModeSelectionPage() {
     "start_browser",
     buttonWidth,
     buttonHeight,
-    ACCENT_COLOR
+    BTN_COLOR_PRIMARY
   );
   browserButton.position.set(0, startY, 0.01);
   viewerUIGroup.add(browserButton);
@@ -2193,7 +2196,8 @@ export function createModeSelectionPage() {
     "Mode VR", // "Mode VR" → "VR Mode"
     "start_vr",
     buttonWidth,
-    buttonHeight
+    buttonHeight,
+    BTN_COLOR_SECONDARY
   );
   vrButton.position.set(0, startY - spacing, 0.01);
   viewerUIGroup.add(vrButton);

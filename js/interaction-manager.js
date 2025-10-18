@@ -64,30 +64,38 @@ function redrawButton(button, color, text = null) {
   const shape = width === height ? "circle" : "roundedRectangle";
   ctx.fillStyle = color;
 
+  // ✅ PERBAIKAN: Tingkatkan padding dari 2 menjadi 4
+  const padding = 0;
+
   if (shape === "circle") {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = canvas.width / 2;
+    // ✅ PERBAIKAN: Kurangi radius dengan padding
+    const radius = canvas.width / 2 - padding;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
     ctx.fill();
   } else {
-    const radius = 10 * (buttonResolution / getResolution());
+    // ✅ PERBAIKAN: Terapkan padding 4px pada rounded rectangle
+    const r = 10 * (buttonResolution / getResolution()); // r = radius sudut (tetap 10)
+    const x = padding;
+    const y = padding;
+    const w = canvas.width - padding * 2; // lebar gambar dikurangi padding
+    const h = canvas.height - padding * 2; // tinggi gambar dikurangi padding
+
+    // Pastikan radius sudut tidak lebih besar dari setengah lebar/tinggi
+    const clampedR = Math.min(r, w / 2, h / 2);
+
     ctx.beginPath();
-    ctx.moveTo(radius, 0);
-    ctx.lineTo(canvas.width - radius, 0);
-    ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
-    ctx.lineTo(canvas.width, canvas.height - radius);
-    ctx.quadraticCurveTo(
-      canvas.width,
-      canvas.height,
-      canvas.width - radius,
-      canvas.height
-    );
-    ctx.lineTo(radius, canvas.height);
-    ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
-    ctx.lineTo(0, radius);
-    ctx.quadraticCurveTo(0, 0, radius, 0);
+    ctx.moveTo(x + clampedR, y);
+    ctx.lineTo(x + w - clampedR, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + clampedR);
+    ctx.lineTo(x + w, y + h - clampedR);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - clampedR, y + h);
+    ctx.lineTo(x + clampedR, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - clampedR);
+    ctx.lineTo(x, y + clampedR);
+    ctx.quadraticCurveTo(x, y, x + clampedR, y);
     ctx.closePath();
     ctx.fill();
   }
@@ -125,8 +133,8 @@ function redrawButton(button, color, text = null) {
 export function setButtonEnabled(button, enabled, text = null) {
   if (!button || !button.userData.isButton) return;
 
-  const DISABLED_COLOR = "#4A5568";
-  const BGCOLOR = "#2D3748"; // Tambahkan konstanta ini
+  const DISABLED_COLOR = "#2727278a";
+  const BGCOLOR = "#000000ff"; // Tambahkan konstanta ini
   const data = button.userData;
 
   if (enabled) {
