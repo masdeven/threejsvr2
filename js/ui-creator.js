@@ -1018,7 +1018,8 @@ export function createViewerPage(
   component,
   index,
   descriptionIndex = 0,
-  highestComponentUnlocked = 0
+  highestComponentUnlocked = 0,
+  hasAttemptedQuiz = false
 ) {
   const uiBasePosition = VIEWER_UI_POSITION;
   const uiLookAtPosition = VIEWER_UI_LOOKAT;
@@ -1158,7 +1159,10 @@ export function createViewerPage(
   const isLastComponent = index >= components.length - 1;
   const allMaterialsUnlocked = highestComponentUnlocked >= components.length;
 
-  if (!isLastComponent || !allMaterialsUnlocked) {
+  const shouldShowNextButton =
+    !isLastComponent || (!allMaterialsUnlocked && !hasAttemptedQuiz);
+
+  if (shouldShowNextButton) {
     const nextButton = createButton(
       "Next >",
       "next_component",

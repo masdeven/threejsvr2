@@ -313,7 +313,8 @@ function showViewer(index, options = {}) {
     component,
     currentComponentIndex,
     currentDescriptionIndex,
-    highestComponentUnlocked
+    highestComponentUnlocked,
+    hasAttemptedQuiz
   );
   activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
 
@@ -497,7 +498,8 @@ function reloadViewerNavigation() {
     component,
     currentComponentIndex,
     currentDescriptionIndex,
-    highestComponentUnlocked
+    highestComponentUnlocked,
+    hasAttemptedQuiz
   );
 }
 
