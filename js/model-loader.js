@@ -53,6 +53,7 @@ export function convertModelMaterials(model) {
       const toonMaterial = new THREE.MeshBasicMaterial({
         color: oldMaterial.color,
         map: oldMaterial.map,
+        toneMapped: false,
       });
 
       toonMaterial.userData.isConverted = true;
