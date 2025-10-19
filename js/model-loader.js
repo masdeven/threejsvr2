@@ -372,8 +372,8 @@ function setupModelPosition(model, startYOffset = 0) {
   // Atur properti rendering (shadow, frustum culling)
   model.traverse((child) => {
     if (child.isMesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
+      // child.castShadow = true;
+      // child.receiveShadow = true;
       child.frustumCulled = true;
     }
   });
