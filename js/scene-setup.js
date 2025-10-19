@@ -13,7 +13,7 @@ export const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(0, 1.6, 0);
+camera.position.set(0, 1.6, -1);
 
 export const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -32,7 +32,7 @@ controls.enableDamping = false;
 controls.enablePan = false;
 controls.enableZoom = false;
 controls.rotateSpeed = -0.1;
-controls.target.set(0, 1.6, 0);
+controls.target.set(0, 1.6, -1);
 controls.minDistance = 0.1;
 controls.maxDistance = 0.5;
 controls.minPolarAngle = Math.PI / 4;
@@ -65,7 +65,7 @@ export function loadRoom(gltfLoader) {
     "assets/models/room.glb",
     (gltf) => {
       const room = gltf.scene;
-      room.position.set(0, 0, -2.5);
+      room.position.set(0, 0, -1.5);
       scene.add(room);
       console.log("Model ruangan berhasil dimuat.");
     },

@@ -51,7 +51,7 @@ const UI_DISTANCE = 2.5;
 const textureLoader = new TextureLoader();
 export let navButtons = [];
 
-const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -4);
+const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -3);
 const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
 
 export const GREETING_DATA = (playerName) => [
@@ -636,8 +636,8 @@ export function updateAvatar(deltaTime, elapsedTime) {
 
 export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   // ✅ Selaras dengan Landing
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 3.5);
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2.5);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4.5);
 
   const panelWidth = 3.2;
   const panelHeight = 1.1;
@@ -774,8 +774,8 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 
 export function createLandingPage(playerName) {
   // ✅ OPTIMASI: Dekatkan panel untuk comfort zone VR (1.75m adalah standar)
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5); // Dari -5 → -3.5
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 3.5); // Adjusted
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2.5); // Dari -5 → -3.5
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4.5); // Adjusted
 
   // ✅ OPTIMASI: Kecilkan panel agar tidak overwhelming
   const panelWidth = 3.2; // Dari 4.0 → 3.2 (20% lebih kecil)
@@ -903,7 +903,7 @@ function createImagePanel(imageUrl, width, height) {
 }
 
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  const uiBasePosition = new THREE.Vector3(0, 1.7, -3.5);
+  const uiBasePosition = new THREE.Vector3(0, 1.7, -2.5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
   const localCenterY = 0;
 
@@ -1476,8 +1476,8 @@ function createConfettiEffect() {
 export function createCompletionScreen(playerName) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 2, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
   const panelWidth = 4.0;
   const panelHeight = 1.8;
@@ -1523,8 +1523,8 @@ export function createCompletionScreen(playerName) {
 }
 
 export function createCreditsScreen(creditPages, pageIndex) {
-  const uiBasePosition = new THREE.Vector3(0, 2, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
   clearViewerUI();
 
   const totalPanelWidth = 4.8;
@@ -1659,8 +1659,8 @@ export function createCreditsScreen(creditPages, pageIndex) {
 export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 2, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
   const totalPanelWidth = 4.8;
   const totalPanelHeight = 2.4;
@@ -1737,8 +1737,8 @@ export function createQuizResultScreen(
 ) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 2, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
   const totalPanelWidth = 4.8;
   const totalPanelHeight = 2.4;
@@ -1869,8 +1869,8 @@ export function createQuizReportScreen(
   isPostCompletion = false
 ) {
   clearUI();
-  const uiBasePosition = new THREE.Vector3(0, 2, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
   const panelWidth = 4.8;
   const panelHeight = 2.0;
@@ -2113,8 +2113,8 @@ export function createMiniQuizResultPage(component, isCorrect) {
 export function createPostQuizChoiceScreen() {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 2, -5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
   const panelWidth = 4.0;
   const panelHeight = 1.4;
@@ -2135,7 +2135,7 @@ export function createPostQuizChoiceScreen() {
     "back_to_menu",
     buttonWidth,
     buttonHeight,
-    BG_COLOR
+    BTN_COLOR_PRIMARY
   );
   learnAgainButton.position.set(0, 0.04, 0.01);
   viewerUIGroup.add(learnAgainButton);
@@ -2145,7 +2145,7 @@ export function createPostQuizChoiceScreen() {
     "back_to_landing",
     buttonWidth,
     buttonHeight,
-    BTN_COLOR_PRIMARY
+    BTN_COLOR_SECONDARY
   );
   mainMenuButton.position.set(0, -0.38, 0.01);
   viewerUIGroup.add(mainMenuButton);
@@ -2167,7 +2167,7 @@ export function createModeSelectionPage() {
   clearUI();
 
   // ✅ Selaras dengan Landing
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -3.5); // -5 → -3.5
+  const uiBasePosition = new THREE.Vector3(0, 1.6, -2.5); // -5 → -3.5
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 3.5);
 
   const panelWidth = 3.2; // 4.0 → 3.2

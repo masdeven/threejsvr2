@@ -428,8 +428,6 @@ async function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMappingExposure = 1.2;
-    camera.position.set(0, 1.6, -1); // Lebih dekat 1.5 meter ke depan
-    camera.updateMatrixWorld();
     changeState(AppState.AVATAR_GREETING);
   });
 
@@ -1028,16 +1026,16 @@ function changeState(newState, options = {}) {
         case AppState.COMPLETION:
         case AppState.CREDITS:
           controls.enabled = true;
-          camera.position.set(0, 1.6, 0.5);
-          controls.target.set(0, 1.6, 0);
+          camera.position.set(0, 1.6, 1.5);
+          controls.target.set(0, 1.6, 1);
           break;
 
         case AppState.VIEWER:
         case AppState.MINI_QUIZ:
         case AppState.MINI_QUIZ_RESULT:
           controls.enabled = true;
-          camera.position.set(0, 1.6, 0.5);
-          controls.target.set(-0.2, 1.6, 0);
+          camera.position.set(0, 1.6, 1.5);
+          controls.target.set(-0.2, 1.6, 1);
           break;
       }
     }
@@ -1409,7 +1407,7 @@ function render() {
 
   if (isDebugVisible) {
     // Gunakan posisi tetap untuk desktop dan VR
-    const tablePosition = new THREE.Vector3(1, 0.8, -2.0);
+    const tablePosition = new THREE.Vector3(1, 0.8, -1.0);
     debugGroup.position.copy(tablePosition);
     debugGroup.lookAt(camera.position);
     updateFpsLabel(fpsLabel, fps);

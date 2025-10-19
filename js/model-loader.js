@@ -119,7 +119,7 @@ function setupModelPosition(model, startYOffset = 0) {
   const center = box.getCenter(new THREE.Vector3());
 
   model.position.x -= center.x;
-  model.position.z = -2.5 - center.z;
+  model.position.z = -1.5 - center.z;
 
   const finalY = TABLE_HEIGHT - box.min.y;
   model.position.y = finalY + startYOffset;
