@@ -1,5 +1,6 @@
 export const creditsData = [
-  "This application was developed as part of a study project for interactive visualization of computer hardware using cross-platform virtual reality.",
-  "Developed by:\nFalachul A.I.",
-  "3D assets and technologies used:\n- Three.js and WebXR\n- Sketchfab and CGTrader\n- Blender and glTF-Transform",
+  "WebXR Computer Lab\n\nAn interactive virtual reality application designed for exploring computer hardware components through immersive 3D visualization. This application was developed as part of a research project.",
+  "Built with\n\nThree.js · WebXR API\nBlender · glTF 2.0\n\nPowered by modern web technologies for cross-platform VR experiences.",
+  "3D Assets: Sketchfab · CGTrader\n\nTools: Blender · glTF-Transform\n\nSpecial thanks to the open-source community.",
+  "Developed by:\n\nFalachul Akhadihima Ibrahaical\nUndergraduate Program in Computer Science\nMa Chung University",
 ];
