@@ -247,6 +247,7 @@ async function init() {
     renderer.toneMappingExposure = 1.2;
     changeState(AppState.AVATAR_GREETING);
   });
+  renderer.xr.addEventListener("sessionstart", onVRSessionStarted);
   renderer.xr.addEventListener("sessionend", onVRSessionEnded);
 
   // Setup Interaksi (Mouse & VR)
@@ -549,7 +550,7 @@ function handleInteraction(action) {
       changeState(AppState.AVATAR_GREETING);
       break;
     case "start_vr":
-      startVRSession(onVRSessionEnded);
+      startVRSession(onVRSessionEnded, onVRSessionStarted);
       break;
     case "next_greeting":
       currentGreetingIndex++;
@@ -996,6 +997,12 @@ function onVRSessionEnded() {
   controls.enabled = true;
   changeState(AppState.MODE_SELECTION);
   console.log("Sesi VR berakhir, kembali ke pemilihan mode.");
+}
+function onVRSessionStarted() {
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMappingExposure = 1.2;
+  changeState(AppState.AVATAR_GREETING);
 }
 
 /**

@@ -87,7 +87,10 @@ export function setupVR() {
  * Menampilkan alert jika gagal atau tidak didukung.
  * @param {function} onSessionEndCallback - Callback yang akan dijalankan saat sesi VR berakhir.
  */
-export async function startVRSession(onSessionEndCallback) {
+export async function startVRSession(
+  onSessionEndCallback,
+  onSessionStartCallback
+) {
   // Cek dukungan WebXR
   if (!navigator.xr) {
     alert("Perangkat atau browser Anda tidak mendukung WebXR.");
@@ -105,6 +108,10 @@ export async function startVRSession(onSessionEndCallback) {
       ],
     });
     renderer.xr.setSession(session);
+
+    if (onSessionStartCallback) {
+      onSessionStartCallback();
+    }
 
     // Tambahkan listener untuk event 'end'
     if (onSessionEndCallback) {
