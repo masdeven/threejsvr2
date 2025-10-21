@@ -19,6 +19,9 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const raycasterDrag = new THREE.Raycaster();
 
+let lastVRClickTime = 0;
+const VR_CLICK_DEBOUNCE = 300;
+
 // Warna
 const DISABLED_COLOR = "#2727278a";
 const BGCOLOR = "#000000ff"; // Warna default jika tidak ada
@@ -359,6 +362,12 @@ function onPointerMove(event) {
  * @param {number} controllerIndex - 0 atau 1.
  */
 function onVRSelectStart(controllerIndex) {
+  const now = performance.now();
+  if (now - lastVRClickTime < VR_CLICK_DEBOUNCE) {
+    return; // Ignore rapid clicks
+  }
+  lastVRClickTime = now;
+
   const controller = getVRControllers()[controllerIndex];
   const state =
     controllerIndex === 0
@@ -379,10 +388,15 @@ function onVRSelectStart(controllerIndex) {
     const action = intersectedObject.userData.action;
     const scrollParent = intersectedObject.userData.scrollParent;
 
-    if (action === "scroll_up" || action === "scroll_down") {
+    if (action === "scrollup" || action === "scrolldown") {
       handleScrollClick(action, scrollParent);
-    } else if (interactionCallback && action) {
-      interactionCallback(action);
+    } else {
+      // PERBAIKAN: Gunakan requestAnimationFrame untuk menunda eksekusi
+      if (interactionCallback && action) {
+        requestAnimationFrame(() => {
+          interactionCallback(action);
+        });
+      }
     }
   }
 }
