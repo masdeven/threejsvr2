@@ -402,111 +402,110 @@ function render() {
  * @param {object} options - Opsi tambahan (mis: isTransitioning).
  */
 function changeState(newState, options = {}) {
-  requestAnimationFrame(() => {
-    activeTextPanel = null;
-    activeCreditsPanel = null;
+  // requestAnimationFrame(() => {
+  activeTextPanel = null;
+  activeCreditsPanel = null;
 
-    if (currentState === newState && newState !== AppState.VIEWER) {
-      return;
-    }
+  if (currentState === newState && newState !== AppState.VIEWER) {
+    return;
+  }
 
-    // Cleanup state sebelumnya (jika perlu)
-    if (
-      currentState === AppState.AVATAR_GREETING &&
-      newState !== AppState.AVATAR_GREETING
-    ) {
-      stopAudio();
-      clearActiveTypingAnimation();
-      stopAvatarDropAnimation();
-      console.log("✓ Avatar greeting cleanup complete");
-    }
-
-    if (currentState === AppState.COMPLETION) {
-      stopConfettiEffect();
-      if (completionSound && completionSound.isPlaying) {
-        completionSound.stop();
-      }
-    }
-
+  // Cleanup state sebelumnya (jika perlu)
+  if (
+    currentState === AppState.AVATAR_GREETING &&
+    newState !== AppState.AVATAR_GREETING
+  ) {
     stopAudio();
-    isFadingInUI = false;
-    if (newState === AppState.MODE_SELECTION) {
-      isFadingInUI = true;
+    clearActiveTypingAnimation();
+    stopAvatarDropAnimation();
+    console.log("✓ Avatar greeting cleanup complete");
+  }
+
+  if (currentState === AppState.COMPLETION) {
+    stopConfettiEffect();
+    if (completionSound && completionSound.isPlaying) {
+      completionSound.stop();
     }
+  }
 
-    // Cek apakah transisi terjadi di dalam konteks viewer
-    const viewerContextStates = new Set([
-      AppState.VIEWER,
-      AppState.MINI_QUIZ,
-      AppState.MINI_QUIZ_RESULT,
-    ]);
+  stopAudio();
+  isFadingInUI = false;
+  if (newState === AppState.MODE_SELECTION) {
+    isFadingInUI = true;
+  }
 
-    const isTransitioningWithinViewer =
-      viewerContextStates.has(currentState) &&
-      viewerContextStates.has(newState);
+  // Cek apakah transisi terjadi di dalam konteks viewer
+  const viewerContextStates = new Set([
+    AppState.VIEWER,
+    AppState.MINI_QUIZ,
+    AppState.MINI_QUIZ_RESULT,
+  ]);
 
-    if (!isTransitioningWithinViewer) {
-      unloadComponentModel();
+  const isTransitioningWithinViewer =
+    viewerContextStates.has(currentState) && viewerContextStates.has(newState);
+
+  if (!isTransitioningWithinViewer) {
+    unloadComponentModel();
+  }
+
+  currentState = newState;
+
+  // Setup state baru (jika perlu)
+  if (newState === AppState.AVATAR_GREETING) {
+    currentGreetingIndex = 0;
+  }
+
+  if (newState === AppState.COMPLETION) {
+    playCompletionAudio();
+  }
+
+  // Atur visibilitas avatar
+  if (
+    newState === AppState.LANDING ||
+    newState === AppState.QUIZ_REPORT ||
+    newState === AppState.AVATAR_GREETING ||
+    newState === AppState.VIEWER ||
+    newState === AppState.MINI_QUIZ ||
+    newState === AppState.MINI_QUIZ_RESULT
+  ) {
+    toggleAvatarVisibility(true);
+  } else {
+    toggleAvatarVisibility(false);
+  }
+
+  // Refresh UI
+  refreshUI(options);
+
+  // Reset posisi kamera jika tidak sedang drag/transisi
+  if (!isDragging && !isTransitioningWithinViewer) {
+    switch (newState) {
+      case AppState.MODE_SELECTION:
+      case AppState.AVATAR_GREETING:
+      case AppState.LANDING:
+      case AppState.MENU:
+      case AppState.HELP:
+      case AppState.QUIZ:
+      case AppState.QUIZ_RESULT:
+      case AppState.QUIZ_REPORT:
+      case AppState.QUIZ_POST_COMPLETION_REPORT:
+      case AppState.POST_QUIZ_CHOICE:
+      case AppState.COMPLETION:
+      case AppState.CREDITS:
+        controls.enabled = true;
+        camera.position.set(0, 1.6, 1.5);
+        controls.target.set(0, 1.6, 1);
+        break;
+
+      case AppState.VIEWER:
+      case AppState.MINI_QUIZ:
+      case AppState.MINI_QUIZ_RESULT:
+        controls.enabled = true;
+        camera.position.set(0, 1.6, 1.5);
+        controls.target.set(-0.2, 1.6, 1);
+        break;
     }
-
-    currentState = newState;
-
-    // Setup state baru (jika perlu)
-    if (newState === AppState.AVATAR_GREETING) {
-      currentGreetingIndex = 0;
-    }
-
-    if (newState === AppState.COMPLETION) {
-      playCompletionAudio();
-    }
-
-    // Atur visibilitas avatar
-    if (
-      newState === AppState.LANDING ||
-      newState === AppState.QUIZ_REPORT ||
-      newState === AppState.AVATAR_GREETING ||
-      newState === AppState.VIEWER ||
-      newState === AppState.MINI_QUIZ ||
-      newState === AppState.MINI_QUIZ_RESULT
-    ) {
-      toggleAvatarVisibility(true);
-    } else {
-      toggleAvatarVisibility(false);
-    }
-
-    // Refresh UI
-    refreshUI(options);
-
-    // Reset posisi kamera jika tidak sedang drag/transisi
-    if (!isDragging && !isTransitioningWithinViewer) {
-      switch (newState) {
-        case AppState.MODE_SELECTION:
-        case AppState.AVATAR_GREETING:
-        case AppState.LANDING:
-        case AppState.MENU:
-        case AppState.HELP:
-        case AppState.QUIZ:
-        case AppState.QUIZ_RESULT:
-        case AppState.QUIZ_REPORT:
-        case AppState.QUIZ_POST_COMPLETION_REPORT:
-        case AppState.POST_QUIZ_CHOICE:
-        case AppState.COMPLETION:
-        case AppState.CREDITS:
-          controls.enabled = true;
-          camera.position.set(0, 1.6, 1.5);
-          controls.target.set(0, 1.6, 1);
-          break;
-
-        case AppState.VIEWER:
-        case AppState.MINI_QUIZ:
-        case AppState.MINI_QUIZ_RESULT:
-          controls.enabled = true;
-          camera.position.set(0, 1.6, 1.5);
-          controls.target.set(-0.2, 1.6, 1);
-          break;
-      }
-    }
-  });
+  }
+  // });
 }
 
 /**

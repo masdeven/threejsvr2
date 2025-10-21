@@ -362,12 +362,6 @@ function onPointerMove(event) {
  * @param {number} controllerIndex - 0 atau 1.
  */
 function onVRSelectStart(controllerIndex) {
-  const now = performance.now();
-  if (now - lastVRClickTime < VR_CLICK_DEBOUNCE) {
-    return; // Ignore rapid clicks
-  }
-  lastVRClickTime = now;
-
   const controller = getVRControllers()[controllerIndex];
   const state =
     controllerIndex === 0
@@ -388,15 +382,10 @@ function onVRSelectStart(controllerIndex) {
     const action = intersectedObject.userData.action;
     const scrollParent = intersectedObject.userData.scrollParent;
 
-    if (action === "scrollup" || action === "scrolldown") {
+    if (action === "scroll_up" || action === "scroll_down") {
       handleScrollClick(action, scrollParent);
-    } else {
-      // PERBAIKAN: Gunakan requestAnimationFrame untuk menunda eksekusi
-      if (interactionCallback && action) {
-        requestAnimationFrame(() => {
-          interactionCallback(action);
-        });
-      }
+    } else if (interactionCallback && action) {
+      interactionCallback(action);
     }
   }
 }
