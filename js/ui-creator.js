@@ -1318,7 +1318,7 @@ export function createLandingPage(playerName) {
  * Membuat UI untuk halaman menu pemilihan topik (grid melengkung).
  */
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  const uiBasePosition = new THREE.Vector3(0, 1.7, -2.5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -2.5);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 5);
   const localCenterY = 0;
   const localLookAtTarget = new THREE.Vector3(0, localCenterY, 5);
@@ -2004,14 +2004,33 @@ export function createQuizReportScreen(
   isPostCompletion = false
 ) {
   clearUI();
+
   const uiBasePosition = new THREE.Vector3(0, 2, -4);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
   const panelWidth = 4.8;
   const panelHeight = 2.0;
+
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
+
+  // === Logo (kiri atas) ===
+  const logoWidth = 0.24;
+  const logoHeight = 0.24;
+  const logoPanel = createImagePanel(
+    "assets/images/logo-kampus.png",
+    logoWidth,
+    logoHeight
+  );
+  const paddingLogo = 0.08;
+  logoPanel.position.set(
+    -panelWidth / 2 + logoWidth / 2 + paddingLogo,
+    panelHeight / 2 - logoHeight / 2 - paddingLogo,
+    0.02
+  );
+  logoPanel.renderOrder = 1;
+  viewerUIGroup.add(logoPanel);
 
   // Judul
   const titleText = hasAttempted
@@ -2040,7 +2059,7 @@ export function createQuizReportScreen(
     scoreTitle.position.set(0, 0.4, 0.02);
     viewerUIGroup.add(scoreTitle);
 
-    const scoreDisplay = createScoreLabel(`${finalScore.toFixed(0)}%`, 1.0);
+    const scoreDisplay = createScoreLabel(finalScore.toFixed(0) + "%", 1.0);
     scoreDisplay.position.set(0, -0.1, 0.01);
     viewerUIGroup.add(scoreDisplay);
 
@@ -2050,7 +2069,7 @@ export function createQuizReportScreen(
     viewerUIGroup.add(reportBody);
   }
 
-  // Tombol Keluar (X)
+  // Tombol Keluar X
   const exitButtonAction = isPostCompletion
     ? "show_post_quiz_choice"
     : "back_to_landing";
@@ -2200,16 +2219,38 @@ export function createPostQuizChoiceScreen() {
 /**
  * Membuat UI untuk halaman credits (Tentang Aplikasi).
  */
+/**
+ * Membuat UI untuk halaman credits (Tentang Aplikasi).
+ */
 export function createCreditsScreen(creditPages, pageIndex) {
   const uiBasePosition = new THREE.Vector3(0, 2, -4);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
+
   clearViewerUI();
 
   const totalPanelWidth = 4.8;
   const totalPanelHeight = 2.0;
+
   const backgroundPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
   backgroundPanel.position.set(0, 0, 0);
   viewerUIGroup.add(backgroundPanel);
+
+  // === Logo (kiri atas) ===
+  const logoWidth = 0.24;
+  const logoHeight = 0.24;
+  const logoPanel = createImagePanel(
+    "assets/images/logo-kampus.png",
+    logoWidth,
+    logoHeight
+  );
+  const paddingLogo = 0.08;
+  logoPanel.position.set(
+    -totalPanelWidth / 2 + logoWidth / 2 + paddingLogo,
+    totalPanelHeight / 2 - logoHeight / 2 - paddingLogo,
+    0.02
+  );
+  logoPanel.renderOrder = 1;
+  viewerUIGroup.add(logoPanel);
 
   // Judul
   const titleWidth = 4.0;
@@ -2225,13 +2266,14 @@ export function createCreditsScreen(creditPages, pageIndex) {
   const descPanel = createTextPanel(creditPages, 4.2, {
     fixedHeight: DESC_PANEL_FIXED_HEIGHT,
   });
+
   // Set halaman awal
   const initialOffsetY =
     (creditPages.length - 1 - pageIndex) / creditPages.length;
   descPanel.material.map.offset.y = initialOffsetY;
   descPanel.userData.targetOffsetY = initialOffsetY;
   descPanel.userData.currentPage = pageIndex;
-  descPanel.userData.isCreditsPanel = true; // Tandai sebagai panel credits
+  descPanel.userData.isCreditsPanel = true;
 
   const descPanelYOffset =
     titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.1;
@@ -2241,12 +2283,13 @@ export function createCreditsScreen(creditPages, pageIndex) {
   // Navigasi Halaman Credits
   const descNavY =
     descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.15;
+
   if (creditPages.length > 1) {
     const buttonWidth = 0.25;
     const indicatorWidth = 0.5;
     const padding = 0.1;
 
-    const pageIndicatorText = `${pageIndex + 1} / ${creditPages.length}`;
+    const pageIndicatorText = `${pageIndex + 1}/${creditPages.length}`;
     const pageIndicator = createTitleLabel(
       pageIndicatorText,
       indicatorWidth,
@@ -2273,8 +2316,8 @@ export function createCreditsScreen(creditPages, pageIndex) {
     viewerUIGroup.add(nextDescButton);
 
     // Tombol Prev
-    const isFirstPage = pageIndex <= 0;
-    const prevButtonX = -(indicatorWidth / 2 + padding + buttonWidth / 2);
+    const isFirstPage = pageIndex === 0;
+    const prevButtonX = -indicatorWidth / 2 - padding - buttonWidth / 2;
     const prevDescButton = createButton(
       "<",
       isFirstPage ? "locked" : "prev_credit",
@@ -2290,7 +2333,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
     viewerUIGroup.add(prevDescButton);
   }
 
-  // Tombol Keluar (X)
+  // Tombol Keluar X
   const exitButtonSize = 0.25;
   const exitPadding = 0.15;
   const exitButton = createButton(
@@ -2516,6 +2559,23 @@ export function createQuickGuideScreen(guidePages, pageIndex) {
   backgroundPanel.position.set(0, 0, 0);
   viewerUIGroup.add(backgroundPanel);
 
+  // === Logo (kiri atas) ===
+  const logoWidth = 0.24;
+  const logoHeight = 0.24;
+  const logoPanel = createImagePanel(
+    "assets/images/logo-kampus.png",
+    logoWidth,
+    logoHeight
+  );
+  const paddingLogo = 0.08;
+  logoPanel.position.set(
+    -totalPanelWidth / 2 + logoWidth / 2 + paddingLogo,
+    totalPanelHeight / 2 - logoHeight / 2 - paddingLogo,
+    0.02
+  );
+  logoPanel.renderOrder = 1;
+  viewerUIGroup.add(logoPanel);
+
   // Judul
   const titleWidth = 4.0;
   const titleHeight = 0.35;
@@ -2537,7 +2597,7 @@ export function createQuickGuideScreen(guidePages, pageIndex) {
   descPanel.material.map.offset.y = initialOffsetY;
   descPanel.userData.targetOffsetY = initialOffsetY;
   descPanel.userData.currentPage = pageIndex;
-  descPanel.userData.isGuidePanel = true; // Tandai sebagai panel guide
+  descPanel.userData.isGuidePanel = true;
 
   const descPanelYOffset =
     titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.1;
