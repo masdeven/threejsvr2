@@ -1070,21 +1070,116 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
+/**
+ * Membuat panel teks statis untuk judul dengan wrapping otomatis.
+ * @param {string} text - Teks judul.
+ * @param {number} maxWidth - Lebar maksimum panel dalam satuan Three.js.
+ * @param {number} maxHeight - Tinggi maksimum panel dalam satuan Three.js.
+ * @param {number} baseFontSize - Ukuran font dasar sebelum scaling.
+ * @param {number} vrFontScale - Faktor skala font untuk mode VR.
+ * @param {number} lineHeightScale - Faktor skala untuk jarak antar baris.
+ * @param {string} color - Warna teks.
+ * @returns {THREE.Mesh} - Mesh panel teks dengan wrapping.
+ */
+function createWrappingTitleLabel(
+  text,
+  maxWidth,
+  maxHeight,
+  baseFontSize = 28,
+  vrFontScale = 1.1,
+  lineHeightScale = 1.2,
+  color = TEXT_COLOR
+) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const resolution = getResolution();
+  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+  const finalFontSize = Math.round(
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize * dpr
+  );
+  const lineHeight = Math.round(finalFontSize * lineHeightScale);
+  const font = `bold ${finalFontSize}px Verdana, Geneva, sans-serif`;
+  ctx.font = font;
+
+  const padding = 15; // Padding dalam piksel (ditambah untuk spacing vertikal)
+  const canvasMaxWidth = maxWidth * resolution;
+  const canvasMaxHeight = maxHeight * resolution;
+  const maxTextWidth = canvasMaxWidth - padding * 2;
+
+  // Hitung tinggi teks yang dibutuhkan
+  const { pixelHeight: textHeightNeeded } = wrapText(
+    ctx,
+    text,
+    0,
+    0,
+    maxTextWidth,
+    lineHeight,
+    false
+  );
+
+  // Batasi tinggi sesuai maxHeight, tambahkan padding atas dan bawah
+  const finalCanvasHeight = Math.min(
+    canvasMaxHeight,
+    textHeightNeeded + padding * 2 // Padding atas dan bawah
+  );
+
+  canvas.width = canvasMaxWidth;
+  canvas.height = finalCanvasHeight;
+
+  // Gambar teks dengan center vertikal
+  ctx.font = font;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = color;
+
+  // Hitung posisi Y untuk center vertikal teks di canvas
+  const textStartY = (finalCanvasHeight - textHeightNeeded) / 2;
+
+  wrapText(
+    ctx,
+    text,
+    padding,
+    textStartY, // Posisi Y center vertikal
+    maxTextWidth,
+    lineHeight,
+    true
+  );
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+  });
+
+  const planeHeight = finalCanvasHeight / resolution;
+  const geometry = new THREE.PlaneGeometry(maxWidth, planeHeight);
+  return new THREE.Mesh(geometry, material);
+}
 
 /**
  * Membuat UI untuk halaman landing (menu utama).
  */
+/**
+ * Membuat UI untuk halaman landing (menu utama).
+ */
 export function createLandingPage(playerName) {
-  const uiBasePosition = new THREE.Vector3(0, 1.6, -2.5);
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
   const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4.5);
-  const panelWidth = 3.2;
-  const panelHeight = 1.1;
 
+  // Panel utama
+  const panelWidth = 4.8;
+  const panelHeight = 2.0;
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  // Logo
+  // Logo (tetap di kiri atas)
   const logoWidth = 0.24;
   const logoHeight = 0.24;
   const logoPanel = createImagePanel(
@@ -1101,19 +1196,53 @@ export function createLandingPage(playerName) {
   logoPanel.renderOrder = 1;
   viewerUIGroup.add(logoPanel);
 
-  // Teks Selamat Datang
+  // === TITLE "MENU" (atas tengah) ===
+  const titleWidth = 4.0;
+  const titleHeight = 0.35;
+  const topPadding = 0.1;
+  const titleY = 0.8;
+
+  const titleLabel = createTitleLabel("Main Menu", titleWidth, titleHeight);
+  titleLabel.position.set(0, titleY, 0.01);
+  viewerUIGroup.add(titleLabel);
+
+  // === Area konten di bawah title ===
+  const contentAreaTop = titleY - titleHeight / 2;
+  const availableHeight = contentAreaTop - -panelHeight / 2;
+  const contentCenterY = contentAreaTop - availableHeight / 2;
+
+  // Welcome Text (kiri, center dalam area konten)
   if (playerName) {
-    const welcomeText = `Select Activity, ${playerName}`;
-    const welcomeLabel = createTitleLabel(welcomeText, 2.8, 0.28);
-    welcomeLabel.position.set(0.08, 0.35, 0.01);
+    const welcomeText = `What do you want to do next, ${playerName}?`;
+    const titleMaxWidth = 2.0;
+    const titleMaxHeight = 1.0;
+    const titlePaddingLeft = 0.3;
+
+    const welcomeLabel = createWrappingTitleLabel(
+      welcomeText,
+      titleMaxWidth,
+      titleMaxHeight,
+      28,
+      1.1,
+      1.2,
+      TEXT_COLOR
+    );
+
+    // Posisi X: kiri panel dengan padding
+    const welcomeTextX = -panelWidth / 2 + titlePaddingLeft + titleMaxWidth / 2;
+    // Posisi Y: center dalam area konten
+    const welcomeTextY = contentCenterY;
+
+    welcomeLabel.position.set(welcomeTextX, welcomeTextY, 0.01);
     viewerUIGroup.add(welcomeLabel);
   }
 
-  // Tombol Menu Utama
-  const primaryButtonWidth = 2.3;
-  const primaryButtonHeight = 0.28;
-  const primarySpacingY = 0.34;
-  const primaryStartY = 0.05;
+  // Tombol-tombol (kanan, center dalam area konten)
+  const buttonWidth = 2.0;
+  const buttonHeight = 0.28;
+  const buttonSpacingY = 0.36;
+  const buttonPaddingRight = 0.3;
+  const buttonX = panelWidth / 2 - buttonPaddingRight - buttonWidth / 2;
 
   const primaryButtons = [
     {
@@ -1122,26 +1251,37 @@ export function createLandingPage(playerName) {
       color: BTN_COLOR_PRIMARY,
     },
     {
+      text: "Quick Guide",
+      action: "show_quick_guide",
+      color: BTN_COLOR_SECONDARY,
+    },
+    {
       text: "Learning Report",
       action: "show_quiz_report",
       color: BTN_COLOR_SECONDARY,
     },
   ];
 
+  const numButtons = primaryButtons.length;
+  const totalButtonsHeight = (numButtons - 1) * buttonSpacingY;
+  // Button center Y sama dengan welcome text Y
+  const buttonCenterY = contentCenterY;
+  const buttonStartY = buttonCenterY + totalButtonsHeight / 2;
+
   primaryButtons.forEach((btn, index) => {
     const button = createButton(
       btn.text,
       btn.action,
-      primaryButtonWidth,
-      primaryButtonHeight,
+      buttonWidth,
+      buttonHeight,
       btn.color
     );
-    const buttonY = primaryStartY - index * primarySpacingY;
-    button.position.set(0, buttonY, 0.01);
+    const buttonY = buttonStartY - index * buttonSpacingY;
+    button.position.set(buttonX, buttonY, 0.01);
     viewerUIGroup.add(button);
   });
 
-  // Tombol Credits (i)
+  // Tombol Credits (i) - tetap di kanan bawah
   const creditButtonSize = 0.15;
   const creditButton = createButton(
     "i",
@@ -1160,13 +1300,13 @@ export function createLandingPage(playerName) {
   creditButton.renderOrder = 1;
   viewerUIGroup.add(creditButton);
 
-  // Avatar
+  // Avatar (kiri atas, dekat logo)
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();
     setupAvatar(
       avatarInstance,
-      new THREE.Vector3(0.35, 0.35, 0.35),
-      new THREE.Vector3(-panelWidth / 2 - 0.18, panelHeight / 2 - 0.18, 0.05)
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(-panelWidth / 2 - 0.2, panelHeight / 2 - 0.2, 0.05)
     );
   }
 
@@ -2076,7 +2216,7 @@ export function createCreditsScreen(creditPages, pageIndex) {
   const titleHeight = 0.35;
   const titleLabel = createTitleLabel("About", titleWidth, titleHeight);
   const topPadding = 0.1;
-  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding;
+  const titleY = 0.8;
   titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
@@ -2362,4 +2502,133 @@ export function updateFpsLabel(mesh, fps) {
   );
 
   texture.needsUpdate = true;
+}
+export function createQuickGuideScreen(guidePages, pageIndex) {
+  const uiBasePosition = new THREE.Vector3(0, 2, -4);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
+
+  clearViewerUI();
+
+  const totalPanelWidth = 4.8;
+  const totalPanelHeight = 2.0;
+
+  const backgroundPanel = createUIPanel(totalPanelWidth, totalPanelHeight, 0.1);
+  backgroundPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(backgroundPanel);
+
+  // Judul
+  const titleWidth = 4.0;
+  const titleHeight = 0.35;
+  const titleLabel = createTitleLabel("Quick Guide", titleWidth, titleHeight);
+  const topPadding = 0.1;
+  const titleY = 0.8;
+  titleLabel.position.set(0, titleY, 0.01);
+  viewerUIGroup.add(titleLabel);
+
+  // Panel Teks Guide
+  const DESC_PANEL_FIXED_HEIGHT = 0.8;
+  const descPanel = createTextPanel(guidePages, 4.2, {
+    fixedHeight: DESC_PANEL_FIXED_HEIGHT,
+  });
+
+  // Set halaman awal
+  const initialOffsetY =
+    (guidePages.length - 1 - pageIndex) / guidePages.length;
+  descPanel.material.map.offset.y = initialOffsetY;
+  descPanel.userData.targetOffsetY = initialOffsetY;
+  descPanel.userData.currentPage = pageIndex;
+  descPanel.userData.isGuidePanel = true; // Tandai sebagai panel guide
+
+  const descPanelYOffset =
+    titleY - titleHeight / 2 - descPanel.geometry.parameters.height / 2 - 0.1;
+  descPanel.position.set(0, descPanelYOffset, 0.01);
+  viewerUIGroup.add(descPanel);
+
+  // Navigasi Halaman Guide
+  const descNavY =
+    descPanelYOffset - descPanel.geometry.parameters.height / 2 - 0.15;
+
+  if (guidePages.length > 1) {
+    const buttonWidth = 0.25;
+    const indicatorWidth = 0.5;
+    const padding = 0.1;
+
+    const pageIndicatorText = `${pageIndex + 1}/${guidePages.length}`;
+    const pageIndicator = createTitleLabel(
+      pageIndicatorText,
+      indicatorWidth,
+      0.15
+    );
+    pageIndicator.position.set(0, descNavY, 0.02);
+    viewerUIGroup.add(pageIndicator);
+
+    // Tombol Next
+    const isLastPage = pageIndex >= guidePages.length - 1;
+    const nextButtonX = indicatorWidth / 2 + padding + buttonWidth / 2;
+    const nextDescButton = createButton(
+      ">",
+      isLastPage ? "locked" : "next_guide",
+      buttonWidth,
+      0.2,
+      isLastPage ? BTN_COLOR_SECONDARY : BTN_COLOR_PRIMARY
+    );
+    if (isLastPage) {
+      nextDescButton.userData.colors = null;
+      nextDescButton.userData.currentState = "disabled";
+    }
+    nextDescButton.position.set(nextButtonX, descNavY, 0.01);
+    viewerUIGroup.add(nextDescButton);
+
+    // Tombol Prev
+    const isFirstPage = pageIndex === 0;
+    const prevButtonX = -indicatorWidth / 2 - padding - buttonWidth / 2;
+    const prevDescButton = createButton(
+      "<",
+      isFirstPage ? "locked" : "prev_guide",
+      buttonWidth,
+      0.2,
+      isFirstPage ? BTN_COLOR_SECONDARY : BTN_COLOR_PRIMARY
+    );
+    if (isFirstPage) {
+      prevDescButton.userData.colors = null;
+      prevDescButton.userData.currentState = "disabled";
+    }
+    prevDescButton.position.set(prevButtonX, descNavY, 0.01);
+    viewerUIGroup.add(prevDescButton);
+  }
+
+  // Tombol Keluar X
+  const exitButtonSize = 0.25;
+  const exitPadding = 0.15;
+  const exitButton = createButton(
+    "X",
+    "back_to_landing",
+    exitButtonSize,
+    exitButtonSize,
+    BTN_COLOR_SECONDARY,
+    "circle"
+  );
+  exitButton.position.set(
+    totalPanelWidth / 2 - exitPadding - exitButtonSize / 2,
+    totalPanelHeight / 2 - exitPadding - exitButtonSize / 2,
+    0.02
+  );
+  viewerUIGroup.add(exitButton);
+
+  // Avatar
+  if (avatarModel) {
+    const avatarInstance = avatarModel.scene.clone();
+    setupAvatar(
+      avatarInstance,
+      new THREE.Vector3(0.4, 0.4, 0.4),
+      new THREE.Vector3(
+        -totalPanelWidth / 2 - 0.2,
+        totalPanelHeight / 2 - 0.2,
+        0.05
+      )
+    );
+  }
+
+  viewerUIGroup.position.copy(uiBasePosition);
+  viewerUIGroup.lookAt(uiLookAtPosition);
 }

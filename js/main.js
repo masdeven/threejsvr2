@@ -15,6 +15,7 @@ import { scene, camera, renderer, controls, loadRoom } from "./scene-setup.js";
 import { components } from "./component-data.js";
 import { quizData } from "./quiz-data.js";
 import { creditsData } from "./credits-data.js";
+import { guideData } from "./guide-data.js";
 
 // Fungsi-fungsi untuk membuat dan mengelola elemen UI
 import {
@@ -48,6 +49,7 @@ import {
   debugGroup,
   createFpsLabel,
   updateFpsLabel,
+  createQuickGuideScreen,
 } from "./ui-creator.js";
 
 // Fungsi untuk memuat model 3D (GLTF, DRACO, KTX2)
@@ -116,11 +118,12 @@ let playerName = "";
 let currentQuestionIndex = 0;
 let quizScore = 0;
 let hasAttemptedQuiz = false;
-let highestComponentUnlocked = 10;
+let highestComponentUnlocked = 0;
 let currentGreetingIndex = 0;
 let currentCreditIndex = 0;
 let wasAnswerCorrect = false;
 let wasMiniQuizCorrect = false;
+let current_guide_index = 0;
 
 // --- State UI & Transisi ---
 let isChangingComponent = false;
@@ -130,6 +133,7 @@ let confettiEffect = null;
 let isFadingInUI = false;
 let activeTextPanel = null;
 let activeCreditsPanel = null;
+let active_guide_panel = null;
 
 // --- State Core Loop & Debug ---
 let stats;
@@ -167,6 +171,7 @@ const AppState = {
   POST_QUIZ_CHOICE: "POST_QUIZ_CHOICE",
   COMPLETION: "COMPLETION",
   CREDITS: "CREDITS",
+  QUICK_GUIDE: "QUICK_GUIDE",
 };
 
 // Inisialisasi grup debug
@@ -361,6 +366,7 @@ function render() {
   updateModelTransition(deltaTime);
   updateScrollAnimation(activeTextPanel, deltaTime);
   updateScrollAnimation(activeCreditsPanel, deltaTime);
+  updateScrollAnimation(active_guide_panel, deltaTime);
 
   const typingAnim = getActiveTypingAnimation();
   if (typingAnim) {
@@ -412,6 +418,7 @@ function changeState(newState, options = {}) {
   // requestAnimationFrame(() => {
   activeTextPanel = null;
   activeCreditsPanel = null;
+  active_guide_panel = null;
 
   if (currentState === newState && newState !== AppState.VIEWER) {
     return;
@@ -731,6 +738,29 @@ function handleInteraction(action) {
         playComponentAudio(components[currentComponentIndex].audioFile);
       }
       break;
+    case "show_quick_guide":
+      current_guide_index = 0;
+      changeState(AppState.QUICK_GUIDE);
+      setTimeout(() => {
+        active_guide_panel = scene.getObjectByProperty("isGuidePanel", true);
+      }, 0);
+      break;
+
+    case "prev_guide":
+      if (current_guide_index > 0) {
+        current_guide_index--;
+        updateActiveGuidePanelTarget();
+        reloadGuideNavigation();
+      }
+      break;
+
+    case "next_guide":
+      if (current_guide_index < guideData.length - 1) {
+        current_guide_index++;
+        updateActiveGuidePanelTarget();
+        reloadGuideNavigation();
+      }
+      break;
     default:
       if (action.startsWith("select_")) {
         if (isChangingComponent) return;
@@ -887,6 +917,9 @@ function refreshUI(options = {}) {
     case AppState.CREDITS:
       createCreditsScreen(creditsData, currentCreditIndex);
       break;
+    case AppState.QUICK_GUIDE:
+      createQuickGuideScreen(guideData, current_guide_index);
+      break;
   }
 }
 
@@ -972,6 +1005,11 @@ function reloadCreditsNavigation() {
   createCreditsScreen(creditsData, currentCreditIndex);
   activeCreditsPanel = scene.getObjectByProperty("isCreditsPanel", true);
 }
+function reloadGuideNavigation() {
+  clearViewerUI();
+  createQuickGuideScreen(guideData, current_guide_index);
+  active_guide_panel = scene.getObjectByProperty("isGuidePanel", true);
+}
 
 /**
  * Mengupdate target offset Y untuk animasi scroll panel teks.
@@ -983,6 +1021,14 @@ function updateActiveTextPanelTarget() {
     activeTextPanel.userData.targetOffsetY =
       (totalPages - 1 - currentDescriptionIndex) / totalPages;
     activeTextPanel.userData.currentPage = currentDescriptionIndex;
+  }
+}
+function updateActiveGuidePanelTarget() {
+  if (active_guide_panel) {
+    const totalPages = active_guide_panel.userData.totalPages;
+    active_guide_panel.userData.targetOffsetY =
+      (totalPages - 1 - current_guide_index) / totalPages;
+    active_guide_panel.userData.currentPage = current_guide_index;
   }
 }
 
@@ -1051,7 +1097,9 @@ function reloadViewer() {
 function updateScrollAnimation(panel, deltaTime) {
   if (
     panel &&
-    (panel.userData.isScrollableText || panel.userData.isCreditsPanel)
+    (panel.userData.isScrollableText ||
+      panel.userData.isCreditsPanel ||
+      panel.userData.isGuidePanel) // TAMBAHAN BARU
   ) {
     const texture = panel.material.map;
     const currentOffsetY = texture.offset.y;
@@ -1061,7 +1109,7 @@ function updateScrollAnimation(panel, deltaTime) {
       texture.offset.y = THREE.MathUtils.lerp(
         currentOffsetY,
         targetOffsetY,
-        deltaTime * 10 // Kecepatan animasi scroll
+        deltaTime * 10
       );
     } else {
       texture.offset.y = targetOffsetY;
