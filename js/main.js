@@ -101,7 +101,12 @@ const LOADING_TIMEOUT = 60000; // 60 detik untuk koneksi lambat
 // ===============================================================
 
 // --- State Audio ---
-let audioListener, sound, backgroundSound, completionSound, greetingSound;
+let audioListener,
+  sound,
+  backgroundSound,
+  completionSound,
+  greetingSound,
+  completionCongratsSound;
 const audioLoader = new THREE.AudioLoader();
 const audioCache = {};
 
@@ -111,7 +116,7 @@ let playerName = "";
 let currentQuestionIndex = 0;
 let quizScore = 0;
 let hasAttemptedQuiz = false;
-let highestComponentUnlocked = 0;
+let highestComponentUnlocked = 10;
 let currentGreetingIndex = 0;
 let currentCreditIndex = 0;
 let wasAnswerCorrect = false;
@@ -223,6 +228,7 @@ async function init() {
   sound.userData = {};
   completionSound = new THREE.Audio(audioListener);
   greetingSound = new THREE.Audio(audioListener);
+  completionCongratsSound = new THREE.Audio(audioListener);
 
   // Setup Loaders (KTX2 & DRACO)
   const ktx2Loader = new KTX2Loader()
@@ -426,6 +432,9 @@ function changeState(newState, options = {}) {
     stopConfettiEffect();
     if (completionSound && completionSound.isPlaying) {
       completionSound.stop();
+    }
+    if (completionCongratsSound && completionCongratsSound.isPlaying) {
+      completionCongratsSound.stop();
     }
   }
 
@@ -805,7 +814,7 @@ function changeDescription(direction) {
       });
     }
     descriptionChangeTimeout = null;
-  }, 150);
+  }, CHANGE_DEBOUNCE_TIME);
 }
 
 // ===============================================================
@@ -1257,6 +1266,7 @@ function preloadOtherAssets() {
       "assets/audio/sfx/button_confirm.ogg",
       "assets/audio/sfx/completion.ogg",
       "assets/audio/music/background_music.ogg",
+      "assets/audio/narration/completion_congrats.ogg",
       ...components.filter((c) => c.audioFile).map((c) => c.audioFile),
       ...greetingAudioFiles,
     ];
@@ -1429,9 +1439,37 @@ function startBackgroundMusic() {
 
 /** Memainkan audio saat materi selesai. */
 function playCompletionAudio() {
-  playControlledSound(completionSound, "assets/audio/sfx/completion.ogg", {
-    volume: 0.5,
-  });
+  // Pastikan suara lain yang mungkin berjalan dihentikan
+  if (completionSound.isPlaying) {
+    completionSound.stop();
+  }
+  if (completionCongratsSound && completionCongratsSound.isPlaying) {
+    completionCongratsSound.stop();
+  }
+
+  // 1. Atur apa yang terjadi setelah suara PERTAMA selesai
+  completionSound.onEnded = () => {
+    // Hapus callback untuk mencegahnya berjalan lagi di lain waktu
+    completionSound.onEnded = null;
+
+    // Mainkan suara KEDUA menggunakan fungsi pembantu
+    playControlledSound(
+      completionCongratsSound,
+      "assets/audio/narration/completion_congrats.ogg",
+      { volume: 1 }
+    );
+  };
+
+  // 2. Mainkan suara PERTAMA (tanpa playControlledSound agar onEnded tidak terhapus)
+  const buffer = audioCache["assets/audio/sfx/completion.ogg"];
+  if (buffer) {
+    completionSound.setBuffer(buffer);
+    completionSound.setLoop(false);
+    completionSound.setVolume(0.5);
+    completionSound.play();
+  } else {
+    console.error("Audio buffer untuk 'completion.ogg' tidak ditemukan.");
+  }
 }
 
 /** Menghentikan semua audio narasi dan efek (kecuali musik latar). */
