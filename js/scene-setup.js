@@ -63,15 +63,21 @@ camera.position.copy(CAMERA_POS);
 export const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: "high-performance",
+  alpha: false,
+  stencil: false,
 });
 renderer.localClippingEnabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
 
 // Pengaturan Encoding & Tone Mapping
-renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
+
+// Optimasi untuk VR
+renderer.xr.enabled = false; // Akan diaktifkan di setupVR
+renderer.shadowMap.enabled = false; // Nonaktifkan shadow untuk performa VR
 
 // Tambahkan renderer ke DOM
 document.getElementById("container").appendChild(renderer.domElement);
