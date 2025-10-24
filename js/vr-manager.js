@@ -43,6 +43,19 @@ export const vrInteractionState = {
  */
 export function setupVR() {
   renderer.xr.enabled = true;
+  
+  // Pengaturan optimal untuk Quest 2
+  // Menggunakan pixel ratio native Quest 2 untuk mengurangi chromatic aberration
+  const xrSession = renderer.xr.getSession();
+  if (xrSession) {
+    // Set reference space untuk kualitas terbaik
+    renderer.xr.setReferenceSpaceType('local-floor');
+  }
+  
+  // Nonaktifkan foveation untuk mengurangi blur (trade-off performa)
+  if (renderer.xr.isPresenting) {
+    renderer.xr.setFoveation(0); // 0 = no foveation, 1 = max foveation
+  }
 
   // Inisialisasi Controller 1 (input)
   controller1 = renderer.xr.getController(0);
@@ -98,16 +111,31 @@ export async function startVRSession(
   }
 
   try {
-    // Meminta sesi VR
+    // Meminta sesi VR dengan pengaturan optimal untuk Quest 2
     const session = await navigator.xr.requestSession("immersive-vr", {
+      requiredFeatures: ["local-floor"],
       optionalFeatures: [
-        "local-floor",
         "bounded-floor",
         "hand-tracking",
         "layers",
       ],
     });
-    renderer.xr.setSession(session);
+    
+    await renderer.xr.setSession(session);
+    
+    // Set foveation ke 0 untuk mengurangi blur
+    // Nilai 0 = no foveation (kualitas penuh), 1 = max foveation (performa max)
+    renderer.xr.setFoveation(0);
+    
+    // Set frame rate untuk Quest 2 (72Hz atau 90Hz)
+    if (session.updateRenderState) {
+      session.updateRenderState({
+        baseLayer: new XRWebGLLayer(session, renderer.getContext(), {
+          framebufferScaleFactor: 1.0, // 1.0 untuk kualitas penuh
+          antialias: true,
+        }),
+      });
+    }
 
     if (onSessionStartCallback) {
       onSessionStartCallback();

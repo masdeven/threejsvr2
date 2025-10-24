@@ -241,12 +241,6 @@ async function init() {
 
   // Setup VR
   setupVR();
-  renderer.xr.addEventListener("sessionstart", () => {
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.toneMappingExposure = 1.2;
-    changeState(AppState.AVATAR_GREETING);
-  });
   renderer.xr.addEventListener("sessionstart", onVRSessionStarted);
   renderer.xr.addEventListener("sessionend", onVRSessionEnded);
 
@@ -999,9 +993,16 @@ function onVRSessionEnded() {
   console.log("Sesi VR berakhir, kembali ke pemilihan mode.");
 }
 function onVRSessionStarted() {
+  // Pengaturan renderer untuk VR mode
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMappingExposure = 1.2;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMappingExposure = 1.0; // Kurangi exposure untuk mengurangi bloom/chromatic aberration
+  
+  // Set foveation untuk mengurangi blur
+  if (renderer.xr.isPresenting) {
+    renderer.xr.setFoveation(0); // 0 = no blur, 1 = max blur
+  }
+  
   changeState(AppState.AVATAR_GREETING);
 }
 
