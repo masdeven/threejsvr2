@@ -253,9 +253,12 @@ async function init() {
   // Setup VR
   setupVR();
   renderer.xr.addEventListener("sessionstart", () => {
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    // Gunakan setting yang lebih konservatif
+    renderer.toneMapping = THREE.LinearToneMapping;
+    renderer.toneMappingExposure = 1.0;
     renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.toneMappingExposure = 1.2;
+
+    console.log("VR session started with optimized rendering");
     changeState(AppState.AVATAR_GREETING);
   });
   renderer.xr.addEventListener("sessionstart", onVRSessionStarted);

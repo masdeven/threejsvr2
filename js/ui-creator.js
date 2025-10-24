@@ -345,10 +345,10 @@ function createUIPanel(width, height, radius, color = BG_COLOR, opacity = 0.7) {
   ctx.fill();
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -433,10 +433,10 @@ function createButton(
   ctx.fillText(text, canvas.width / 2, canvas.height / 2 + verticalOffset);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -510,10 +510,10 @@ function createTextPanel(descriptions, width, options = {}) {
   });
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   // Atur tekstur untuk tiling vertikal (scrolling)
   texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -561,10 +561,10 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -597,10 +597,10 @@ function createSubtitleLabel(text, width, height) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -659,10 +659,10 @@ function createBodyText(text, width, options = {}) {
   );
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -704,10 +704,10 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -728,10 +728,10 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
  */
 function createImagePanel(imageUrl, width, height) {
   const texture = textureLoader.load(imageUrl);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -1146,10 +1146,10 @@ function createWrappingTitleLabel(
   );
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -2498,10 +2498,10 @@ export function createFpsLabel() {
   context.fillText("0", canvasWidth / 2, canvasHeight / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipMapLinearFilter;
+  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
+  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,

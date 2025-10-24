@@ -307,17 +307,24 @@ export function convertModelMaterials(model) {
   model.traverse((child) => {
     if (child.isMesh) {
       const oldMaterial = child.material;
-      if (oldMaterial.userData.isConverted) return; // Sudah dikonversi
+      if (oldMaterial.userData.isConverted) return;
 
-      const toonMaterial = new THREE.MeshBasicMaterial({
+      // GUNAKAN MeshLambertMaterial atau MeshStandardMaterial
+      const vrMaterial = new THREE.MeshLambertMaterial({
         color: oldMaterial.color,
         map: oldMaterial.map,
-        toneMapped: false,
+        transparent: oldMaterial.transparent,
+        opacity: oldMaterial.opacity,
       });
 
-      toonMaterial.userData.isConverted = true;
-      oldMaterial.dispose();
-      child.material = toonMaterial;
+      vrMaterial.userData.isConverted = true;
+
+      // Dispose material lama dengan benar
+      if (oldMaterial !== vrMaterial) {
+        oldMaterial.dispose();
+      }
+
+      child.material = vrMaterial;
     }
   });
 }

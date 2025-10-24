@@ -44,6 +44,10 @@ export const vrInteractionState = {
 export function setupVR() {
   renderer.xr.enabled = true;
 
+  if (renderer.xr.isPresenting) {
+    renderer.xr.setFramebufferScaleFactor(1.0); // Hindari supersampling
+  }
+
   // Inisialisasi Controller 1 (input)
   controller1 = renderer.xr.getController(0);
   scene.add(controller1);

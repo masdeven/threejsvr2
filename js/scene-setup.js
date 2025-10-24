@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { loadingManager } from "./loading-manager.js";
+import { isVRMode } from "./vr-manager.js";
 import { loader as gltfLoader } from "./model-loader.js";
 
 // ===============================================================
@@ -12,7 +13,7 @@ import { loader as gltfLoader } from "./model-loader.js";
 const INITIAL_BG_COLOR = 0x101010;
 const AMBIENT_LIGHT_COLOR = 0xffffff;
 const AMBIENT_LIGHT_INTENSITY = 2;
-const TONE_MAPPING_EXPOSURE = 2;
+const TONE_MAPPING_EXPOSURE = 1;
 
 // --- Kamera ---
 const CAMERA_FOV = 50;
@@ -64,14 +65,26 @@ export const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: "high-performance",
 });
+renderer.physicallyCorrectLights = false;
+renderer.gammaFactor = 2.2; // Standard gamma
 renderer.localClippingEnabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+const getVRPixelRatio = () => {
+  return isVRMode() ? 1.0 : Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
+};
+renderer.setPixelRatio(getVRPixelRatio());
 
 // Pengaturan Encoding & Tone Mapping
 renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMapping = THREE.LinearToneMapping; // Lebih aman untuk mobile VR
 renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
+
+renderer.xr.addEventListener("sessionstart", () => {
+  // Reset tone mapping untuk VR
+  renderer.toneMapping = THREE.LinearToneMapping;
+  renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
+  console.log("VR Session started with optimized settings");
+});
 
 // Tambahkan renderer ke DOM
 document.getElementById("container").appendChild(renderer.domElement);
@@ -110,13 +123,18 @@ scene.add(ambientLight);
 const pmremGenerator = new THREE.PMREMGenerator(renderer);
 pmremGenerator.compileEquirectangularShader();
 
-new RGBELoader(loadingManager) // Menggunakan loadingManager dari modul lain
+// GANTI environment map loading:
+new RGBELoader(loadingManager)
   .setPath(ENV_MAP_PATH)
   .load(ENV_MAP_FILE, function (texture) {
     const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-    pmremGenerator.dispose(); // Bebaskan memori setelah konversi
+    pmremGenerator.dispose();
+
+    // Batasi intensity environment map
+    envMap.intensity = 0.5; // Turunkan dari default 1.0
+
     scene.environment = envMap;
-    scene.background = envMap; // Ganti background default dengan env map
+    scene.background = envMap;
   });
 
 // ===============================================================
