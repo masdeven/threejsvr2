@@ -134,6 +134,7 @@ let isFadingInUI = false;
 let activeTextPanel = null;
 let activeCreditsPanel = null;
 let active_guide_panel = null;
+let isSidebarOpen = false;
 
 // --- State Core Loop & Debug ---
 let stats;
@@ -503,6 +504,11 @@ function changeState(newState, options = {}) {
       case AppState.AVATAR_GREETING:
       case AppState.LANDING:
       case AppState.MENU:
+
+      case AppState.VIEWER:
+      case AppState.MINI_QUIZ:
+      case AppState.MINI_QUIZ_RESULT:
+
       case AppState.HELP:
       case AppState.QUIZ:
       case AppState.QUIZ_RESULT:
@@ -516,13 +522,10 @@ function changeState(newState, options = {}) {
         controls.target.set(0, 1.6, 1);
         break;
 
-      case AppState.VIEWER:
-      case AppState.MINI_QUIZ:
-      case AppState.MINI_QUIZ_RESULT:
-        controls.enabled = true;
-        camera.position.set(0, 1.6, 1.5);
-        controls.target.set(-0.2, 1.6, 1);
-        break;
+      // controls.enabled = true;
+      // camera.position.set(0, 1.6, 1.5);
+      // controls.target.set(0, 1.6, 1);
+      // break;
     }
   }
   // });
@@ -1558,6 +1561,10 @@ function setupHTMLEvents() {
   );
   const startNewBtn = document.getElementById("start-new-button");
 
+  const aboutButton = document.getElementById("about-button");
+  const sidebar = document.getElementById("about-sidebar");
+  const closeSidebarButton = document.getElementById("close-sidebar-button");
+
   // Tombol "Lanjutkan Progres"
   continueProgressBtn.addEventListener("click", () => {
     document.getElementById("progress-choice-overlay").classList.add("hidden");
@@ -1626,6 +1633,42 @@ function setupHTMLEvents() {
       changeState(AppState.MODE_SELECTION);
     }, fadeOutDuration);
   });
+
+  if (aboutButton && sidebar && closeSidebarButton) {
+    // Tombol Floating '?' untuk membuka sidebar
+    aboutButton.addEventListener("click", () => {
+      sidebar.classList.remove("hidden");
+      // Tambahkan sedikit delay agar transisi CSS berjalan
+      requestAnimationFrame(() => {
+        sidebar.classList.add("visible");
+      });
+      isSidebarOpen = true;
+    });
+
+    // Tombol 'X' di dalam sidebar untuk menutup
+    closeSidebarButton.addEventListener("click", () => {
+      sidebar.classList.remove("visible");
+      // Tambahkan event listener untuk 'transitionend' agar 'hidden' ditambahkan setelah transisi selesai
+      sidebar.addEventListener("transitionend", function handler() {
+        sidebar.classList.add("hidden");
+        sidebar.removeEventListener("transitionend", handler); // Hapus listener setelah selesai
+      });
+      isSidebarOpen = false;
+    });
+
+    // Opsional: Tutup sidebar jika klik di luar area sidebar
+    document.addEventListener("click", (event) => {
+      if (
+        isSidebarOpen &&
+        !sidebar.contains(event.target) &&
+        !aboutButton.contains(event.target)
+      ) {
+        closeSidebarButton.click(); // Panggil klik tombol close
+      }
+    });
+  } else {
+    console.error("Sidebar elements not found!");
+  }
 }
 
 /** Menampilkan overlay selamat datang. */

@@ -86,7 +86,7 @@
         <input
           type="text"
           id="player-name-input"
-          maxlength="12"
+          maxlength="8"
           autocomplete="off"
           required
         />
@@ -95,15 +95,417 @@
       <button id="continue-button" class="overlay-button">OK</button>
     </div>
 
-    <a
-      href="https://github.com/Falachul/webxr-v2"
-      target="_blank"
-      id="github-button"
-      class="floating-button"
-    >
-      &lt;/&gt;
-      <span class="tooltip">Lihat Kode Sumber di GitHub</span>
-    </a>
+    <button id="about-button" class="floating-button">?</button>
+
+    <!-- Struktur Sidebar About -->
+    <!-- TAMBAHAN: Sidebar HTML -->
+    <aside id="about-sidebar" class="hidden">
+      <button id="close-sidebar-button">&times;</button>
+      <div id="sidebar-content">
+        <!-- Konten Markdown diubah menjadi HTML di sini -->
+        <h1>🧠 Aplikasi Pembelajaran Perangkat Keras Berbasis VR</h1>
+        <p>(WebXR + Three.js)</p>
+        <p>
+          Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi
+          perangkat keras komputer dalam 3D. Dikembangkan menggunakan
+          <strong>Three.js</strong> dan <strong>WebXR</strong> dengan metodologi
+          <strong>Multimedia Development Life Cycle (MDLC)</strong>, aplikasi
+          ini memungkinkan pelajar untuk mempelajari komponen perangkat keras
+          komputer secara interaktif melalui pengalaman berbasis browser yang
+          imersif—tanpa memerlukan perangkat VR yang mahal.
+        </p>
+
+        <hr />
+
+        <h2>🚀 Fitur</h2>
+        <ul>
+          <li>Visualisasi 3D interaktif dari perangkat keras komputer</li>
+          <li>Mode VR berbasis web (WebXR)</li>
+          <li>Narasi audio menggunakan suara yang dihasilkan AI</li>
+          <li>
+            Rendering 3D yang ringan dan dioptimalkan (kompresi Draco + KTX2)
+          </li>
+          <li>Kontrol responsif untuk perangkat desktop dan VR</li>
+        </ul>
+
+        <hr />
+
+        <h2>🧩 Tumpukan Teknologi</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Kategori</th>
+              <th>Alat / Kerangka Kerja</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mesin 3D</strong></td>
+              <td>Three.js</td>
+            </tr>
+            <tr>
+              <td><strong>Dukungan XR</strong></td>
+              <td>WebXR API</td>
+            </tr>
+            <tr>
+              <td><strong>Optimisasi</strong></td>
+              <td>glTF-Transform, Draco, KTX2</td>
+            </tr>
+            <tr>
+              <td><strong>Pemodelan</strong></td>
+              <td>Blender</td>
+            </tr>
+            <tr>
+              <td><strong>Audio</strong></td>
+              <td>Narakeet (AI TTS), YouTube Audio Library</td>
+            </tr>
+            <tr>
+              <td><strong>Hosting</strong></td>
+              <td>Cloudflare Pages / GitHub Pages</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr />
+
+        <h2>🧱 Alur Pengembangan</h2>
+        <ol>
+          <li>Pemodelan 3D di Blender (pengurangan verteks ±20%)</li>
+          <li>Ekspor sebagai format <code>.glb</code></li>
+          <li>
+            Optimalkan menggunakan <strong>glTF-Transform</strong>
+            <ul>
+              <li><code>optimize</code> (menyederhanakan struktur)</li>
+              <li><code>draco</code> (kompresi geometri)</li>
+              <li><code>ktx2</code> (kompresi tekstur)</li>
+            </ul>
+          </li>
+          <li>Integrasikan ke dalam <strong>Three.js + WebXR</strong></li>
+          <li>Uji dan deploy di web</li>
+        </ol>
+
+        <hr />
+
+        <h2>🎨 Kredit & Lisensi</h2>
+        <h3>🧱 Model 3D</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Sumber</th>
+              <th>3D Artist / Modeler</th>
+              <th>Lisensi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data tabel kredit model dimasukkan di sini -->
+            <tr>
+              <td><strong>Monitor</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/rigged-monitor-iiyama-gb2770hsu-free-download-bca1aef8e0424cc3baf4369beec3b6a8"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>BlendedPopcorn</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Keyboard</strong></td>
+              <td>
+                <a
+                  href="https://www.cgtrader.com/free-3d-models/electronics/computer/mechanical-keybord"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >CGTrader</a
+                >
+              </td>
+              <td>autho</td>
+              <td>Royalty Free No Ai License</td>
+            </tr>
+            <tr>
+              <td><strong>Mouse</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/mouse-ef4c6dfb6de44d0c9bd200a64c8c1a73"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Mukhesh</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Printer</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/epson-printer-model-752da10ef09a4f4782aa6c38a82f4b26"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>zafry</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Storage</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/ssd-noname-sata-5a182a80361f407e965adaaee077e3cd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Хлюпич</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Motherboard</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Daniel Cardona</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>CPU</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/am4-cpu-free-912c9c42d2dc40fe95574345aae51ea0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Igor.Jop</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Kartu Jaringan</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/network-interface-card-191c8ad40de2430980b879615aa0d2e3"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>ARComputerFundamentals</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>GPU</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Daniel Cardona</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>RAM</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Daniel Cardona</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Flask Drive</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/flash-drive-ecc57ae0430f4786845a6f76ae924268"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Blender3D</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Avatar</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/low-poly-guardian-8df18d89b3354cd88c2fea99c2c2048a"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Akash Sisodiya</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td><strong>Ruangan</strong></td>
+              <td>
+                <a
+                  href="https://sketchfab.com/3d-models/vr-round-art-gallery-3af1b679f52042fc9c40c901a6fed81b"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Sketchfab</a
+                >
+              </td>
+              <td>Maxim Mavrichev</td>
+              <td>CC BY 4.0</td>
+            </tr>
+          </tbody>
+        </table>
+        <blockquote>
+          Perlu diketahui: Semua model 3D digunakan di bawah lisensi
+          masing-masing. Atribusi diberikan sesuai dengan persyaratan platform.
+        </blockquote>
+
+        <h3>🔊 Audio & Suara</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Sumber</th>
+              <th>Deskripsi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data tabel kredit audio dimasukkan di sini -->
+            <tr>
+              <td>
+                <a
+                  href="https://www.narakeet.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Narakeet</a
+                >
+              </td>
+              <td>Narasi suara</td>
+            </tr>
+            <tr>
+              <td>
+                <a
+                  href="https://www.youtube.com/watch?v=pBEdwmP8B4o&list=LL&index=17s"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >YouTube - BreakingCopyright</a
+                >
+              </td>
+              <td>Musik latar</td>
+            </tr>
+            <tr>
+              <td>
+                <a
+                  href="https://pixabay.com/id/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Pixabay</a
+                >
+              </td>
+              <td>Efek suara</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>🧰 Alat & Kerangka Kerja</h3>
+        <ul>
+          <li>
+            <a
+              href="https://threejs.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Three.js</a
+            >
+            – Mesin rendering 3D
+          </li>
+          <li>
+            <a
+              href="https://immersiveweb.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >WebXR</a
+            >
+            – Dukungan VR/AR berbasis browser
+          </li>
+          <li>
+            <a
+              href="https://gltf-transform.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >glTF-Transform</a
+            >
+            – CLI optimisasi model
+          </li>
+          <li>
+            <a
+              href="https://www.blender.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Blender</a
+            >
+            – Pemodelan 3D dan persiapan aset
+          </li>
+        </ul>
+
+        <hr />
+
+        <h2>⚖️ Lisensi</h2>
+        <p>
+          Proyek ini dilisensikan di bawah <strong>Lisensi MIT</strong>. Anda
+          bebas menggunakan, memodifikasi, dan mendistribusikan proyek ini untuk
+          tujuan pendidikan atau non-komersial, dengan syarat semua atribusi dan
+          kredit tetap utuh.
+        </p>
+
+        <hr />
+
+        <h2>🙌 Ucapan Terima Kasih</h2>
+        <p>Terima kasih khusus kepada:</p>
+        <ul>
+          <li>
+            Semua kreator di <strong>Sketchfab</strong> dan
+            <strong>CGTrader</strong> yang telah menyediakan model 3D
+            berkualitas tinggi.
+          </li>
+          <li><strong>Narakeet</strong> untuk layanan narasi suara AI.</li>
+          <li>
+            Komunitas sumber terbuka dari para pengembang
+            <strong>Three.js</strong> dan <strong>WebXR</strong>.
+          </li>
+        </ul>
+
+        <hr />
+
+        <h2>🧑‍💻 Penulis</h2>
+        <p><strong>Falachul Akhadihima Ibrahaical</strong></p>
+        <p>
+          Proyek Skripsi — IMPLEMENTASI THREE.JS DAN WEBXR DALAM PENGEMBANGAN
+          APLIKASI VIRTUAL REALITY (VR) UNTUK PENGENALAN PERANGKAT KERAS
+          KOMPUTER<br />
+          <em>Program Studi Teknik Informatika</em><br />
+          <em>Fakultas Teknologi dan Desain, Universitas Ma Chung</em>
+        </p>
+
+        <hr />
+
+        <p>Proyek Penelitian Sarjana 📧</p>
+      </div>
+    </aside>
+
     <script type="module" src="js/main.js"></script>
   </body>
 </html>
