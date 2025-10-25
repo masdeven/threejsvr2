@@ -11,7 +11,9 @@ import { TextureLoader } from "three";
 // ===============================================================
 
 // --- Font & Warna ---
-export const FONT = "bold 32px Verdana, Geneva, sans-serif";
+export const FONT = "bold 32px Arial, sans-serif";
+const LOGICAL_RESOLUTION = 1024; // ↑ Increased from 768
+const logicalBaseFontSize = 32; // ↑ Increased from 24
 const BG_COLOR = "#000000ff";
 const BTN_COLOR_PRIMARY = "#00000088";
 const BTN_COLOR_SECONDARY = "#4b4b4b8a";
@@ -259,15 +261,25 @@ export function updateAvatar(deltaTime, elapsedTime) {
 // ===============================================================
 
 /**
- * Mendapatkan resolusi canvas target berdasarkan mode (VR/Desktop) dan DPR.
- * @returns {number} - Resolusi (mis: 256 atau 480).
+ * Mendapatkan resolusi canvas target yang tinggi dan konsisten.
+ * @returns {number} - Resolusi (mis: 1536).
  */
 export function getResolution() {
   if (isVRMode()) {
-    return 1024; // Resolusi tetap untuk VR
+    return 1024; // Keep VR lower for performance
   } else {
-    const baseResolution = 720;
-    const dpr = Math.min(window.devicePixelRatio, 2); // Batasi DPR di 2
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const screenWidth = window.innerWidth;
+
+    let baseResolution;
+    if (screenWidth <= 1024) {
+      baseResolution = 1024; // ↑ Increased from 768
+    } else if (screenWidth <= 1440) {
+      baseResolution = 1536; // ↑ Increased from 768 (CRITICAL FIX)
+    } else {
+      baseResolution = 2048; // ↑ Increased from 1024
+    }
+
     return baseResolution * dpr;
   }
 }
@@ -345,10 +357,11 @@ function createUIPanel(width, height, radius, color = BG_COLOR, opacity = 0.7) {
   ctx.fill();
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -433,10 +446,11 @@ function createButton(
   ctx.fillText(text, canvas.width / 2, canvas.height / 2 + verticalOffset);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -470,15 +484,18 @@ function createTextPanel(descriptions, width, options = {}) {
   const descriptionsArray = Array.isArray(descriptions)
     ? descriptions
     : [descriptions];
+  // Diubah dari if/else (20, 22, 25)
 
-  const BASE_FONT_SIZE_PX = 25;
-  const vrFontScale = 1.5;
-  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+  const currentResolution = getResolution(); // Akan menjadi 1536 (non-VR)
+  const scaleFactor = currentResolution / LOGICAL_RESOLUTION; // 1536 / 768 = 2
+  const scaledBaseFontSize = logicalBaseFontSize * scaleFactor; // 24 * 2 = 48px
+
+  const vrFontScale = 1;
   const finalFontSize = Math.round(
-    isVRMode() ? BASE_FONT_SIZE_PX * vrFontScale : BASE_FONT_SIZE_PX * dpr
+    isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * 1.2);
-  const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
+  const font = `800 ${finalFontSize}px Verdana, Geneva, sans-serif`;
   const padding = 12.5;
   const resolution = getResolution();
   ctx.font = font;
@@ -510,10 +527,11 @@ function createTextPanel(descriptions, width, options = {}) {
   });
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   // Atur tekstur untuk tiling vertikal (scrolling)
   texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -545,10 +563,20 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
+
   canvas.width = width * resolution;
   canvas.height = height * resolution;
 
-  const vrFontScale = 1;
+  // Adaptive VR font scale
+  const screenWidth = window.innerWidth;
+  let vrFontScale;
+
+  if (screenWidth <= 768) {
+    vrFontScale = 0.8; // ← Lebih kecil untuk mobile
+  } else {
+    vrFontScale = 1;
+  }
+
   const baseFontSize = height * resolution * 0.6;
   const fontSize = Math.floor(
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
@@ -561,10 +589,11 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -597,10 +626,11 @@ function createSubtitleLabel(text, width, height) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -615,7 +645,7 @@ function createSubtitleLabel(text, width, height) {
  */
 function createBodyText(text, width, options = {}) {
   const {
-    baseFontSize = 68,
+    baseFontSize: logicalBaseFontSize = 24,
     vrFontScale = 1.1,
     lineHeightScale = 1.2,
   } = options;
@@ -623,10 +653,14 @@ function createBodyText(text, width, options = {}) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
-  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+
+  const currentResolution = getResolution();
+  const scaleFactor = currentResolution / LOGICAL_RESOLUTION;
+  const scaledBaseFontSize = logicalBaseFontSize * scaleFactor;
+  // --- AKHIR PERBAIKAN ---
 
   const finalFontSize = Math.round(
-    isVRMode() ? baseFontSize * vrFontScale : baseFontSize * dpr
+    isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
@@ -659,10 +693,11 @@ function createBodyText(text, width, options = {}) {
   );
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -704,10 +739,11 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -731,7 +767,6 @@ function createImagePanel(imageUrl, width, height) {
   texture.minFilter = THREE.LinearMipMapLinearFilter; // Non-mipmapped untuk UI
   texture.magFilter = THREE.LinearFilter;
   texture.generateMipmaps = true; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -747,7 +782,7 @@ function createImagePanel(imageUrl, width, height) {
  */
 function createTypingText(text, width, options = {}, onComplete) {
   const {
-    baseFontSize = 14,
+    baseFontSize: logicalBaseFontSize = 28,
     vrFontScale = 1.5,
     lineHeightScale = 1.2,
   } = options;
@@ -755,10 +790,14 @@ function createTypingText(text, width, options = {}, onComplete) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
-  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+
+  const currentResolution = getResolution();
+  const scaleFactor = currentResolution / LOGICAL_RESOLUTION;
+  const scaledBaseFontSize = logicalBaseFontSize * scaleFactor;
+  // --- AKHIR PERBAIKAN ---
 
   const finalFontSize = Math.round(
-    isVRMode() ? baseFontSize * vrFontScale : baseFontSize * dpr
+    isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
@@ -776,7 +815,10 @@ function createTypingText(text, width, options = {}, onComplete) {
   canvas.height = totalTextPixelHeight + padding;
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -1100,9 +1142,15 @@ function createWrappingTitleLabel(
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const resolution = getResolution();
-  const dpr = isVRMode() ? 1 : Math.min(window.devicePixelRatio, 2);
+
+  const logicalBaseFontSize = baseFontSize; // Ambil dari argumen (default 28)
+  const currentResolution = getResolution();
+  const scaleFactor = currentResolution / LOGICAL_RESOLUTION;
+  const scaledBaseFontSize = logicalBaseFontSize * scaleFactor;
+  // --- AKHIR PERBAIKAN ---
+
   const finalFontSize = Math.round(
-    isVRMode() ? baseFontSize * vrFontScale : baseFontSize * dpr
+    isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
   const font = `bold ${finalFontSize}px Verdana, Geneva, sans-serif`;
@@ -1153,12 +1201,11 @@ function createWrappingTitleLabel(
     lineHeight,
     true
   );
-
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false;
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -1708,7 +1755,7 @@ export function createHelpPanel() {
 export function createMiniQuizPage(component) {
   // Posisi konsisten dengan Viewer Panel
   const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
 
   clearViewerUI();
   navButtons = [];
@@ -1795,7 +1842,7 @@ export function createMiniQuizPage(component) {
 export function createMiniQuizResultPage(component, isCorrect) {
   // Posisi konsisten dengan Viewer Panel
   const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
 
   clearViewerUI();
   navButtons = [];
@@ -2570,10 +2617,11 @@ export function createFpsLabel() {
   context.fillText("0", canvasWidth / 2, canvasHeight / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter; // Non-mipmapped untuk UI
+  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
   texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = false; // Nonaktifkan mipmaps untuk UI
-  texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+  texture.generateMipmaps = true; // Changed to true
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
+  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,

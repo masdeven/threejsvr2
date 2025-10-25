@@ -12,20 +12,20 @@ import { loader as gltfLoader } from "./model-loader.js";
 // --- Warna & Cahaya ---
 const INITIAL_BG_COLOR = 0x101010;
 const AMBIENT_LIGHT_COLOR = 0xffffff;
-const AMBIENT_LIGHT_INTENSITY = 2;
+const AMBIENT_LIGHT_INTENSITY = 0.5;
 const TONE_MAPPING_EXPOSURE = 1;
 
 // --- Kamera ---
 const CAMERA_FOV = 50;
 const CAMERA_NEAR = 0.1;
 const CAMERA_FAR = 100;
-const CAMERA_POS = new THREE.Vector3(0, 1.6, -1);
+const CAMERA_POS = new THREE.Vector3(0, 1.6, 1);
 
 // --- Renderer ---
-const MAX_PIXEL_RATIO = 1.5;
+const MAX_PIXEL_RATIO = 2;
 
 // --- Kontrol ---
-const TARGET_POS = new THREE.Vector3(0, 1.6, -1);
+const TARGET_POS = new THREE.Vector3(0, 1.6, 1);
 const CONTROLS_ROTATE_SPEED = -0.1;
 const CONTROLS_MIN_DIST = 0.1;
 const CONTROLS_MAX_DIST = 0.5;
@@ -65,23 +65,27 @@ export const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: "high-performance",
 });
-renderer.physicallyCorrectLights = false;
-renderer.gammaFactor = 2.2; // Standard gamma
 renderer.localClippingEnabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
 const getVRPixelRatio = () => {
+  // --- PERBAIKAN: Jangan paksa 1.0 di VR ---
+  // Opsi 1: Biarkan WebXR yang menentukan (lebih disarankan)
+  // return renderer.xr.getSession()?.renderState?.outputScalingFactor || 1.0;
+  // Opsi 2: Set ke nilai > 1 untuk supersampling (misal 1.2 atau 1.5), HATI-HATI PERFORMA!
+  // return 1.2;
+  // Opsi 3: Set default 1.0 tapi HAPUS setFramebufferScaleFactor(1.0)
   return isVRMode() ? 1.0 : Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
 };
 renderer.setPixelRatio(getVRPixelRatio());
 
 // Pengaturan Encoding & Tone Mapping
 renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.LinearToneMapping; // Lebih aman untuk mobile VR
+renderer.toneMapping = THREE.ACESFilmicToneMapping; // Lebih aman untuk mobile VR
 renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
 
 renderer.xr.addEventListener("sessionstart", () => {
   // Reset tone mapping untuk VR
-  renderer.toneMapping = THREE.LinearToneMapping;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
   console.log("VR Session started with optimized settings");
 });

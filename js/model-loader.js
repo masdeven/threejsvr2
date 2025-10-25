@@ -10,7 +10,7 @@ const TABLE_HEIGHT = 1.2;
 const ROTATION_SPEED_VR = 2.0;
 const ROTATION_SPEED_MOUSE = 0.005;
 const ROTATION_SPEED_AUTO = 0.005;
-const ANIMATION_SPEED = 4;
+const ANIMATION_SPEED = 10;
 const MODEL_SCALE_FACTOR = 0.7; // Skala target untuk model (0.7 / maxDim)
 
 // ===============================================================
@@ -169,7 +169,7 @@ export function startModelAnimation(
 
   if (isAnimatingOut) {
     // Target Y di bawah meja
-    transitionState.targetY = TABLE_HEIGHT - 1.5;
+    transitionState.targetY = TABLE_HEIGHT - 1;
   } else {
     // Target Y di atas meja (posisi final)
     transitionState.targetY = currentModel.userData.finalY;
