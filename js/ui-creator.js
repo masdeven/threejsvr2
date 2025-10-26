@@ -47,7 +47,7 @@ let avatarDropAnimation = {
   startY: 0,
   targetY: 0,
   currentY: 0,
-  speed: 2,
+  speed: 8,
   onComplete: null,
 };
 let avatarFlyUpAnimation = {
@@ -55,7 +55,7 @@ let avatarFlyUpAnimation = {
   startY: 0,
   targetY: 0,
   currentY: 0,
-  speed: 3, // Lebih cepat untuk "exit"
+  speed: 8, // Lebih cepat untuk "exit"
   onComplete: null,
 };
 
@@ -159,6 +159,7 @@ function setupAvatar(model, scale, position, shouldAnimate = false) {
   model.position.copy(position);
   model.rotation.y = 0.4;
   model.userData.initialY = position.y;
+  model.userData.hoverStartTime = -1;
   viewerUIGroup.add(model);
 
   if (shouldAnimate) {
@@ -166,7 +167,7 @@ function setupAvatar(model, scale, position, shouldAnimate = false) {
 
     // Koreksi: Bagi dropHeight dengan skala y dari avatar
     // untuk mendapatkan ketinggian yang benar di local space.
-    model.position.y = position.y + dropHeight / scale.y;
+    model.position.y = position.y + dropHeight;
 
     avatarDropAnimation.isAnimating = true;
     avatarDropAnimation.startY = model.position.y;
@@ -218,9 +219,10 @@ export function updateAvatarDropAnimation(deltaTime) {
   currentAvatar.position.y = avatarDropAnimation.currentY;
 
   // Cek jika sudah sampai
-  if (Math.abs(currentY - targetY) < 0.01) {
+  if (Math.abs(currentY - targetY) < 0.001) {
     currentAvatar.position.y = targetY;
     avatarDropAnimation.isAnimating = false;
+    currentAvatar.userData.hoverStartTime = -1;
 
     // Panggil callback jika ada
     if (avatarDropAnimation.onComplete) {
@@ -252,7 +254,7 @@ export function updateAvatarFlyUpAnimation(deltaTime) {
   currentAvatar.position.y = avatarFlyUpAnimation.currentY;
 
   // Cek jika sudah sampai
-  if (Math.abs(currentY - targetY) < 0.05) {
+  if (Math.abs(currentY - targetY) < 0.001) {
     currentAvatar.position.y = targetY;
     avatarFlyUpAnimation.isAnimating = false;
 
@@ -278,6 +280,8 @@ export function startAvatarFlyUpAnimation(onCompleteCallback) {
     if (onCompleteCallback) onCompleteCallback();
     return;
   }
+
+  currentAvatar.userData.hoverStartTime = -1;
 
   const flyUpHeight = 2; // Seberapa tinggi avatar terbang
   const startY = currentAvatar.position.y;
@@ -332,14 +336,25 @@ export function updateAvatar(deltaTime, elapsedTime) {
   if (
     currentAvatar &&
     currentAvatar.userData.initialY !== undefined &&
-    !avatarDropAnimation.isAnimating && // Hanya jika tidak sedang jatuh
-    !avatarFlyUpAnimation.isAnimating // Hanya jika tidak sedang jatuh
+    !avatarDropAnimation.isAnimating &&
+    !avatarFlyUpAnimation.isAnimating
   ) {
+    // === AWAL PERBAIKAN HOVER ===
+    // Cek jika hover timer perlu di-reset (di-set -1 oleh drop/fly anim)
+    if (currentAvatar.userData.hoverStartTime === -1) {
+      currentAvatar.userData.hoverStartTime = elapsedTime;
+    }
+
+    // Gunakan waktu lokal untuk hover, bukan elapsedTime global
+    const hoverTime = elapsedTime - currentAvatar.userData.hoverStartTime;
+    // === AKHIR PERBAIKAN HOVER ===
+
     const hoverAmplitude = 0.04;
     const hoverSpeed = 1.5;
+
     currentAvatar.position.y =
       currentAvatar.userData.initialY +
-      Math.sin(elapsedTime * hoverSpeed) * hoverAmplitude;
+      Math.sin(hoverTime * hoverSpeed) * hoverAmplitude; // <-- Gunakan hoverTime
   }
 }
 
@@ -707,7 +722,7 @@ function createSubtitleLabel(text, width, height) {
  */
 function createBodyText(text, width, options = {}) {
   const {
-    baseFontSize: logicalBaseFontSize = 24,
+    baseFontSize: logicalBaseFontSize = 72,
     vrFontScale = 1.1,
     lineHeightScale = 1.2,
   } = options;

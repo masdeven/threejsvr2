@@ -708,6 +708,7 @@ function handleInteraction(action) {
       navButtons.forEach((btn) => setButtonEnabled(btn, false, "..."));
 
       const onAnimationMidpointNext = () => {
+        unloadComponentModel();
         if (currentComponentIndex === highestComponentUnlocked) {
           changeState(AppState.MINI_QUIZ);
           isChangingComponent = false;
@@ -758,6 +759,7 @@ function handleInteraction(action) {
       navButtons.forEach((btn) => setButtonEnabled(btn, false, "..."));
 
       const onAnimationMidpointPrev = () => {
+        unloadComponentModel();
         if (currentComponentIndex > 0) {
           currentComponentIndex--;
           changeState(AppState.VIEWER, { isTransitioning: true });

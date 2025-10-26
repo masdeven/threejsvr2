@@ -195,7 +195,7 @@ export function updateModelTransition(deltaTime) {
   );
 
   // Cek jika sudah dekat dengan target
-  if (Math.abs(currentY - targetY) < 0.01) {
+  if (Math.abs(currentY - targetY) < 0.001) {
     currentModel.position.y = targetY; // Snap ke posisi final
 
     if (transitionState.isAnimating === "out" && transitionState.onMidpoint) {
@@ -278,7 +278,11 @@ export function rotateModelWithVR(deltaX, deltaY) {
  * Merotasi model secara otomatis (dipanggil di render loop).
  */
 export function updateModelRotation() {
-  if (currentModel && !isDragging) {
+  if (
+    currentModel &&
+    !isDragging &&
+    !transitionState.isAnimating // <-- TAMBAHKAN KONDISI INI
+  ) {
     currentModel.rotation.y += ROTATION_SPEED_AUTO;
   }
 }
