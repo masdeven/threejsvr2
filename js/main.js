@@ -434,7 +434,11 @@ function changeState(newState, options = {}) {
   activeCreditsPanel = null;
   active_guide_panel = null;
 
-  if (currentState === newState && newState !== AppState.VIEWER) {
+  if (
+    currentState === newState &&
+    newState !== AppState.VIEWER &&
+    !options.isTextUpdateOnly
+  ) {
     return;
   }
 
@@ -482,7 +486,7 @@ function changeState(newState, options = {}) {
   currentState = newState;
 
   // Setup state baru (jika perlu)
-  if (newState === AppState.AVATAR_GREETING) {
+  if (newState === AppState.AVATAR_GREETING && !options.isTextUpdateOnly) {
     currentGreetingIndex = 0;
   }
 
@@ -583,8 +587,9 @@ function handleInteraction(action) {
       startVRSession(onVRSessionEnded, onVRSessionStarted);
       break;
     case "next_greeting":
+      stopAudio();
       currentGreetingIndex++;
-      refreshUI();
+      changeState(AppState.AVATAR_GREETING, { isTextUpdateOnly: true });
       break;
     case "continue_to_landing":
       stopAudio();
@@ -900,13 +905,13 @@ function changeDescription(direction) {
  * @param {object} options - Opsi tambahan untuk diteruskan ke `create...` functions.
  */
 function refreshUI(options = {}) {
-  clearUI();
+  clearUI(options);
   switch (currentState) {
     case AppState.MODE_SELECTION:
       createModeSelectionPage();
       break;
     case AppState.AVATAR_GREETING:
-      createAvatarGreetingPage(playerName, currentGreetingIndex);
+      createAvatarGreetingPage(playerName, currentGreetingIndex, options);
       break;
     case AppState.LANDING:
       createLandingPage(playerName, options);

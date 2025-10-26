@@ -38,6 +38,7 @@ scene.add(debugGroup);
 const textureLoader = new TextureLoader();
 
 // --- State Avatar ---
+let isAvatarInitialized = false;
 let avatarMixer;
 let currentAvatar = null;
 let avatarModel = null;
@@ -1082,7 +1083,13 @@ export function createModeSelectionPage() {
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
 
-export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
+export function createAvatarGreetingPage(
+  playerName,
+  greetingIndex = 0,
+  options = {}
+) {
+  const isTextUpdateOnly = options.isTextUpdateOnly || false; // Perbaikan: Cek opsi
+
   // KONSISTEN dengan halaman lainnya
   const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
@@ -1100,7 +1107,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   const exitPadding = 0.055;
   const exitButton = createButton(
     "X",
-    "back_to_landing",
+    null,
     exitButtonSize,
     exitButtonSize,
     BTN_COLOR_SECONDARY,
@@ -1112,6 +1119,8 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
     0.02
   );
   exitButton.renderOrder = 2;
+  exitButton.visible = false;
+  exitButton.userData.isButton = false; // Perbaikan: Nonaktifkan klik saat tersembunyi
   viewerUIGroup.add(exitButton);
 
   // Data greeting
@@ -1133,48 +1142,62 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   );
   continueButton.position.set(0, -0.25, 0.01); // Lebih rendah untuk panel kecil
   continueButton.visible = false;
+  continueButton.userData.isButton = false; // Perbaikan: Nonaktifkan klik saat tersembunyi
   viewerUIGroup.add(continueButton);
 
-  // Setup Avatar (kiri atas, professional chatbot style)
-  if (avatarModel) {
+  // Callback setelah animasi drop selesai ATAU jika avatar sudah ada
+  const onAvatarReady = () => {
+    exitButton.visible = true;
+    exitButton.userData.action = "back_to_landing";
+    exitButton.userData.isButton = true; // Perbaikan: Aktifkan klik
+
+    // 1. Putar audio
+    if (window.playCurrentGreetingAudioCallback) {
+      window.playCurrentGreetingAudioCallback(); // Memanggil fungsi dari main.js
+    }
+
+    // 2. Tampilkan typing text (chatbot bubble style)
+    if (currentGreeting.text) {
+      const textWidth = panelWidth * 0.88;
+      const welcomeLabel = createTypingText(
+        currentGreeting.text,
+        textWidth,
+        {
+          baseFontSize: 40,
+          vrFontScale: 1.1,
+          lineHeightScale: 1.3, // Sedikit lebih lebar untuk readability
+        },
+        () => {
+          // 3. Tampilkan tombol setelah typing selesai
+          continueButton.visible = true;
+          continueButton.userData.isButton = true; // Perbaikan: Aktifkan klik
+          continueButton.userData.action = isLastGreeting
+            ? "continue_to_landing"
+            : "next_greeting";
+        }
+      );
+      welcomeLabel.position.set(0, 0.05, 0.01); // Adjusted untuk panel kecil
+      viewerUIGroup.add(welcomeLabel);
+    }
+  };
+
+  // === PERBAIKAN UTAMA: Logika Setup Avatar ===
+  if (isTextUpdateOnly && currentAvatar) {
+    // Avatar sudah ada dari state sebelumnya.
+    // clearUI() sudah menghentikan animasi teks & stopAudio() sudah menghentikan audio.
+    // Kita hanya perlu memanggil onAvatarReady untuk memulai teks & audio BARU.
+    onAvatarReady();
+  } else if (avatarModel) {
+    // Ini adalah pemuatan pertama kali (bukan update teks).
+    // Buat instance avatar baru.
     const avatarInstance = avatarModel.scene.clone();
     const avatarFinalPosition = new THREE.Vector3(
       -panelWidth / 2 - 0.5,
       panelHeight / 2 - 0.05,
       0.05
     );
+    // Animasi drop HANYA jika ini greeting pertama.
     const shouldAnimateDrop = greetingIndex === 0;
-
-    // Callback setelah animasi drop selesai
-    const onAvatarReady = () => {
-      // 1. Putar audio
-      if (window.playCurrentGreetingAudioCallback) {
-        window.playCurrentGreetingAudioCallback();
-      }
-
-      // 2. Tampilkan typing text (chatbot bubble style)
-      if (currentGreeting.text) {
-        const textWidth = panelWidth * 0.88;
-        const welcomeLabel = createTypingText(
-          currentGreeting.text,
-          textWidth,
-          {
-            baseFontSize: 40,
-            vrFontScale: 1.1,
-            lineHeightScale: 1.3, // Sedikit lebih lebar untuk readability
-          },
-          () => {
-            // 3. Tampilkan tombol setelah typing selesai
-            continueButton.visible = true;
-            continueButton.userData.action = isLastGreeting
-              ? "continue_to_landing"
-              : "next_greeting";
-          }
-        );
-        welcomeLabel.position.set(0, 0.05, 0.01); // Adjusted untuk panel kecil
-        viewerUIGroup.add(welcomeLabel);
-      }
-    };
 
     if (shouldAnimateDrop) {
       avatarDropAnimation.onComplete = onAvatarReady;
@@ -1182,15 +1205,17 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 
     setupAvatar(
       avatarInstance,
-      new THREE.Vector3(0.2, 0.2, 0.2),
+      new THREE.Vector3(0.2, 0.2, 0.2), // Skala dari file Anda
       avatarFinalPosition,
       shouldAnimateDrop
     );
 
     if (!shouldAnimateDrop) {
+      // Jika tidak ada animasi drop (misal: refresh), panggil onAvatarReady
       onAvatarReady();
     }
   }
+  // === AKHIR PERBAIKAN ===
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
@@ -1219,7 +1244,7 @@ function createWrappingTitleLabel(
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", {
     alpha: true,
-    willReadFrequently: false, // Performance optimization
+    willReadFrequently: false, // Performance optimizations
   });
 
   // Enable high-quality text rendering
@@ -1358,7 +1383,7 @@ export function createLandingPage(playerName, options = {}) {
       welcomeText,
       titleMaxWidth,
       titleMaxHeight,
-      40, // baseFontSize disesuaikan (dari 28 ke 11)
+      42, // baseFontSize disesuaikan (dari 28 ke 11)
       1,
       1.2,
       TEXT_COLOR
@@ -2564,14 +2589,15 @@ export function createCreditsScreen(creditPages, pageIndex) {
  * Membersihkan semua elemen UI dari `uiGroup` dan `viewerUIGroup`.
  * Menghentikan animasi dan membersihkan memori (dispose).
  */
-export function clearUI() {
+export function clearUI(options = {}) {
+  const keepAvatar = options.isTextUpdateOnly || false;
   // Hentikan animasi yang mungkin berjalan
   clearActiveTypingAnimation();
   stopAvatarDropAnimation();
   stopAvatarFlyUpAnimation();
 
   // Hentikan mixer avatar
-  if (avatarMixer) {
+  if (avatarMixer && !keepAvatar) {
     avatarMixer.stopAllAction();
     avatarMixer.uncacheRoot(avatarMixer.getRoot());
     avatarMixer = null;
@@ -2581,6 +2607,9 @@ export function clearUI() {
   [uiGroup, viewerUIGroup].forEach((group) => {
     for (let i = group.children.length - 1; i >= 0; i--) {
       const child = group.children[i];
+      if (keepAvatar && child === currentAvatar) {
+        continue;
+      }
       // Traverse untuk membersihkan material dan geometri
       child.traverse((object) => {
         if (object.isMesh) {
@@ -2603,7 +2632,10 @@ export function clearUI() {
   });
 
   // Reset avatar
-  currentAvatar = null;
+  if (!keepAvatar) {
+    // <-- TAMBAHKAN !keepAvatar
+    currentAvatar = null;
+  }
 }
 
 /**

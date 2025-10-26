@@ -64,7 +64,12 @@ body {
   align-items: center;
   text-align: center;
   z-index: 999;
-  background-color: var(--bg);
+  /* --- AWAL PERUBAHAN --- */
+  /* Gabungkan warna dan gambar */
+  background: var(--bg) url("../assets/images/bg.png") center/cover no-repeat; /* Warna dulu, lalu gambar */
+  /* Opsional: Gunakan blend mode untuk mencampur warna dan gambar */
+  /* background-blend-mode: multiply; */ /* atau screen, overlay, dll. Tergantung efek yang diinginkan */
+  /* --- AKHIR PERUBAHAN --- */
   transition: opacity 0.3s ease;
   padding: calc(var(--unit) * 3);
 }
