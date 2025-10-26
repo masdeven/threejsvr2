@@ -10,9 +10,9 @@ import { loader as gltfLoader } from "./model-loader.js";
 // ===============================================================
 
 // --- Warna & Cahaya ---
-const INITIAL_BG_COLOR = 0x101010;
+const INITIAL_BG_COLOR = 0xffffff;
 const AMBIENT_LIGHT_COLOR = 0xffffff;
-const AMBIENT_LIGHT_INTENSITY = 0.5;
+const AMBIENT_LIGHT_INTENSITY = 2;
 const TONE_MAPPING_EXPOSURE = 1;
 
 // --- Kamera ---
@@ -65,28 +65,18 @@ export const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: "high-performance",
 });
-renderer.localClippingEnabled = true;
+// renderer.localClippingEnabled = true;
+// renderer.xr.setReferenceSpaceType("local");
 renderer.setSize(window.innerWidth, window.innerHeight);
-const getVRPixelRatio = () => {
-  // --- PERBAIKAN: Jangan paksa 1.0 di VR ---
-  // Opsi 1: Biarkan WebXR yang menentukan (lebih disarankan)
-  // return renderer.xr.getSession()?.renderState?.outputScalingFactor || 1.0;
-  // Opsi 2: Set ke nilai > 1 untuk supersampling (misal 1.2 atau 1.5), HATI-HATI PERFORMA!
-  // return 1.2;
-  // Opsi 3: Set default 1.0 tapi HAPUS setFramebufferScaleFactor(1.0)
-  return isVRMode() ? 1.0 : Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO);
-};
-renderer.setPixelRatio(getVRPixelRatio());
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
 
 // Pengaturan Encoding & Tone Mapping
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; // Lebih aman untuk mobile VR
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.LinearToneMapping; // Lebih aman untuk mobile VR
 renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
 
 renderer.xr.addEventListener("sessionstart", () => {
   // Reset tone mapping untuk VR
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
   console.log("VR Session started with optimized settings");
 });
 
@@ -117,28 +107,28 @@ controls.update();
 // ===============================================================
 
 // Cahaya Ambient
-const ambientLight = new THREE.AmbientLight(
-  AMBIENT_LIGHT_COLOR,
-  AMBIENT_LIGHT_INTENSITY
+// const ambientLight = new THREE.AmbientLight(
+//   AMBIENT_LIGHT_COLOR,
+//   AMBIENT_LIGHT_INTENSITY
+// );
+// scene.add(ambientLight);
+
+const hemiLight = new THREE.HemisphereLight(
+  0xffffff, // Sky color: putih murni
+  0xaaaaaa, // Ground color: abu-abu terang
+  2 // Intensity: 0.8 (BUKAN 2!)
 );
-scene.add(ambientLight);
+scene.add(hemiLight);
 
 // Environment Map (HDR)
-const pmremGenerator = new THREE.PMREMGenerator(renderer);
-pmremGenerator.compileEquirectangularShader();
-
-// GANTI environment map loading:
+// Environment Map (HDR)
 new RGBELoader(loadingManager)
   .setPath(ENV_MAP_PATH)
   .load(ENV_MAP_FILE, function (texture) {
-    const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-    pmremGenerator.dispose();
+    texture.mapping = THREE.EquirectangularReflectionMapping;
 
-    // Batasi intensity environment map
-    envMap.intensity = 0.5; // Turunkan dari default 1.0
-
-    scene.environment = envMap;
-    scene.background = envMap;
+    // ← PENTING! Set scene.environment
+    scene.environment = texture;
   });
 
 // ===============================================================
@@ -152,6 +142,7 @@ window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
 });
 
 // ===============================================================

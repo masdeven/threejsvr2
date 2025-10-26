@@ -13,7 +13,7 @@ import { TextureLoader } from "three";
 // --- Font & Warna ---
 export const FONT = "bold 32px Arial, sans-serif";
 const LOGICAL_RESOLUTION = 1024; // ↑ Increased from 768
-const logicalBaseFontSize = 32; // ↑ Increased from 24
+const logicalBaseFontSize = 40; // ↑ Increased from 24
 const BG_COLOR = "#000000ff";
 const BTN_COLOR_PRIMARY = "#00000088";
 const BTN_COLOR_SECONDARY = "#4b4b4b8a";
@@ -46,7 +46,15 @@ let avatarDropAnimation = {
   startY: 0,
   targetY: 0,
   currentY: 0,
-  speed: 3.5,
+  speed: 2,
+  onComplete: null,
+};
+let avatarFlyUpAnimation = {
+  isAnimating: false,
+  startY: 0,
+  targetY: 0,
+  currentY: 0,
+  speed: 3, // Lebih cepat untuk "exit"
   onComplete: null,
 };
 
@@ -153,9 +161,12 @@ function setupAvatar(model, scale, position, shouldAnimate = false) {
   viewerUIGroup.add(model);
 
   if (shouldAnimate) {
-    // Set posisi awal lebih tinggi untuk efek jatuh
-    const dropHeight = 2.5;
-    model.position.y = position.y + dropHeight;
+    const dropHeight = 3; // Sekarang nilai ini akan berpengaruh
+
+    // Koreksi: Bagi dropHeight dengan skala y dari avatar
+    // untuk mendapatkan ketinggian yang benar di local space.
+    model.position.y = position.y + dropHeight / scale.y;
+
     avatarDropAnimation.isAnimating = true;
     avatarDropAnimation.startY = model.position.y;
     avatarDropAnimation.targetY = position.y;
@@ -218,6 +229,78 @@ export function updateAvatarDropAnimation(deltaTime) {
   }
 }
 
+// ... (Tepat setelah fungsi updateAvatarDropAnimation)
+
+/**
+ * Mengupdate animasi terbang ke atas avatar (dipanggil di render loop).
+ * @param {number} deltaTime - Waktu delta.
+ */
+export function updateAvatarFlyUpAnimation(deltaTime) {
+  if (!avatarFlyUpAnimation.isAnimating || !currentAvatar) return;
+
+  const currentY = avatarFlyUpAnimation.currentY;
+  const targetY = avatarFlyUpAnimation.targetY;
+  const speed = avatarFlyUpAnimation.speed;
+
+  // Lerp ke target
+  avatarFlyUpAnimation.currentY = THREE.MathUtils.lerp(
+    currentY,
+    targetY,
+    speed * deltaTime
+  );
+  currentAvatar.position.y = avatarFlyUpAnimation.currentY;
+
+  // Cek jika sudah sampai
+  if (Math.abs(currentY - targetY) < 0.05) {
+    currentAvatar.position.y = targetY;
+    avatarFlyUpAnimation.isAnimating = false;
+
+    // Panggil callback jika ada
+    if (avatarFlyUpAnimation.onComplete) {
+      avatarFlyUpAnimation.onComplete();
+      avatarFlyUpAnimation.onComplete = null;
+    }
+  }
+}
+
+/**
+ * Memulai animasi avatar terbang ke atas sebelum pindah state.
+ * @param {Function} onCompleteCallback - Fungsi yang dipanggil setelah animasi selesai.
+ */
+export function startAvatarFlyUpAnimation(onCompleteCallback) {
+  if (
+    !currentAvatar ||
+    avatarFlyUpAnimation.isAnimating ||
+    avatarDropAnimation.isAnimating
+  ) {
+    // Jika tidak ada avatar atau sedang animasi lain, langsung jalankan callback
+    if (onCompleteCallback) onCompleteCallback();
+    return;
+  }
+
+  const flyUpHeight = 2; // Seberapa tinggi avatar terbang
+  const startY = currentAvatar.position.y;
+  // Ambil initialY (posisi diam) dan tambahkan tinggi terbang
+  const targetY = (currentAvatar.userData.initialY || startY) + flyUpHeight;
+
+  avatarFlyUpAnimation.isAnimating = true;
+  avatarFlyUpAnimation.startY = startY;
+  avatarFlyUpAnimation.targetY = targetY;
+  avatarFlyUpAnimation.currentY = startY;
+  avatarFlyUpAnimation.onComplete = onCompleteCallback;
+}
+
+/**
+ * Menghentikan animasi terbang avatar secara paksa.
+ */
+export function stopAvatarFlyUpAnimation() {
+  if (avatarFlyUpAnimation.isAnimating) {
+    avatarFlyUpAnimation.isAnimating = false;
+    avatarFlyUpAnimation.onComplete = null; // Hapus callback
+    console.log("✓ Avatar fly-up animation stopped");
+  }
+}
+
 /**
  * Mengatur visibilitas avatar.
  * @param {boolean} visible - True untuk terlihat, false untuk sembunyi.
@@ -237,6 +320,8 @@ export function updateAvatar(deltaTime, elapsedTime) {
   // 1. Update animasi jatuh
   updateAvatarDropAnimation(deltaTime);
 
+  updateAvatarFlyUpAnimation(deltaTime);
+
   // 2. Update animasi idle
   if (avatarMixer) {
     avatarMixer.update(deltaTime);
@@ -246,7 +331,8 @@ export function updateAvatar(deltaTime, elapsedTime) {
   if (
     currentAvatar &&
     currentAvatar.userData.initialY !== undefined &&
-    !avatarDropAnimation.isAnimating // Hanya jika tidak sedang jatuh
+    !avatarDropAnimation.isAnimating && // Hanya jika tidak sedang jatuh
+    !avatarFlyUpAnimation.isAnimating // Hanya jika tidak sedang jatuh
   ) {
     const hoverAmplitude = 0.04;
     const hoverSpeed = 1.5;
@@ -264,22 +350,22 @@ export function updateAvatar(deltaTime, elapsedTime) {
  * Mendapatkan resolusi canvas target yang tinggi dan konsisten.
  * @returns {number} - Resolusi (mis: 1536).
  */
+// ✅ BENAR: VR butuh resolution LEBIH TINGGI karena pixel density headset
 export function getResolution() {
   if (isVRMode()) {
-    return 1024; // Keep VR lower for performance
+    // VR headset butuh 2-4x lebih tinggi untuk text clarity
+    return 2048; // ↑ Increased from 1024
   } else {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const screenWidth = window.innerWidth;
-
     let baseResolution;
     if (screenWidth <= 1024) {
-      baseResolution = 1024; // ↑ Increased from 768
+      baseResolution = 1024;
     } else if (screenWidth <= 1440) {
-      baseResolution = 1536; // ↑ Increased from 768 (CRITICAL FIX)
+      baseResolution = 1536;
     } else {
-      baseResolution = 2048; // ↑ Increased from 1024
+      baseResolution = 2048;
     }
-
     return baseResolution * dpr;
   }
 }
@@ -357,11 +443,6 @@ function createUIPanel(width, height, radius, color = BG_COLOR, opacity = 0.7) {
   ctx.fill();
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -446,11 +527,6 @@ function createButton(
   ctx.fillText(text, canvas.width / 2, canvas.height / 2 + verticalOffset);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -494,8 +570,8 @@ function createTextPanel(descriptions, width, options = {}) {
   const finalFontSize = Math.round(
     isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
-  const lineHeight = Math.round(finalFontSize * 1.2);
-  const font = `800 ${finalFontSize}px Verdana, Geneva, sans-serif`;
+  const lineHeight = Math.round(finalFontSize * 1.1);
+  const font = `600 ${finalFontSize}px Arial, Geneva, sans-serif`;
   const padding = 12.5;
   const resolution = getResolution();
   ctx.font = font;
@@ -527,11 +603,6 @@ function createTextPanel(descriptions, width, options = {}) {
   });
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   // Atur tekstur untuk tiling vertikal (scrolling)
   texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -589,11 +660,6 @@ function createTitleLabel(text, width, height, color = TEXT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -613,7 +679,7 @@ function createSubtitleLabel(text, width, height) {
   canvas.width = width * resolution;
   canvas.height = height * resolution;
 
-  const vrFontScale = 1.2;
+  const vrFontScale = 1;
   const baseFontSize = height * resolution * 0.7;
   const fontSize = Math.floor(
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
@@ -626,11 +692,6 @@ function createSubtitleLabel(text, width, height) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -651,7 +712,17 @@ function createBodyText(text, width, options = {}) {
   } = options;
 
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    alpha: true,
+    willReadFrequently: false, // Performance optimization
+  });
+
+  // Enable high-quality text rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // Untuk text clarity maksimal
+  ctx.textRendering = "optimizeLegibility";
   const resolution = getResolution();
 
   const currentResolution = getResolution();
@@ -663,7 +734,7 @@ function createBodyText(text, width, options = {}) {
     isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
-  const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
+  const font = `700 ${finalFontSize}px Verdana, Geneva, sans-serif`;
   ctx.font = font;
 
   const padding = 7.5;
@@ -693,11 +764,6 @@ function createBodyText(text, width, options = {}) {
   );
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -715,7 +781,17 @@ function createBodyText(text, width, options = {}) {
  */
 function createScoreLabel(text, size, color = ACCENT_COLOR) {
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    alpha: true,
+    willReadFrequently: false, // Performance optimization
+  });
+
+  // Enable high-quality text rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // Untuk text clarity maksimal
+  ctx.textRendering = "optimizeLegibility";
   const resolution = getResolution();
 
   // Hitung font size dulu
@@ -739,11 +815,6 @@ function createScoreLabel(text, size, color = ACCENT_COLOR) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -788,7 +859,17 @@ function createTypingText(text, width, options = {}, onComplete) {
   } = options;
 
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    alpha: true,
+    willReadFrequently: false, // Performance optimization
+  });
+
+  // Enable high-quality text rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // Untuk text clarity maksimal
+  ctx.textRendering = "optimizeLegibility";
   const resolution = getResolution();
 
   const currentResolution = getResolution();
@@ -800,7 +881,7 @@ function createTypingText(text, width, options = {}, onComplete) {
     isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
-  const font = `${finalFontSize}px Verdana, Geneva, sans-serif`;
+  const font = `600 ${finalFontSize}px Arial, Geneva, sans-serif`;
   ctx.font = font;
 
   const padding = 7.5;
@@ -815,10 +896,6 @@ function createTypingText(text, width, options = {}, onComplete) {
   canvas.height = totalTextPixelHeight + padding;
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -1062,7 +1139,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
   if (avatarModel) {
     const avatarInstance = avatarModel.scene.clone();
     const avatarFinalPosition = new THREE.Vector3(
-      -panelWidth / 2 - 0.05,
+      -panelWidth / 2 - 0.5,
       panelHeight / 2 - 0.05,
       0.05
     );
@@ -1082,7 +1159,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
           currentGreeting.text,
           textWidth,
           {
-            baseFontSize: 28,
+            baseFontSize: 40,
             vrFontScale: 1.1,
             lineHeightScale: 1.3, // Sedikit lebih lebar untuk readability
           },
@@ -1105,7 +1182,7 @@ export function createAvatarGreetingPage(playerName, greetingIndex = 0) {
 
     setupAvatar(
       avatarInstance,
-      new THREE.Vector3(0.14, 0.14, 0.14),
+      new THREE.Vector3(0.2, 0.2, 0.2),
       avatarFinalPosition,
       shouldAnimateDrop
     );
@@ -1140,7 +1217,17 @@ function createWrappingTitleLabel(
   color = TEXT_COLOR
 ) {
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    alpha: true,
+    willReadFrequently: false, // Performance optimization
+  });
+
+  // Enable high-quality text rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // Untuk text clarity maksimal
+  ctx.textRendering = "optimizeLegibility";
   const resolution = getResolution();
 
   const logicalBaseFontSize = baseFontSize; // Ambil dari argumen (default 28)
@@ -1153,7 +1240,7 @@ function createWrappingTitleLabel(
     isVRMode() ? scaledBaseFontSize * vrFontScale : scaledBaseFontSize
   );
   const lineHeight = Math.round(finalFontSize * lineHeightScale);
-  const font = `bold ${finalFontSize}px Verdana, Geneva, sans-serif`;
+  const font = `600 ${finalFontSize}px Arial, Geneva, sans-serif`;
   ctx.font = font;
 
   const padding = 15;
@@ -1202,10 +1289,6 @@ function createWrappingTitleLabel(
     true
   );
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -1221,7 +1304,7 @@ function createWrappingTitleLabel(
 /**
  * Membuat UI untuk halaman landing (menu utama).
  */
-export function createLandingPage(playerName) {
+export function createLandingPage(playerName, options = {}) {
   const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
   const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
 
@@ -1275,14 +1358,38 @@ export function createLandingPage(playerName) {
       welcomeText,
       titleMaxWidth,
       titleMaxHeight,
-      28, // baseFontSize disesuaikan (dari 28 ke 11)
-      1.2,
+      40, // baseFontSize disesuaikan (dari 28 ke 11)
+      1,
       1.2,
       TEXT_COLOR
     );
 
     const welcomeTextX = -panelWidth / 2 + titlePaddingLeft + titleMaxWidth / 2;
     const welcomeTextY = contentCenterY;
+
+    if (avatarModel) {
+      const avatarInstance = avatarModel.scene.clone();
+
+      // Gunakan posisi yang sama dengan halaman greeting agar konsisten
+      const avatarFinalPosition = new THREE.Vector3(
+        -panelWidth / 2 - 0.5, // -0.7 - 0.5 = -1.2
+        panelHeight / 2 - 0.05, // 0.4 - 0.05 = 0.35
+        0.05
+      );
+
+      const skipDrop = options.skipAvatarDrop || false;
+
+      // Animasikan drop (true) KECUALI jika kita skip (datang dari greeting)
+      const shouldAnimateDrop = !skipDrop;
+      // === AKHIR MODIFIKASI LOGIKA ===
+
+      setupAvatar(
+        avatarInstance,
+        new THREE.Vector3(0.2, 0.2, 0.2), // Skala yang sama
+        avatarFinalPosition,
+        shouldAnimateDrop // <-- Menggunakan variabel dinamis baru
+      );
+    }
 
     welcomeLabel.position.set(welcomeTextX, welcomeTextY, 0.01);
     viewerUIGroup.add(welcomeLabel);
@@ -1330,25 +1437,6 @@ export function createLandingPage(playerName) {
     button.position.set(buttonX, buttonY, 0.01);
     viewerUIGroup.add(button);
   });
-
-  // Tombol Credits (i) - tetap di kanan bawah
-  // const creditButtonSize = 0.044;
-  // const creditButton = createButton(
-  //   "i",
-  //   "show_credits",
-  //   creditButtonSize,
-  //   creditButtonSize,
-  //   BTN_COLOR_SECONDARY,
-  //   "circle"
-  // );
-  // const padding = 0.044;
-  // creditButton.position.set(
-  //   panelWidth / 2 - padding,
-  //   -panelHeight / 2 + padding,
-  //   0.02
-  // );
-  // creditButton.renderOrder = 1;
-  // viewerUIGroup.add(creditButton);
 
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
@@ -1484,8 +1572,8 @@ export function createViewerPage(
   hasAttemptedQuiz = false
 ) {
   // Posisi UI di dunia (Konsisten dengan halaman lain)
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -1); // Disesuaikan sedikit ke kiri
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1); // Melihat sedikit ke atas
+  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, 0); // Disesuaikan sedikit ke kiri
+  const uiLookAtPosition = new THREE.Vector3(0.3, 1.6, 1.5); // Melihat sedikit ke atas
 
   clearViewerUI();
   navButtons = []; // Pastikan reset navButtons
@@ -1730,32 +1818,12 @@ export function createViewerPage(
 }
 
 /**
- * Membuat UI untuk halaman bantuan (placeholder).
- */
-export function createHelpPanel() {
-  const helpLabel = createTitleLabel("Bantuan", 3, 0.5);
-  helpLabel.position.set(0, 2.2, 0);
-  uiGroup.add(helpLabel);
-
-  const helpText = "Deskripsi bantuan";
-  const helpPanel = createTextPanel(helpText, 4);
-  const panelHeight = helpPanel.geometry.parameters.height;
-  helpPanel.position.set(0, 1.6, 0);
-  uiGroup.add(helpPanel);
-
-  const closeButton = createButton("Tutup", "close_help", 1, 0.4);
-  const closeButtonY = 1.6 - panelHeight / 2 - 0.4 / 2 - 0.2;
-  closeButton.position.set(0, closeButtonY, 0);
-  uiGroup.add(closeButton);
-}
-
-/**
  * Membuat UI untuk halaman kuis mini (per komponen).
  */
 export function createMiniQuizPage(component) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, 0);
+  const uiLookAtPosition = new THREE.Vector3(0.3, 1.6, 1.5);
 
   clearViewerUI();
   navButtons = [];
@@ -1841,8 +1909,8 @@ export function createMiniQuizPage(component) {
  */
 export function createMiniQuizResultPage(component, isCorrect) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, 0);
+  const uiLookAtPosition = new THREE.Vector3(0.3, 1.6, 1.5);
 
   clearViewerUI();
   navButtons = [];
@@ -2178,7 +2246,7 @@ export function createQuizReportScreen(
     const detailText = `You answered ${score} out of ${totalQuestions} questions correctly.`;
     const reportBodyWidth = 1.23;
     const reportBody = createBodyText(detailText, reportBodyWidth, {
-      baseFontSize: 24,
+      baseFontSize: 34,
     });
     reportBody.position.set(0, -0.25, 0.02);
     viewerUIGroup.add(reportBody);
@@ -2500,6 +2568,7 @@ export function clearUI() {
   // Hentikan animasi yang mungkin berjalan
   clearActiveTypingAnimation();
   stopAvatarDropAnimation();
+  stopAvatarFlyUpAnimation();
 
   // Hentikan mixer avatar
   if (avatarMixer) {
@@ -2601,7 +2670,17 @@ export function updateUIGroupPosition() {
  */
 export function createFpsLabel() {
   const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext("2d", {
+    alpha: true,
+    willReadFrequently: false, // Performance optimization
+  });
+
+  // Enable high-quality text rendering
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+
+  // Untuk text clarity maksimal
+  context.textRendering = "optimizeLegibility";
   const canvasWidth = 256;
   const canvasHeight = 128;
   canvas.width = canvasWidth;
@@ -2617,11 +2696,6 @@ export function createFpsLabel() {
   context.fillText("0", canvasWidth / 2, canvasHeight / 2);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearMipmapLinearFilter; // Changed
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true; // Changed to true
-  texture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // ADD THIS LINE
-  // Nonaktifkan mipmaps untuk UI
 
   const material = new THREE.MeshBasicMaterial({
     map: texture,

@@ -25,7 +25,6 @@ import {
   clearUI,
   clearViewerUI,
   updateUIGroupPosition,
-  createHelpPanel,
   createQuizScreen,
   createMiniQuizPage,
   createQuizResultScreen,
@@ -46,6 +45,7 @@ import {
   getActiveTypingAnimation,
   clearActiveTypingAnimation,
   stopAvatarDropAnimation,
+  startAvatarFlyUpAnimation,
   debugGroup,
   createFpsLabel,
   updateFpsLabel,
@@ -419,6 +419,16 @@ function render() {
  * @param {object} options - Opsi tambahan (mis: isTransitioning).
  */
 function changeState(newState, options = {}) {
+  if (newState === AppState.LANDING) {
+    if (currentState === AppState.AVATAR_GREETING) {
+      // Jika kita datang dari greeting, JANGAN animasikan drop.
+      options.skipAvatarDrop = true;
+    }
+    // Jika 'currentState' adalah hal lain (mis. MENU, REPORT),
+    // 'options.skipAvatarDrop' akan undefined (false),
+    // yang berarti avatar AKAN beranimasi. Ini sudah benar.
+  }
+
   // requestAnimationFrame(() => {
   activeTextPanel = null;
   activeCreditsPanel = null;
@@ -505,10 +515,6 @@ function changeState(newState, options = {}) {
       case AppState.LANDING:
       case AppState.MENU:
 
-      case AppState.VIEWER:
-      case AppState.MINI_QUIZ:
-      case AppState.MINI_QUIZ_RESULT:
-
       case AppState.HELP:
       case AppState.QUIZ:
       case AppState.QUIZ_RESULT:
@@ -521,11 +527,13 @@ function changeState(newState, options = {}) {
         camera.position.set(0, 1.6, 1.5);
         controls.target.set(0, 1.6, 1);
         break;
-
-      // controls.enabled = true;
-      // camera.position.set(0, 1.6, 1.5);
-      // controls.target.set(0, 1.6, 1);
-      // break;
+      case AppState.VIEWER:
+      case AppState.MINI_QUIZ:
+      case AppState.MINI_QUIZ_RESULT:
+        controls.enabled = true;
+        camera.position.set(0.3, 1.6, 1.5);
+        controls.target.set(0, 1.6, 1);
+        break;
     }
   }
   // });
@@ -583,7 +591,15 @@ function handleInteraction(action) {
       changeState(AppState.LANDING);
       break;
     case "start_learning":
-      changeState(AppState.MENU);
+      if (currentState === AppState.LANDING) {
+        // Panggil animasi, LALU ganti state
+        startAvatarFlyUpAnimation(() => {
+          changeState(AppState.MENU);
+        });
+      } else {
+        // Jika bukan dari landing page, langsung ganti state
+        changeState(AppState.MENU);
+      }
       break;
     case "help":
       changeState(AppState.HELP);
@@ -622,7 +638,15 @@ function handleInteraction(action) {
       changeState(AppState.QUIZ);
       break;
     case "show_quiz_report":
-      changeState(AppState.QUIZ_REPORT);
+      if (currentState === AppState.LANDING) {
+        // Panggil animasi, LALU ganti state
+        startAvatarFlyUpAnimation(() => {
+          changeState(AppState.QUIZ_REPORT);
+        });
+      } else {
+        // Jika bukan dari landing page, langsung ganti state
+        changeState(AppState.QUIZ_REPORT);
+      }
       break;
     case "answer_correct":
       wasAnswerCorrect = true;
@@ -746,10 +770,24 @@ function handleInteraction(action) {
       break;
     case "show_quick_guide":
       current_guide_index = 0;
-      changeState(AppState.QUICK_GUIDE);
-      setTimeout(() => {
-        active_guide_panel = scene.getObjectByProperty("isGuidePanel", true);
-      }, 0);
+      if (currentState === AppState.LANDING) {
+        // Panggil animasi, LALU ganti state
+        startAvatarFlyUpAnimation(() => {
+          changeState(AppState.QUICK_GUIDE);
+          setTimeout(() => {
+            active_guide_panel = scene.getObjectByProperty(
+              "isGuidePanel",
+              true
+            );
+          }, 0);
+        });
+      } else {
+        // Jika bukan dari landing page, langsung ganti state
+        changeState(AppState.QUICK_GUIDE);
+        setTimeout(() => {
+          active_guide_panel = scene.getObjectByProperty("isGuidePanel", true);
+        }, 0);
+      }
       break;
 
     case "prev_guide":
@@ -871,7 +909,7 @@ function refreshUI(options = {}) {
       createAvatarGreetingPage(playerName, currentGreetingIndex);
       break;
     case AppState.LANDING:
-      createLandingPage(playerName);
+      createLandingPage(playerName, options);
       break;
     case AppState.MENU:
       const allUnlocked = highestComponentUnlocked >= components.length - 1;
@@ -890,9 +928,6 @@ function refreshUI(options = {}) {
         components[currentComponentIndex],
         wasMiniQuizCorrect
       );
-      break;
-    case AppState.HELP:
-      createHelpPanel();
       break;
     case AppState.QUIZ:
       createQuizScreen(
