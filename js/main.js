@@ -95,7 +95,7 @@ import {
 // ===============================================================
 
 const STORAGE_KEY = "webxr_learning_progress";
-const CHANGE_DEBOUNCE_TIME = 500;
+const CHANGE_DEBOUNCE_TIME = 50;
 const LOADING_TIMEOUT = 60000; // 60 detik untuk koneksi lambat
 
 // ===============================================================
@@ -528,15 +528,15 @@ function changeState(newState, options = {}) {
       case AppState.COMPLETION:
       case AppState.CREDITS:
         controls.enabled = true;
-        camera.position.set(0, 1.6, 1.5);
-        controls.target.set(0, 1.6, 1);
+        camera.position.set(0, 1.6, 1);
+        controls.target.set(0, 1.6, 0.6);
         break;
       case AppState.VIEWER:
       case AppState.MINI_QUIZ:
       case AppState.MINI_QUIZ_RESULT:
         controls.enabled = true;
-        camera.position.set(0.3, 1.6, 1.5);
-        controls.target.set(0, 1.6, 1);
+        camera.position.set(0.2, 1.6, 0.9);
+        controls.target.set(0, 1.6, 0.6);
         break;
     }
   }
@@ -705,7 +705,7 @@ function handleInteraction(action) {
     case "next_component":
       if (isChangingComponent) return;
       isChangingComponent = true;
-      navButtons.forEach((btn) => setButtonEnabled(btn, false, "..."));
+      navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointNext = () => {
         unloadComponentModel();
@@ -756,7 +756,7 @@ function handleInteraction(action) {
     case "prev_component":
       if (isChangingComponent) return;
       isChangingComponent = true;
-      navButtons.forEach((btn) => setButtonEnabled(btn, false, "..."));
+      navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointPrev = () => {
         unloadComponentModel();
@@ -1002,7 +1002,7 @@ function showViewer(index, options = {}) {
   // 2. JIKA sedang dalam mode transisi, nonaktifkan SEMUA tombol interaktif.
   if (isTransitioning) {
     navButtons.forEach((btn) => {
-      setButtonEnabled(btn, false, "...");
+      setButtonEnabled(btn, false);
     });
   }
 

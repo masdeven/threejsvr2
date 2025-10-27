@@ -1,7 +1,13 @@
 import * as THREE from "three";
 import { scene, camera, renderer, controls } from "./scene-setup.js";
 import { getVRControllers, vrInteractionState } from "./vr-manager.js";
-import { uiGroup, viewerUIGroup, FONT, getResolution } from "./ui-creator.js";
+import {
+  uiGroup,
+  viewerUIGroup,
+  FONT,
+  getResolution,
+  LOGICAL_RESOLUTION,
+} from "./ui-creator.js";
 import {
   startDragging,
   stopDragging,
@@ -154,15 +160,28 @@ function redrawButton(button, color, text = null) {
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
   ctx.font = `${fontStyle} ${finalFontSize}px Verdana, Geneva, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+  ctx.textBaseline = "middle"; // Tetapkan baseline
 
   const verticalOffset = shape === "circle" ? finalFontSize * 0.05 : 0;
-  ctx.fillText(
-    text || data.text,
-    canvas.width / 2,
-    canvas.height / 2 + verticalOffset
-  );
+  const buttonText = text || data.text;
+
+  // === PERBAIKAN: Cek flag textAlign ===
+  if (data.textAlign === "left") {
+    // Jika ditandai "left" (dari createTopicButton)
+    ctx.textAlign = "left";
+    const logicalTextPadding = 20; // 20px padding logis
+    const textPadding =
+      logicalTextPadding * (buttonResolution / LOGICAL_RESOLUTION);
+    ctx.fillText(buttonText, textPadding, canvas.height / 2 + verticalOffset);
+  } else {
+    // Perilaku default (rata tengah, untuk createButton biasa)
+    ctx.textAlign = "center";
+    ctx.fillText(
+      buttonText,
+      canvas.width / 2,
+      canvas.height / 2 + verticalOffset
+    );
+  }
 
   button.material.map.needsUpdate = true;
 }

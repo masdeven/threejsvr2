@@ -319,6 +319,7 @@ export function convertModelMaterials(model) {
         map: oldMaterial.map,
         transparent: oldMaterial.transparent,
         opacity: oldMaterial.opacity,
+        depthWrite: true,
       });
 
       vrMaterial.userData.isConverted = true;

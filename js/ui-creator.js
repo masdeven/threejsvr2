@@ -12,7 +12,7 @@ import { TextureLoader } from "three";
 
 // --- Font & Warna ---
 export const FONT = "bold 32px Arial, sans-serif";
-const LOGICAL_RESOLUTION = 1024; // ↑ Increased from 768
+export const LOGICAL_RESOLUTION = 1024; // ↑ Increased from 768
 const logicalBaseFontSize = 40; // ↑ Increased from 24
 const BG_COLOR = "#000000ff";
 const BTN_COLOR_PRIMARY = "#00000088";
@@ -565,6 +565,94 @@ function createButton(
   return mesh;
 }
 
+function createTopicButton(
+  text,
+  action,
+  width = 1,
+  height = 0.25,
+  bgColor = BTN_COLOR_PRIMARY
+) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const buttonResolution = getResolution();
+
+  canvas.width = width * buttonResolution;
+  canvas.height = height * buttonResolution;
+
+  ctx.fillStyle = bgColor;
+  const padding = 0; // Padding 0 seperti di kode asli
+
+  // Gambar rounded rectangle (Sama seperti createButton)
+  const r = 10 * (buttonResolution / getResolution()); // Radius sudut tetap 10
+  const x = padding;
+  const y = padding;
+  const w = canvas.width - padding * 2;
+  const h = canvas.height - padding * 2;
+  const clampedR = Math.min(r, w / 2, h / 2);
+
+  ctx.beginPath();
+  ctx.moveTo(x + clampedR, y);
+  ctx.lineTo(x + w - clampedR, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + clampedR);
+  ctx.lineTo(x + w, y + h - clampedR);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - clampedR, y + h);
+  ctx.lineTo(x + clampedR, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - clampedR);
+  ctx.lineTo(x, y + clampedR);
+  ctx.quadraticCurveTo(x, y, x + clampedR, y);
+  ctx.closePath();
+  ctx.fill();
+
+  // --- PERUBAHAN UTAMA DI SINI ---
+  // Gambar Teks
+  ctx.fillStyle = TEXT_COLOR;
+  const vrFontScale = 1;
+  const resolution = getResolution();
+  const fontStyle = FONT.split(" ")[0]; // "bold"
+  let baseFontSize = height * resolution * 0.5; // Ukuran font sama
+  const finalFontSize = Math.floor(
+    isVRMode() ? baseFontSize * vrFontScale : baseFontSize
+  );
+  ctx.font = `${fontStyle} ${finalFontSize}px Verdana, Geneva, sans-serif`;
+
+  // 1. Ubah perataan teks
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+
+  // 2. Tentukan padding kiri untuk teks (disesuaikan dengan resolusi)
+  const logicalTextPadding = 20; // 20px padding logis
+  const textPadding =
+    logicalTextPadding * (buttonResolution / LOGICAL_RESOLUTION);
+
+  // 3. Gambar teks di posisi X yang baru
+  const verticalOffset = 0; // Vertikal tetap di tengah
+  ctx.fillText(text, textPadding, canvas.height / 2 + verticalOffset);
+  // --- AKHIR PERUBAHAN ---
+
+  const texture = new THREE.CanvasTexture(canvas);
+
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+  });
+
+  const geometry = new THREE.PlaneGeometry(width, height);
+  const mesh = new THREE.Mesh(geometry, material);
+
+  mesh.userData = {
+    isButton: true,
+    action: action,
+    text: text,
+    colors: { default: bgColor, hover: BTN_COLOR_HOVER },
+    canvasContext: ctx,
+    currentState: "default",
+    textAlign: "left",
+  };
+
+  return mesh;
+}
+
 /**
  * Membuat panel teks yang bisa di-scroll (untuk deskripsi, kuis, dll).
  */
@@ -991,7 +1079,7 @@ function createConfettiEffect() {
   const despawnY = 0;
   const spawnRangeY = 2;
   const spawnRangeX = 5;
-  const spawnRangeZ = 2;
+  const spawnRangeZ = 3;
 
   for (let i = 0; i < particleCount; i++) {
     const particleMaterial = new THREE.MeshBasicMaterial({
@@ -1486,114 +1574,145 @@ export function createLandingPage(playerName, options = {}) {
  * Membuat UI untuk halaman menu pemilihan topik (grid melengkung).
  */
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
-  const uiBasePosition = new THREE.Vector3(0, 1.4, -2.5);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 2);
-  const localCenterY = 0.5;
-  const localLookAtTarget = new THREE.Vector3(0, localCenterY, 5);
+  // 1. Setup Panel & Posisi Standar
+  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
+  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
 
-  // Pengaturan Grid Melengkung
-  const radius = 3.5;
-  const angleSpan = Math.PI * 0.8;
-  const itemsPerRow = 4;
-  const rowHeight = 0.5;
-  const startAngle = -angleSpan / 2;
-  const angleStep = angleSpan / (itemsPerRow - 1);
+  clearViewerUI(); // Bersihkan panel sebelumnya
 
-  // Judul
-  const titleY = localCenterY + 1;
-  const titleZ = -(radius - 2);
-  const titleBgWidth = 3;
-  const titleBgHeight = 0.45;
-  const titleBackground = createUIPanel(
-    titleBgWidth,
-    titleBgHeight,
-    0.05,
-    BG_COLOR,
-    0.9
+  const totalPanelWidth = 1.4;
+  const totalPanelHeight = 0.8;
+
+  const backgroundPanel = createUIPanel(
+    totalPanelWidth,
+    totalPanelHeight,
+    0.05
   );
-  titleBackground.position.set(0, titleY, titleZ);
-  titleBackground.lookAt(localLookAtTarget);
-  viewerUIGroup.add(titleBackground);
+  backgroundPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(backgroundPanel);
 
-  const titleLabel = createTitleLabel("Select Topic", 4.0, 0.35);
-  titleLabel.position.set(0, titleY, titleZ + 0.01);
-  titleLabel.lookAt(localLookAtTarget);
+  // 2. Judul Standar
+  const titleWidth = 1.17;
+  const titleHeight = 0.14;
+  const topPadding = 0.04;
+  const titleY = totalPanelHeight / 2 - titleHeight / 2 - topPadding; // Posisi Y standar (0.29)
+  const titleLabel = createTitleLabel("Select Topic", titleWidth, titleHeight);
+  titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
-  // Tombol Komponen
+  // 3. Tombol 'X' Standar (Keluar ke Landing)
+  const exitButtonSize = 0.073;
+  const exitPadding = 0.044;
+  const exitButton = createButton(
+    "X",
+    "back_to_landing", // Kembali ke menu utama
+    exitButtonSize,
+    exitButtonSize,
+    BTN_COLOR_SECONDARY,
+    "circle"
+  );
+  exitButton.position.set(
+    totalPanelWidth / 2 - exitPadding - exitButtonSize / 2,
+    totalPanelHeight / 2 - exitPadding - exitButtonSize / 2,
+    0.02
+  );
+  viewerUIGroup.add(exitButton);
+
+  // 4. Tombol "Final Test" Standar (Di Bawah)
+  const quizButtonWidth = 1.23; // Lebar penuh konten
+  const quizButtonHeight = 0.09; // Tinggi standar tombol nav
+  const bottomPadding = 0.04;
+  const quizButtonY =
+    -totalPanelHeight / 2 + quizButtonHeight / 2 + bottomPadding; // Posisi Y di bawah
+
+  // Logika dari fungsi lama untuk label & aksi tombol
+  let quizButtonLabel, quizButtonAction, quizButtonColor;
+  if (!allComponentsUnlocked) {
+    quizButtonLabel = "Final Test (Locked)";
+    quizButtonAction = "locked";
+    quizButtonColor = BTN_COLOR_SECONDARY;
+  } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
+    quizButtonLabel = "Start Final Test";
+    quizButtonAction = "show_quiz";
+    quizButtonColor = BTN_COLOR_PRIMARY;
+  } else {
+    // Jika sudah pernah, tombol ini menjadi "Lihat Laporan"
+    quizButtonLabel = "View Learning Report";
+    quizButtonAction = "show_quiz_report";
+    quizButtonColor = BTN_COLOR_PRIMARY;
+  }
+
+  const quizButton = createButton(
+    quizButtonLabel,
+    quizButtonAction,
+    quizButtonWidth,
+    quizButtonHeight,
+    quizButtonColor
+  );
+
+  if (quizButtonAction === "locked") {
+    quizButton.userData.colors = null; // Nonaktifkan hover jika terkunci
+  }
+  quizButton.position.set(0, quizButtonY, 0.01);
+  viewerUIGroup.add(quizButton);
+
+  // 5. Grid untuk 12 Tombol Topik (2 Kolom x 6 Baris)
+  const itemsPerRow = 2;
+  const numRows = Math.ceil(components.length / itemsPerRow); // 12 / 2 = 6
+  const buttonWidth = 0.6; // Lebar tombol (0.6 * 2 + padding = 1.23)
+  const buttonHeight = 0.07; // Tinggi tombol (dibuat lebih kecil agar 6 baris muat)
+  const paddingX = 0.03;
+  const paddingY = 0.01; // Jarak vertikal kecil
+
+  // Hitung total tinggi grid
+  const gridTotalHeight = numRows * buttonHeight + (numRows - 1) * paddingY; // (6 * 0.07) + (5 * 0.01) = 0.42 + 0.05 = 0.47
+
+  // Tentukan area vertikal untuk grid (di antara judul dan tombol bawah)
+  const gridTopBoundary = titleY - titleHeight / 2 - 0.02; // Batas atas (di bawah judul)
+  const gridBottomBoundary = quizButtonY + quizButtonHeight / 2 + 0.02; // Batas bawah (di atas tombol kuis)
+
+  // Hitung Y tengah dari area tersebut
+  const gridCenterY = (gridTopBoundary + gridBottomBoundary) / 2;
+  // Hitung Y untuk baris pertama
+  const gridTopY = gridCenterY + gridTotalHeight / 2 - buttonHeight / 2;
+
+  // Tentukan X untuk setiap kolom
+  const col1X = -(buttonWidth / 2) - paddingX / 2; // Kolom kiri
+  const col2X = buttonWidth / 2 + paddingX / 2; // Kolom kanan
+
   components.forEach((comp, index) => {
     const row = Math.floor(index / itemsPerRow);
     const col = index % itemsPerRow;
-    const angle = startAngle + col * angleStep;
     const isUnlocked = comp.unlocked;
 
     const buttonLabel = isUnlocked ? `${index + 1}. ${comp.label}` : "Locked";
     const buttonColor = isUnlocked ? BTN_COLOR_PRIMARY : BTN_COLOR_SECONDARY;
-    const button = createButton(
+
+    // =======================================================
+    // --- PERUBAHAN DI SINI ---
+    // Menggunakan createTopicButton agar teks rata kiri
+    const button = createTopicButton(
       buttonLabel,
       isUnlocked ? `select_${index}` : "locked",
-      1.8,
-      0.25,
+      buttonWidth,
+      buttonHeight,
       buttonColor
     );
+    // --- AKHIR PERUBAHAN ---
+    // =======================================================
+
     if (!isUnlocked) {
       button.userData.colors = null; // Nonaktifkan hover
     }
 
-    const x = radius * Math.sin(angle);
-    const z = -radius * Math.cos(angle);
-    const y = localCenterY + 0.4 - row * rowHeight;
+    const x = col === 0 ? col1X : col2X;
+    const y = gridTopY - row * (buttonHeight + paddingY);
 
-    button.position.set(x, y, z);
-    button.lookAt(localLookAtTarget);
+    button.position.set(x, y, 0.01);
     viewerUIGroup.add(button);
   });
 
-  // Tombol Navigasi Bawah
-  const actionButtonY = localCenterY - 1;
-  const actionZ = -(radius - 1.5);
-  const actionSpacingX = 2.4;
-
-  const exitButton = createButton(
-    "< Main Menu",
-    "back_to_landing",
-    2.2,
-    0.3,
-    BG_COLOR
-  );
-  exitButton.position.set(-actionSpacingX / 2, actionButtonY, actionZ);
-  exitButton.lookAt(localLookAtTarget);
-  viewerUIGroup.add(exitButton);
-
-  // Logika Tombol Kuis/Laporan
-  let quizButtonLabel, quizButtonAction, quizButtonColor;
-  if (!allComponentsUnlocked) {
-    quizButtonLabel = "Final Test > (Locked)";
-    quizButtonAction = "locked";
-    quizButtonColor = BTN_COLOR_SECONDARY;
-  } else if (allComponentsUnlocked && !quizHasBeenAttempted) {
-    quizButtonLabel = "Final Test >";
-    quizButtonAction = "show_quiz";
-    quizButtonColor = BTN_COLOR_PRIMARY;
-  } else {
-    quizButtonLabel = "Learning Report >";
-    quizButtonAction = "show_quiz_report";
-    quizButtonColor = BG_COLOR;
-  }
-  const quizButton = createButton(
-    quizButtonLabel,
-    quizButtonAction,
-    2.2,
-    0.3,
-    quizButtonColor
-  );
-  if (!allComponentsUnlocked) {
-    quizButton.userData.colors = null; // Nonaktifkan hover jika terkunci
-  }
-  quizButton.position.set(actionSpacingX / 2, actionButtonY, actionZ);
-  quizButton.lookAt(localLookAtTarget);
-  viewerUIGroup.add(quizButton);
-
+  // 6. Atur Posisi Grup UI
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
@@ -1612,8 +1731,8 @@ export function createViewerPage(
   hasAttemptedQuiz = false
 ) {
   // Posisi UI di dunia (Konsisten dengan halaman lain)
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, 0); // Disesuaikan sedikit ke kiri
-  const uiLookAtPosition = new THREE.Vector3(0.3, 1.6, 1.5); // Melihat sedikit ke atas
+  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -0.5); // Disesuaikan sedikit ke kiri
+  const uiLookAtPosition = new THREE.Vector3(1, 1.6, 1.5); // Melihat sedikit ke atas
 
   clearViewerUI();
   navButtons = []; // Pastikan reset navButtons
@@ -1862,9 +1981,8 @@ export function createViewerPage(
  */
 export function createMiniQuizPage(component) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, 0);
-  const uiLookAtPosition = new THREE.Vector3(0.3, 1.6, 1.5);
-
+  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -0.5); // Disesuaikan sedikit ke kiri
+  const uiLookAtPosition = new THREE.Vector3(1, 1.6, 1.5);
   clearViewerUI();
   navButtons = [];
 
@@ -1949,8 +2067,8 @@ export function createMiniQuizPage(component) {
  */
 export function createMiniQuizResultPage(component, isCorrect) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, 0);
-  const uiLookAtPosition = new THREE.Vector3(0.3, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -0.5); // Disesuaikan sedikit ke kiri
+  const uiLookAtPosition = new THREE.Vector3(1, 1.6, 1.5);
 
   clearViewerUI();
   navButtons = [];
