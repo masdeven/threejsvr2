@@ -527,16 +527,12 @@ function changeState(newState, options = {}) {
       case AppState.POST_QUIZ_CHOICE:
       case AppState.COMPLETION:
       case AppState.CREDITS:
-        controls.enabled = true;
-        camera.position.set(0, 1.6, 1);
-        controls.target.set(0, 1.6, 0.6);
-        break;
       case AppState.VIEWER:
       case AppState.MINI_QUIZ:
       case AppState.MINI_QUIZ_RESULT:
         controls.enabled = true;
-        camera.position.set(0.2, 1.6, 0.9);
-        controls.target.set(0, 1.6, 0.6);
+        camera.position.set(1, 1.6, 0.5);
+        controls.target.set(1, 1.6, 0);
         break;
     }
   }
@@ -581,7 +577,7 @@ function handleInteraction(action) {
   // Switch case untuk semua aksi
   switch (action) {
     case "start_browser":
-      changeState(AppState.AVATAR_GREETING);
+      changeState(AppState.POST_QUIZ_CHOICE);
       break;
     case "start_vr":
       startVRSession(onVRSessionEnded, onVRSessionStarted);

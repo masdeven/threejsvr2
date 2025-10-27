@@ -1143,8 +1143,8 @@ function createConfettiEffect() {
  */
 export function createModeSelectionPage() {
   clearUI();
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   // Panel utama
   const panelWidth = 1.4;
@@ -1194,8 +1194,8 @@ export function createAvatarGreetingPage(
   const isTextUpdateOnly = options.isTextUpdateOnly || false; // Perbaikan: Cek opsi
 
   // KONSISTEN dengan halaman lainnya
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   // Panel ukuran standard (chatbot style)
   const panelWidth = 1.4;
@@ -1433,8 +1433,8 @@ function createWrappingTitleLabel(
  * Membuat UI untuk halaman landing (menu utama).
  */
 export function createLandingPage(playerName, options = {}) {
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   // Panel utama
   const panelWidth = 1.4;
@@ -1575,8 +1575,8 @@ export function createLandingPage(playerName, options = {}) {
  */
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   // 1. Setup Panel & Posisi Standar
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   clearViewerUI(); // Bersihkan panel sebelumnya
 
@@ -1731,8 +1731,8 @@ export function createViewerPage(
   hasAttemptedQuiz = false
 ) {
   // Posisi UI di dunia (Konsisten dengan halaman lain)
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -0.5); // Disesuaikan sedikit ke kiri
-  const uiLookAtPosition = new THREE.Vector3(1, 1.6, 1.5); // Melihat sedikit ke atas
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   clearViewerUI();
   navButtons = []; // Pastikan reset navButtons
@@ -1981,8 +1981,8 @@ export function createViewerPage(
  */
 export function createMiniQuizPage(component) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -0.5); // Disesuaikan sedikit ke kiri
-  const uiLookAtPosition = new THREE.Vector3(1, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
   clearViewerUI();
   navButtons = [];
 
@@ -2067,8 +2067,8 @@ export function createMiniQuizPage(component) {
  */
 export function createMiniQuizResultPage(component, isCorrect) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(-1.2, 1.2, -0.5); // Disesuaikan sedikit ke kiri
-  const uiLookAtPosition = new THREE.Vector3(1, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   clearViewerUI();
   navButtons = [];
@@ -2156,8 +2156,8 @@ export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 
   // Posisi konsisten dengan Main Menu
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   // === Panel Utama (Ukuran standar Main Menu) ===
   const panelWidth = 1.4;
@@ -2250,8 +2250,8 @@ export function createQuizResultScreen(
   clearUI();
 
   // Posisi konsisten dengan Main Menu
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   // === Panel Utama ===
   const panelWidth = 1.4;
@@ -2346,8 +2346,8 @@ export function createQuizReportScreen(
 ) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   const panelWidth = 1.4;
   const panelHeight = 0.8;
@@ -2440,75 +2440,94 @@ export function createQuizReportScreen(
  */
 export function createCompletionScreen(playerName) {
   clearUI();
-  const uiBasePosition = new THREE.Vector3(0, 2, -4);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
 
-  const panelWidth = 4.0;
-  const panelHeight = 1.8;
-  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.1);
+  // 1. Gunakan Posisi & LookAt Standar
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+
+  // 2. Gunakan Ukuran Panel Standar
+  const panelWidth = 1.4;
+  const panelHeight = 0.8;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0.05); // Radius standar 0.05
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  // Judul
+  // 3. Judul (Layout Standar)
   let titleText = `Excellent, ${playerName}!`;
-  const titleLabel = createTitleLabel(titleText, 3.8, 0.4, "#FFD700"); // Emas
-  titleLabel.position.set(0, 0.5, 0.01);
+  const titleWidth = 1.17;
+  const titleHeight = 0.14;
+  const topPadding = 0.04;
+  const titleY = panelHeight / 2 - titleHeight / 2 - topPadding; // Posisi Y standar (0.29)
+  const titleLabel = createTitleLabel(
+    titleText,
+    titleWidth,
+    titleHeight,
+    "#FFD700"
+  ); // Tetap warna emas
+  titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
-  // Pesan
-  const messageText =
-    "You have successfully completed all the learning topics.\nNow it's time to test your knowledge in the Final Test!";
-  const messageBody = createBodyText(messageText, 3.5);
-  messageBody.position.set(0, 0, 0.01);
-  viewerUIGroup.add(messageBody);
-
-  // Tombol ke Kuis
+  // 4. Tombol (Layout Standar Bawah)
+  const buttonWidth = 1.23; // Lebar konten standar
+  const buttonHeight = 0.15; // Tinggi tombol besar (konsisten dgn post-quiz)
+  const bottomPadding = 0.04;
+  const buttonY = -panelHeight / 2 + buttonHeight / 2 + bottomPadding; // Posisi Y bawah (-0.285)
   const quizButton = createButton(
     "Take Final Test",
     "back_to_menu", // Aksi ini membawa ke menu, di mana tombol kuis sudah aktif
-    2.5,
-    0.3,
+    buttonWidth,
+    buttonHeight,
     BTN_COLOR_PRIMARY
   );
-  quizButton.position.set(0, -0.6, 0.01);
+  quizButton.position.set(0, buttonY, 0.01);
   viewerUIGroup.add(quizButton);
 
+  // 5. Pesan (Di tengah-tengah)
+  const messageText =
+    "You have successfully completed all the learning topics.\nNow it's time to test your knowledge in the Final Test!";
+  const messageBodyWidth = 1.23; // Lebar konten standar
+  const messageBody = createBodyText(messageText, messageBodyWidth, {
+    baseFontSize: 34, // Sesuaikan ukuran font jika perlu
+  });
+
+  // Kalkulasi Y (otomatis di antara title bawah dan button atas)
+  const titleBottomEdge = titleY - titleHeight / 2; // 0.22
+  const buttonTopEdge = buttonY + buttonHeight / 2; // -0.21
+  const messageCenterY = (titleBottomEdge + buttonTopEdge) / 2; // ~0.005 (center)
+  messageBody.position.set(0, messageCenterY, 0.01);
+  viewerUIGroup.add(messageBody);
+
+  // Atur posisi grup UI
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 
-  // Mulai efek confetti
+  // 6. Mulai efek confetti (Menggunakan createConfettiEffect yang sudah dimodifikasi)
   const confetti = createConfettiEffect();
   return confetti;
 }
 
 /**
  * Membuat UI untuk halaman pilihan setelah kuis akhir selesai.
- */
-/**
- * Membuat UI untuk halaman pilihan setelah kuis akhir selesai.
+ * (VERSI REFACTOR - Tombol Kiri/Kanan)
  */
 export function createPostQuizChoiceScreen() {
   clearUI();
   // Posisi UI di dunia (sesuai Mode Selection & Landing)
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
-  // Panel utama (ukuran baru)
+  // Panel utama (ukuran standar)
   const panelWidth = 1.4;
   const panelHeight = 0.8;
   const mainPanel = createUIPanel(panelWidth, panelHeight, 0.05);
   mainPanel.position.set(0, 0, 0);
   viewerUIGroup.add(mainPanel);
 
-  // --- PENYESUAIAN SKALA & POSISI ---
-
-  // Title (Menggunakan ukuran & padding standar dari Mode Selection/Landing)
-  const titleWidth = 1.17; // Standar lebar judul
-  const titleHeight = 0.14; // Standar tinggi judul
-  const topPadding = 0.04; // Standar padding atas
-  const titleY = panelHeight / 2 - titleHeight / 2 - topPadding; // Kalkulasi Y standar
-  // titleY = 0.8 / 2 - 0.14 / 2 - 0.04 = 0.4 - 0.07 - 0.04 = 0.29
-
+  // Title (Standar)
+  const titleWidth = 1.17;
+  const titleHeight = 0.14;
+  const topPadding = 0.04;
+  const titleY = panelHeight / 2 - titleHeight / 2 - topPadding; // 0.29
   const titleLabel = createTitleLabel(
     "Session Complete",
     titleWidth,
@@ -2517,53 +2536,64 @@ export function createPostQuizChoiceScreen() {
   titleLabel.position.set(0, titleY, 0.01);
   viewerUIGroup.add(titleLabel);
 
-  // const buttonWidth = 0.7;
-  // const buttonHeight = 0.15;
-  // const spacing = 0.18;
-  // const startY = -0.02;
-  // Buttons (Ukuran dan posisi disesuaikan agar center di bawah judul)
-  const buttonWidth = 1.23; // Lebar konsisten (seperti panel teks di Quick Guide)
-  const buttonHeight = 0.15; // Tinggi konsisten (seperti Landing Page)
-  const spacing = 0.18; // Jarak vertikal standar antar tombol
+  // --- PERUBAHAN TATA LETAK TOMBOL ---
 
-  // Kalkulasi posisi Y agar tombol center di area bawah judul
-  const spaceBelowTitle = titleY - titleHeight / 2; // = 0.29 - 0.07 = 0.22
-  const spaceAboveBottom = -panelHeight / 2; // = -0.4
-  const availableHeight = spaceBelowTitle - spaceAboveBottom; // = 0.22 - (-0.4) = 0.62
-  const buttonGroupCenterY = spaceAboveBottom + availableHeight / 2; // = -0.4 + 0.62 / 2 = -0.4 + 0.31 = -0.09
+  // Tentukan ukuran tombol baru (lebih kecil)
+  const buttonWidth = 0.58; // Lebar standar (seperti landing page)
+  const buttonHeight = 0.12; // Tinggi standar (seperti mini quiz)
+  const spacingX = 0.05; // Jarak horizontal antar tombol
 
-  const learnAgainButtonY = buttonGroupCenterY + spacing / 2; // = -0.09 + 0.16 / 2 = -0.01
-  const mainMenuButtonY = buttonGroupCenterY - spacing / 2; // = -0.09 - 0.16 / 2 = -0.17
+  // Tentukan posisi Y untuk baris tombol (konsisten dengan mini quiz)
+  const buttonY = -panelHeight / 2 + buttonHeight / 2 + 0.08; // Y = -0.26
 
-  const learnAgainButton = createButton(
-    "Repeat Lesson",
-    "back_to_menu",
-    buttonWidth,
-    buttonHeight,
-    BTN_COLOR_PRIMARY
-  );
-  learnAgainButton.position.set(0, learnAgainButtonY, 0.01);
-  viewerUIGroup.add(learnAgainButton);
+  // Tentukan posisi X
+  const leftButtonX = -(spacingX / 2) - buttonWidth / 2; // -0.025 - 0.29 = -0.315
+  const rightButtonX = spacingX / 2 + buttonWidth / 2; // 0.025 + 0.29 = 0.315
 
+  // Tombol Kiri (Kembali ke Menu Utama)
   const mainMenuButton = createButton(
     "Back to Menu",
     "back_to_landing",
     buttonWidth,
     buttonHeight,
-    BTN_COLOR_SECONDARY
+    BTN_COLOR_SECONDARY // Aksi sekunder
   );
-  mainMenuButton.position.set(0, mainMenuButtonY, 0.01);
+  mainMenuButton.position.set(leftButtonX, buttonY, 0.01);
   viewerUIGroup.add(mainMenuButton);
 
-  // --- AKHIR PENYESUAIAN ---
+  // Tombol Kanan (Ulangi Pelajaran)
+  const learnAgainButton = createButton(
+    "Repeat Lesson",
+    "back_to_menu",
+    buttonWidth,
+    buttonHeight,
+    BTN_COLOR_PRIMARY // Aksi utama
+  );
+  learnAgainButton.position.set(rightButtonX, buttonY, 0.01);
+  viewerUIGroup.add(learnAgainButton);
 
+  // --- AKHIR PERUBAHAN TATA LETAK TOMBOL ---
+
+  // Teks Body (Sekarang Punya Lebih Banyak Ruang)
+  const subtitleText =
+    "You have successfully completed all lessons and the final test.\nFeel free to review the topics again or head back to the main menu.";
+  const subtitleWidth = 1.23; // Lebar penuh
+  const subtitleLabel = createBodyText(subtitleText, subtitleWidth, {
+    baseFontSize: 32, // Ukuran font pas untuk area tengah
+  });
+
+  // Hitung posisi Y agar center di area kosong (antara judul dan tombol)
+  const titleBottomEdge = titleY - titleHeight / 2; // Y = 0.22
+  const buttonTopEdge = buttonY + buttonHeight / 2; // Y = -0.26 + 0.06 = -0.20
+  const subtitleY = (titleBottomEdge + buttonTopEdge) / 2; // Y = (0.22 - 0.20) / 2 = 0.01
+
+  subtitleLabel.position.set(0, subtitleY, 0.01); // Posisikan di tengah
+  viewerUIGroup.add(subtitleLabel);
+
+  // Atur posisi akhir
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
 }
-
-/**
- * Membuat UI untuk halaman credits (Tentang Aplikasi).
- */
 /**
  * Membuat UI untuk halaman credits (Tentang Aplikasi).
  */
@@ -2906,8 +2936,8 @@ export function updateFpsLabel(mesh, fps) {
   texture.needsUpdate = true;
 }
 export function createQuickGuideScreen(guidePages, pageIndex) {
-  const uiBasePosition = new THREE.Vector3(0, 1.2, -1);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.6, 1.5);
+  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
+  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
 
   clearViewerUI();
 
