@@ -19,7 +19,10 @@ const MODEL_SCALE_FACTOR = 0.7; // Skala target untuk model (0.7 / maxDim)
 
 let currentModel = null;
 let activeLoad = null; // Catatan: Variabel ini dideklarasikan tapi tidak pernah digunakan di kode asli.
-export let isDragging = false;
+export let isUserInteracting = false; // Ganti nama dari isDragging
+export function setUserInteracting(state) {
+  isUserInteracting = state;
+}
 let previousMousePosition = { x: 0, y: 0 };
 let currentAbort = null;
 
@@ -229,7 +232,7 @@ export function updateModelTransition(deltaTime) {
  */
 export function startDragging(event) {
   if (!currentModel) return;
-  isDragging = true;
+  isUserInteracting = true;
   previousMousePosition = {
     x: event.clientX,
     y: event.clientY,
@@ -240,7 +243,7 @@ export function startDragging(event) {
  * Menghentikan mode drag model (dipanggil oleh interaction-manager).
  */
 export function stopDragging() {
-  isDragging = false;
+  isUserInteracting = false;
 }
 
 /**
@@ -248,7 +251,7 @@ export function stopDragging() {
  * @param {PointerEvent} event - Event pointer.
  */
 export function dragModel(event) {
-  if (!isDragging || !currentModel) return;
+  if (!isUserInteracting || !currentModel) return;
 
   const deltaX = event.clientX - previousMousePosition.x;
   const deltaY = event.clientY - previousMousePosition.y;
@@ -280,7 +283,7 @@ export function rotateModelWithVR(deltaX, deltaY) {
 export function updateModelRotation() {
   if (
     currentModel &&
-    !isDragging &&
+    !isUserInteracting &&
     !transitionState.isAnimating // <-- TAMBAHKAN KONDISI INI
   ) {
     currentModel.rotation.y += ROTATION_SPEED_AUTO;

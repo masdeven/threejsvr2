@@ -60,7 +60,7 @@ import {
   updateModelRotation,
   setupDRACOLoader,
   setupKTX2Loader,
-  isDragging,
+  isUserInteracting,
   modelCache,
   startModelAnimation,
   updateModelTransition,
@@ -512,7 +512,7 @@ function changeState(newState, options = {}) {
   refreshUI(options);
 
   // Reset posisi kamera jika tidak sedang drag/transisi
-  if (!isDragging && !isTransitioningWithinViewer) {
+  if (!isUserInteracting && !isTransitioningWithinViewer) {
     switch (newState) {
       case AppState.MODE_SELECTION:
       case AppState.AVATAR_GREETING:

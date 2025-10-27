@@ -14,6 +14,7 @@ import {
   dragModel,
   getCurrentModel,
   rotateModelWithVR,
+  setUserInteracting,
 } from "./model-loader.js";
 import { isVRMode } from "./vr-manager.js";
 
@@ -27,6 +28,7 @@ const raycasterDrag = new THREE.Raycaster();
 
 let lastVRClickTime = 0;
 const VR_CLICK_DEBOUNCE = 300;
+let isUsingThumbstickRotation = false;
 
 // Warna
 const DISABLED_COLOR = "#2727278a";
@@ -59,6 +61,37 @@ function getIntersectedObject(x, y) {
     }
   }
   return null;
+}
+function getThumbstickAxes(controller) {
+  if (!controller || !controller.inputSource) return null;
+
+  const gamepad = controller.inputSource.gamepad;
+  if (!gamepad || !gamepad.axes || gamepad.axes.length < 4) return null;
+
+  // Axes mapping untuk xr-standard:
+  // axes[0-1]: left thumbstick (x, y)
+  // axes[2-3]: right thumbstick (x, y)
+  // Kita gunakan axes[2] dan axes[3] untuk thumbstick kanan
+  return {
+    x: gamepad.axes[2] || 0,
+    y: gamepad.axes[3] || 0,
+  };
+}
+
+// Fungsi baru: Rotasi model dengan thumbstick
+function rotateModelWithThumbstick(deltaX, deltaY) {
+  const currentModel = getCurrentModel();
+  if (!currentModel) return;
+
+  // Sensitivitas rotasi (sesuaikan nilai ini untuk mengubah kecepatan rotasi)
+  const sensitivity = 2.0;
+
+  // Rotasi horizontal (Y-axis) berdasarkan thumbstick X
+  currentModel.rotation.y += deltaX * sensitivity;
+
+  // Opsional: Rotasi vertikal (X-axis) berdasarkan thumbstick Y
+  // Uncomment baris di bawah jika ingin rotasi vertikal juga
+  // currentModel.rotation.x += deltaY * sensitivity;
 }
 
 /**
@@ -392,6 +425,7 @@ function onVRSelectStart(controllerIndex) {
   if (intersectedModel) {
     state.isGrabbing = true;
     state.startPosition.copy(controller.position);
+    setUserInteracting(true);
     return; // Prioritaskan grab model di atas klik UI
   }
 
@@ -420,6 +454,7 @@ function onVRSelectEnd(controllerIndex) {
       : vrInteractionState.controller2;
   if (state.isGrabbing) {
     state.isGrabbing = false;
+    setUserInteracting(false);
   }
 }
 
@@ -485,7 +520,15 @@ export function handleVRHover() {
  * Menangani logika drag model dengan controller VR (dipanggil setiap frame).
  */
 export function handleVRDrag() {
+  const currentModel = getCurrentModel();
+  if (!currentModel) {
+    // Jika tidak ada model, pastikan flag interaksi mati
+    // (kecuali mouse sedang drag, yang ditangani oleh stopDragging())
+    return;
+  }
+
   const controllers = getVRControllers();
+  let isStickActiveThisFrame = false; // Flag lokal HANYA untuk frame ini
 
   controllers.forEach((controller, index) => {
     const state =
@@ -493,6 +536,7 @@ export function handleVRDrag() {
         ? vrInteractionState.controller1
         : vrInteractionState.controller2;
 
+    // 1. Prioritas Utama: Grabbing (Trigger ditahan)
     if (state.isGrabbing) {
       const currentPosition = controller.position;
       // Hitung delta (perbedaan) dari frame sebelumnya
@@ -504,6 +548,37 @@ export function handleVRDrag() {
 
       // Simpan posisi saat ini untuk perhitungan delta di frame berikutnya
       state.startPosition.copy(currentPosition);
+
+      // setUserInteracting(true) sudah diatur di onVRSelectStart
+      return; // Selesai untuk controller ini
     }
-  });
+
+    // 2. Prioritas Kedua: Rotasi Thumbstick
+    // INI ADALAH PERBAIKAN UTAMA: Logika ini tidak lagi di dalam if(intersectedModel)
+    const thumbstick = getThumbstickAxes(controller);
+    if (thumbstick) {
+      // Deadzone untuk mencegah drift (nilai kecil yang diabaikan)
+      const deadzone = 0.15;
+
+      if (
+        Math.abs(thumbstick.x) > deadzone ||
+        Math.abs(thumbstick.y) > deadzone
+      ) {
+        // Thumbstick digerakkan, putar model
+        rotateModelWithThumbstick(thumbstick.x, thumbstick.y);
+        isStickActiveThisFrame = true; // Tandai bahwa thumbstick aktif
+        return; // Selesai untuk controller ini
+      }
+    }
+  }); // Akhir dari forEach controller
+
+  // 3. Update Status Interaksi Global
+  // Jika tidak ada controller yang 'grabbing',
+  // update status interaksi berdasarkan thumbstick.
+  if (
+    !vrInteractionState.controller1.isGrabbing &&
+    !vrInteractionState.controller2.isGrabbing
+  ) {
+    setUserInteracting(isStickActiveThisFrame);
+  }
 }
