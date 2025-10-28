@@ -9,7 +9,14 @@ import Stats from "three/addons/libs/stats.module.js";
 // ===============================================================
 
 // Pengaturan Scene, Kamera, Renderer, dan Kontrol
-import { scene, camera, renderer, controls, loadRoom } from "./scene-setup.js";
+import {
+  scene,
+  camera,
+  renderer,
+  controls,
+  loadRoom,
+  loadEnvironmentMap,
+} from "./scene-setup.js";
 
 // Data untuk komponen dan kuis
 import { components } from "./component-data.js";
@@ -247,21 +254,14 @@ async function init() {
   setupDRACOLoader(dracoLoader);
 
   setRendererForCompilation(renderer, camera);
-
+  await new Promise((resolve) => {
+    loadEnvironmentMap(resolve);
+  });
   // Memuat model ruangan
   loadRoom(loader);
 
   // Setup VR
   setupVR();
-  renderer.xr.addEventListener("sessionstart", () => {
-    // Gunakan setting yang lebih konservatif
-    renderer.toneMapping = THREE.LinearToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    renderer.outputEncoding = THREE.sRGBEncoding;
-
-    console.log("VR session started with optimized rendering");
-    changeState(AppState.AVATAR_GREETING);
-  });
   renderer.xr.addEventListener("sessionstart", onVRSessionStarted);
   renderer.xr.addEventListener("sessionend", onVRSessionEnded);
 
@@ -1100,7 +1100,8 @@ function onVRSessionEnded() {
 function onVRSessionStarted() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMappingExposure = 1.2;
+  renderer.toneMappingExposure = 1;
+  // renderer.xr.setFramebufferScaleFactor(2);
   changeState(AppState.AVATAR_GREETING);
 }
 

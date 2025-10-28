@@ -3,7 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { loadingManager } from "./loading-manager.js";
 import { isVRMode } from "./vr-manager.js";
-import { loader as gltfLoader } from "./model-loader.js";
+import { loader as gltfLoader, convertModelMaterials } from "./model-loader.js";
 
 // ===============================================================
 // KONSTANTA & PENGATURAN AWAL
@@ -12,8 +12,8 @@ import { loader as gltfLoader } from "./model-loader.js";
 // --- Warna & Cahaya ---
 const INITIAL_BG_COLOR = 0xffffff;
 const AMBIENT_LIGHT_COLOR = 0xffffff;
-const AMBIENT_LIGHT_INTENSITY = 2;
-const TONE_MAPPING_EXPOSURE = 1;
+const AMBIENT_LIGHT_INTENSITY = 0.6;
+const TONE_MAPPING_EXPOSURE = 0.8;
 
 // --- Kamera ---
 const CAMERA_FOV = 50;
@@ -72,7 +72,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
 
 // Pengaturan Encoding & Tone Mapping
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.LinearToneMapping; // Lebih aman untuk mobile VR
+renderer.toneMapping = THREE.ACESFilmicToneMapping; // Lebih aman untuk mobile VR
 renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
 
 renderer.xr.addEventListener("sessionstart", () => {
@@ -116,21 +116,26 @@ controls.update();
 const hemiLight = new THREE.HemisphereLight(
   0xffffff, // Sky color: putih murni
   0xaaaaaa, // Ground color: abu-abu terang
-  2 // Intensity: 0.8 (BUKAN 2!)
+  0.8 // Intensity: 0.8 (BUKAN 2!)
 );
 scene.add(hemiLight);
 
 // Environment Map (HDR)
-// Environment Map (HDR)
-new RGBELoader(loadingManager)
-  .setPath(ENV_MAP_PATH)
-  .load(ENV_MAP_FILE, function (texture) {
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-
-    // ← PENTING! Set scene.environment
-    scene.environment = texture;
-  });
-
+export function loadEnvironmentMap(callback) {
+  new RGBELoader(loadingManager).setPath(ENV_MAP_PATH).load(
+    ENV_MAP_FILE,
+    function (texture) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      scene.environment = texture;
+      console.log("Environment map loaded");
+      if (callback) callback();
+    },
+    undefined,
+    (error) => {
+      console.error("Gagal memuat environment map:", error);
+    }
+  );
+}
 // ===============================================================
 // EVENT LISTENER
 // ===============================================================
@@ -159,6 +164,7 @@ export function loadRoom(gltfLoaderInstance) {
     (gltf) => {
       const room = gltf.scene;
       room.position.copy(ROOM_POSITION);
+      // convertModelMaterials(room);
       scene.add(room);
       console.log("✓ Model ruangan berhasil dimuat.");
     },

@@ -324,7 +324,7 @@ export function convertModelMaterials(model) {
         opacity: oldMaterial.opacity,
         depthWrite: true,
         metalness: 0.0, // Asumsikan non-logam
-        roughness: 0.8,
+        roughness: 0.9,
       });
 
       vrMaterial.userData.isConverted = true;
