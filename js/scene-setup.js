@@ -33,7 +33,7 @@ const CONTROLS_MIN_POLAR = Math.PI / 4; // 45 derajat
 const CONTROLS_MAX_POLAR = (3 * Math.PI) / 4; // 135 derajat
 
 // --- Scene ---
-const ROOM_POSITION = new THREE.Vector3(0, 0, -1.5);
+const ROOM_POSITION = new THREE.Vector3(-1.5, 0, -2.5);
 const ENV_MAP_PATH = "assets/env/";
 const ENV_MAP_FILE = "environment.hdr";
 const ROOM_MODEL_PATH = "assets/models/room.glb";

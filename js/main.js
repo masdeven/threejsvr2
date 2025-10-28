@@ -379,7 +379,7 @@ function render() {
 
   // --- Update Debug Panel ---
   if (isDebugVisible) {
-    const tablePosition = new THREE.Vector3(1, 0.8, -1.0);
+    const tablePosition = new THREE.Vector3(-0.5, 0.8, -2.0);
     debugGroup.position.copy(tablePosition);
     debugGroup.lookAt(camera.position);
     updateFpsLabel(fpsLabel, fps);
@@ -531,8 +531,8 @@ function changeState(newState, options = {}) {
       case AppState.MINI_QUIZ:
       case AppState.MINI_QUIZ_RESULT:
         controls.enabled = true;
-        camera.position.set(1, 1.6, 0.5);
-        controls.target.set(1, 1.6, 0);
+        camera.position.set(-0.55, 1.6, -0.6);
+        controls.target.set(-0.55, 1.6, -1);
         break;
     }
   }
@@ -577,7 +577,7 @@ function handleInteraction(action) {
   // Switch case untuk semua aksi
   switch (action) {
     case "start_browser":
-      changeState(AppState.POST_QUIZ_CHOICE);
+      changeState(AppState.AVATAR_GREETING);
       break;
     case "start_vr":
       startVRSession(onVRSessionEnded, onVRSessionStarted);

@@ -400,8 +400,8 @@ function setupModelPosition(model, startYOffset = 0) {
   const center = box.getCenter(new THREE.Vector3());
 
   // Pusatkan model di X dan Z
-  model.position.x -= center.x;
-  model.position.z = -1.5 - center.z; // -1.5 adalah posisi Z meja/ruangan
+  model.position.x = -1.5 - center.x;
+  model.position.z = -2.5 - center.z; // -1.5 adalah posisi Z meja/ruangan
 
   // Atur posisi Y
   const finalY = TABLE_HEIGHT - box.min.y; // Y agar model 'duduk' di atas meja

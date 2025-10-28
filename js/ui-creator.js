@@ -23,7 +23,7 @@ const ACCENT_COLOR = "#3182CE"; // Untuk skor
 
 // --- Posisi & Jarak ---
 const UI_DISTANCE = 2.5; // Jarak UI dari kamera di mode VR
-const VIEWER_UI_POSITION = new THREE.Vector3(-3, 1.6, -3);
+const VIEWER_UI_POSITION = new THREE.Vector3(0, 1.6, -2);
 const VIEWER_UI_LOOKAT = new THREE.Vector3(0, 1.6, 0);
 
 // --- Grup Scene ---
@@ -1143,8 +1143,8 @@ function createConfettiEffect() {
  */
 export function createModeSelectionPage() {
   clearUI();
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // Panel utama
   const panelWidth = 1.4;
@@ -1194,8 +1194,8 @@ export function createAvatarGreetingPage(
   const isTextUpdateOnly = options.isTextUpdateOnly || false; // Perbaikan: Cek opsi
 
   // KONSISTEN dengan halaman lainnya
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // Panel ukuran standard (chatbot style)
   const panelWidth = 1.4;
@@ -1433,8 +1433,8 @@ function createWrappingTitleLabel(
  * Membuat UI untuk halaman landing (menu utama).
  */
 export function createLandingPage(playerName, options = {}) {
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // Panel utama
   const panelWidth = 1.4;
@@ -1575,8 +1575,8 @@ export function createLandingPage(playerName, options = {}) {
  */
 export function createMenuPage(allComponentsUnlocked, quizHasBeenAttempted) {
   // 1. Setup Panel & Posisi Standar
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   clearViewerUI(); // Bersihkan panel sebelumnya
 
@@ -1731,8 +1731,8 @@ export function createViewerPage(
   hasAttemptedQuiz = false
 ) {
   // Posisi UI di dunia (Konsisten dengan halaman lain)
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   clearViewerUI();
   navButtons = []; // Pastikan reset navButtons
@@ -1981,8 +1981,8 @@ export function createViewerPage(
  */
 export function createMiniQuizPage(component) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
   clearViewerUI();
   navButtons = [];
 
@@ -2067,8 +2067,8 @@ export function createMiniQuizPage(component) {
  */
 export function createMiniQuizResultPage(component, isCorrect) {
   // Posisi konsisten dengan Viewer Panel
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   clearViewerUI();
   navButtons = [];
@@ -2156,8 +2156,8 @@ export function createQuizScreen(currentQuestion, questionIndex) {
   clearUI();
 
   // Posisi konsisten dengan Main Menu
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // === Panel Utama (Ukuran standar Main Menu) ===
   const panelWidth = 1.4;
@@ -2250,8 +2250,8 @@ export function createQuizResultScreen(
   clearUI();
 
   // Posisi konsisten dengan Main Menu
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // === Panel Utama ===
   const panelWidth = 1.4;
@@ -2346,8 +2346,8 @@ export function createQuizReportScreen(
 ) {
   clearUI();
 
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   const panelWidth = 1.4;
   const panelHeight = 0.8;
@@ -2442,8 +2442,8 @@ export function createCompletionScreen(playerName) {
   clearUI();
 
   // 1. Gunakan Posisi & LookAt Standar
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // 2. Gunakan Ukuran Panel Standar
   const panelWidth = 1.4;
@@ -2513,8 +2513,8 @@ export function createCompletionScreen(playerName) {
 export function createPostQuizChoiceScreen() {
   clearUI();
   // Posisi UI di dunia (sesuai Mode Selection & Landing)
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   // Panel utama (ukuran standar)
   const panelWidth = 1.4;
@@ -2598,8 +2598,8 @@ export function createPostQuizChoiceScreen() {
  * Membuat UI untuk halaman credits (Tentang Aplikasi).
  */
 export function createCreditsScreen(creditPages, pageIndex) {
-  const uiBasePosition = new THREE.Vector3(0, 2, -4);
-  const uiLookAtPosition = new THREE.Vector3(0, 1.2, 4);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   clearViewerUI();
 
@@ -2936,8 +2936,8 @@ export function updateFpsLabel(mesh, fps) {
   texture.needsUpdate = true;
 }
 export function createQuickGuideScreen(guidePages, pageIndex) {
-  const uiBasePosition = new THREE.Vector3(1.5, 1.6, -1);
-  const uiLookAtPosition = new THREE.Vector3(1.5, 1.6, 0);
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
 
   clearViewerUI();
 
