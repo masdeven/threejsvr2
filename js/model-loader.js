@@ -317,12 +317,14 @@ export function convertModelMaterials(model) {
       if (oldMaterial.userData.isConverted) return;
 
       // GUNAKAN MeshLambertMaterial atau MeshStandardMaterial
-      const vrMaterial = new THREE.MeshLambertMaterial({
+      const vrMaterial = new THREE.MeshStandardMaterial({
         color: oldMaterial.color,
         map: oldMaterial.map,
         transparent: oldMaterial.transparent,
         opacity: oldMaterial.opacity,
         depthWrite: true,
+        metalness: 0.0, // Asumsikan non-logam
+        roughness: 0.8,
       });
 
       vrMaterial.userData.isConverted = true;
