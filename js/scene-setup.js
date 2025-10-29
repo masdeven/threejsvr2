@@ -13,19 +13,19 @@ import { loader as gltfLoader, convertModelMaterials } from "./model-loader.js";
 const INITIAL_BG_COLOR = 0xffffff;
 const AMBIENT_LIGHT_COLOR = 0xffffff;
 const AMBIENT_LIGHT_INTENSITY = 0.6;
-const TONE_MAPPING_EXPOSURE = 0.8;
+const TONE_MAPPING_EXPOSURE = 0.6;
 
 // --- Kamera ---
 const CAMERA_FOV = 50;
 const CAMERA_NEAR = 0.1;
 const CAMERA_FAR = 100;
-const CAMERA_POS = new THREE.Vector3(0, 1.6, 1);
+const CAMERA_POS = new THREE.Vector3(0, 1.6, 0);
 
 // --- Renderer ---
 const MAX_PIXEL_RATIO = 2;
 
 // --- Kontrol ---
-const TARGET_POS = new THREE.Vector3(0, 1.6, 1);
+const TARGET_POS = new THREE.Vector3(0, 1.6, 0);
 const CONTROLS_ROTATE_SPEED = -0.1;
 const CONTROLS_MIN_DIST = 0.1;
 const CONTROLS_MAX_DIST = 0.5;
@@ -115,7 +115,7 @@ controls.update();
 
 const hemiLight = new THREE.HemisphereLight(
   0xffffff, // Sky color: putih murni
-  0xaaaaaa, // Ground color: abu-abu terang
+  0x666666, // Ground color: abu-abu terang
   0.8 // Intensity: 0.8 (BUKAN 2!)
 );
 scene.add(hemiLight);
@@ -164,7 +164,7 @@ export function loadRoom(gltfLoaderInstance) {
     (gltf) => {
       const room = gltf.scene;
       room.position.copy(ROOM_POSITION);
-      // convertModelMaterials(room);
+      convertModelMaterials(room);
       scene.add(room);
       console.log("✓ Model ruangan berhasil dimuat.");
     },

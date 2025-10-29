@@ -202,7 +202,7 @@ function redrawButton(button, color, text = null) {
   if (data.textAlign === "left") {
     // Jika ditandai "left" (dari createTopicButton)
     ctx.textAlign = "left";
-    const logicalTextPadding = 20; // 20px padding logis
+    const logicalTextPadding = 8; // 20px padding logis
     const textPadding =
       logicalTextPadding * (buttonResolution / LOGICAL_RESOLUTION);
     ctx.fillText(buttonText, textPadding, canvas.height / 2 + verticalOffset);
