@@ -172,7 +172,7 @@ export function startModelAnimation(
 
   if (isAnimatingOut) {
     // Target Y di bawah meja
-    transitionState.targetY = TABLE_HEIGHT - 1;
+    transitionState.targetY = TABLE_HEIGHT - 0.5;
   } else {
     // Target Y di atas meja (posisi final)
     transitionState.targetY = currentModel.userData.finalY;

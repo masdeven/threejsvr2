@@ -288,6 +288,75 @@ async function init() {
   await preloadModels();
   await preloadOtherAssets();
 
+  setLoadingPhase(LoadingPhases.LOADING_MEDIUM); // Atau fase baru misal "FINALIZING"
+  updateLoadingText("Finalizing assets...");
+  console.log("🚀 Starting final render pass for cached models...");
+
+  if (scene.environment) {
+    let finalizedCount = 0;
+    const totalModelsToFinalize = Object.keys(modelCache).length;
+
+    // Loop melalui semua model yang sudah di-cache
+    for (const url in modelCache) {
+      if (modelCache.hasOwnProperty(url)) {
+        const originalScene = modelCache[url];
+        if (originalScene) {
+          const tempModel = originalScene.clone(); // Clone model
+
+          // Posisikan jauh di luar pandangan kamera
+          tempModel.position.set(0, -1000, 0);
+
+          // Tambahkan ke scene utama (sementara)
+          scene.add(tempModel);
+
+          // --- PAKSA RENDER SATU FRAME ---
+          // Ini akan memaksa GPU upload tekstur/geometri & final shader linking
+          // dalam konteks scene utama (dengan environment map)
+          try {
+            renderer.render(scene, camera);
+            console.log(`   ✓ Finalized: ${url}`);
+          } catch (compileError) {
+            console.warn(
+              `   ⚠️ Finalizing render error for ${url}:`,
+              compileError
+            );
+          }
+          // --------------------------------
+
+          // Hapus model sementara dari scene
+          scene.remove(tempModel);
+          // (Opsional: dispose clone jika memori jadi masalah, tapi mungkin tidak perlu)
+          // tempModel.traverse(obj => {
+          //    if (obj.isMesh) {
+          //       obj.geometry.dispose();
+          //       // Material jangan di-dispose karena mungkin dipakai clone lain
+          //    }
+          // });
+
+          finalizedCount++;
+          // Update progress bar manual jika diinginkan
+          updateManualProgress(
+            finalizedCount,
+            totalModelsToFinalize,
+            "Finalizing..."
+          );
+        } else {
+          console.warn(
+            `   Skipping finalization for ${url}, cache entry invalid.`
+          );
+          totalModelsToFinalize--; // Kurangi total jika cache invalid
+        }
+      }
+    }
+    console.log(
+      `🏁 Final render pass complete (${finalizedCount}/${totalModelsToFinalize}).`
+    );
+  } else {
+    console.warn(
+      "⚠️ Cannot perform final render pass: scene.environment is not ready."
+    );
+  }
+
   // Sembunyikan Splash Screen
   const splashScreen = document.getElementById("splash-screen");
   if (splashScreen) {
@@ -1057,7 +1126,7 @@ function showViewer(index, options = {}) {
   if (component.modelFile) {
     // Panggil loadComponentModel, animasi masuk akan memanggil onModelReady.
     // Offset -1.5 agar model muncul dari bawah meja
-    loadComponentModel(component.modelFile, -1.5, onModelReady);
+    loadComponentModel(component.modelFile, -0.5, onModelReady);
   } else {
     // Jika tidak ada model (mis. Intro), jalankan callback setelah jeda singkat
     // (anggap sebagai "animasi masuk" instan).
