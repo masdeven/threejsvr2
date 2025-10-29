@@ -32,7 +32,7 @@ let isUsingThumbstickRotation = false;
 
 // Warna
 const DISABLED_COLOR = "#2727278a";
-const BGCOLOR = "#000000ff"; // Warna default jika tidak ada
+const BGCOLOR = "#5579bf88"; // Warna default jika tidak ada
 const HOVER_COLOR = "#4A5568";
 const TEXT_COLOR = "#FFFFFF";
 
@@ -159,7 +159,7 @@ function redrawButton(button, color, text = null) {
     ctx.fill();
   } else {
     // Rounded rectangle
-    const r = 10 * (buttonResolution / getResolution());
+    const r = buttonResolution / getResolution();
     const x = padding;
     const y = padding;
     const w = canvas.width - padding * 2;

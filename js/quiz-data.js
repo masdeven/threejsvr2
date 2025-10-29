@@ -26,8 +26,9 @@ export const quizData = [
   {
     question:
       "Which type of monitor is highlighted for its high contrast and more vivid colors?",
-    answers: ["LED", "Gaming Monitor", "OLED", "15-inch Monitor"],
-    correctAnswerIndex: 2,
+    // Diubah (sebelumnya 2)
+    answers: ["OLED", "LED", "Gaming Monitor", "15-inch Monitor"],
+    correctAnswerIndex: 0,
   },
   {
     question:
@@ -55,8 +56,9 @@ export const quizData = [
   {
     question:
       "A standard modern keyboard generally has how many keys according to the material?",
-    answers: ["88 keys", "101 keys", "104 keys", "108 keys"],
-    correctAnswerIndex: 2,
+    // Diubah (sebelumnya 2)
+    answers: ["104 keys", "101 keys", "88 keys", "108 keys"],
+    correctAnswerIndex: 0,
   },
   // == Mouse ==
   {
@@ -68,13 +70,14 @@ export const quizData = [
   {
     question:
       "What is the primary function of the scroll wheel on a mouse as described in the text?",
+    // Diubah (sebelumnya 2)
     answers: [
-      "Left-clicking",
-      "Controlling cursor speed",
       "Page navigation",
+      "Controlling cursor speed",
+      "Left-clicking",
       "Right-clicking",
     ],
-    correctAnswerIndex: 2,
+    correctAnswerIndex: 0,
   },
   // == Motherboard ==
   {
@@ -115,24 +118,26 @@ export const quizData = [
   // == Memory (RAM) ==
   {
     question: "What is the function of ROM (Read-Only Memory) in a computer?",
+    // Diubah (sebelumnya 2)
     answers: [
+      "To store basic instructions for starting the computer (BIOS/UEFI).",
       "To run multiple programs at once.",
       "To store user files permanently.",
-      "To store basic instructions for starting the computer (BIOS/UEFI).",
       "To serve as the computer's temporary workspace.",
     ],
-    correctAnswerIndex: 2,
+    correctAnswerIndex: 0,
   },
   {
     question:
       "Which of the following are RAM speed standards mentioned in the text?",
+    // Diubah (sebelumnya 2)
     answers: [
       "DDR1 and DDR2",
-      "DDR3 and DDR4",
       "DDR4 and DDR5",
+      "DDR3 and DDR4",
       "DDR5 and DDR6",
     ],
-    correctAnswerIndex: 2,
+    correctAnswerIndex: 1,
   },
   // == Graphics Card (GPU) ==
   {
@@ -156,19 +161,21 @@ export const quizData = [
   {
     question:
       "What type of network card is used for wired connections that offer stable speed and low latency?",
-    answers: ["WiFi Card", "Bluetooth Card", "Ethernet Card", "Modem Card"],
-    correctAnswerIndex: 2,
+    // Diubah (sebelumnya 2)
+    answers: ["WiFi Card", "Bluetooth Card", "Modem Card", "Ethernet Card"],
+    correctAnswerIndex: 3,
   },
   {
     question:
       "What does the text say about network cards in most modern motherboards?",
+    // Diubah (sebelumnya 2)
     answers: [
+      "They are already integrated.",
       "They are sold separately.",
       "They are always wireless.",
-      "They are already integrated.",
       "They require a special slot.",
     ],
-    correctAnswerIndex: 2,
+    correctAnswerIndex: 0,
   },
   // == Storage ==
   {
@@ -184,8 +191,9 @@ export const quizData = [
   },
   {
     question: "What is the interface mentioned for modern, super-fast SSDs?",
-    answers: ["SATA", "USB", "NVMe", "IDE"],
-    correctAnswerIndex: 2,
+    // Diubah (sebelumnya 2)
+    answers: ["NVMe", "SATA", "USB", "IDE"],
+    correctAnswerIndex: 0,
   },
   // == Printer ==
   {
@@ -202,20 +210,22 @@ export const quizData = [
   {
     question:
       "Which printer technology is most suitable for printing high-quality photos?",
-    answers: ["Laser", "Dot Matrix", "Inkjet", "Monochrome"],
-    correctAnswerIndex: 2,
+    // Diubah (sebelumnya 2)
+    answers: ["Laser", "Dot Matrix", "Monochrome", "Inkjet"],
+    correctAnswerIndex: 3,
   },
   // == Flash Drive ==
   {
     question:
       "What technology allows a flash drive to retain data without needing electrical power?",
+    // Diubah (sebelumnya 2)
     answers: [
       "Magnetic Disk Technology",
       "Optical Technology",
-      "Flash Memory Technology",
       "RAM Technology",
+      "Flash Memory Technology",
     ],
-    correctAnswerIndex: 2,
+    correctAnswerIndex: 3,
   },
   {
     question:
