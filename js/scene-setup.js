@@ -27,7 +27,7 @@ const MAX_PIXEL_RATIO = 2;
 // --- Kontrol ---
 const TARGET_POS = new THREE.Vector3(0, 1.6, 0);
 const CONTROLS_ROTATE_SPEED = -0.1;
-const CONTROLS_MIN_DIST = 0.1;
+const CONTROLS_MIN_DIST = 0.05;
 const CONTROLS_MAX_DIST = 0.5;
 const CONTROLS_MIN_POLAR = Math.PI / 4; // 45 derajat
 const CONTROLS_MAX_POLAR = (3 * Math.PI) / 4; // 135 derajat
@@ -90,7 +90,7 @@ document.getElementById("container").appendChild(renderer.domElement);
 export const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = false;
 controls.enablePan = false;
-controls.enableZoom = false;
+controls.enableZoom = true;
 controls.rotateSpeed = CONTROLS_ROTATE_SPEED;
 controls.target.copy(TARGET_POS);
 
