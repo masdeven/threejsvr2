@@ -17,7 +17,7 @@ const MODEL_SCALE_FACTOR = 0.3; // Skala target untuk model (0.7 / maxDim)
 // STATE MODUL
 // ===============================================================
 
-let currentModel = null;
+export let currentModel = null;
 let activeLoad = null; // Catatan: Variabel ini dideklarasikan tapi tidak pernah digunakan di kode asli.
 export let isUserInteracting = false; // Ganti nama dari isDragging
 export function setUserInteracting(state) {
@@ -40,7 +40,7 @@ let rendererRef = null;
 let cameraRef = null;
 
 // State Animasi Transisi
-let transitionState = {
+export let transitionState = {
   isAnimating: false,
   targetY: 0,
   speed: ANIMATION_SPEED,

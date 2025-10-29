@@ -1871,9 +1871,7 @@ export function createViewerPage(
       BTN_COLOR_PRIMARY // Warna primer jika bisa lanjut
     );
     // Posisi X tergantung ada tombol kiri atau tidak
-    const nextX = hasLeftButton
-      ? navCompSpacing / 2 + navCompButtonWidth / 2 // Kanan dari tengah
-      : 0; // Tengah jika hanya tombol next
+    const nextX = navCompSpacing / 2 + navCompButtonWidth / 2;
     nextButton.position.set(nextX, navCompY, navCompZ);
     nextButton.renderOrder = 1;
     viewerUIGroup.add(nextButton);

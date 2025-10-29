@@ -76,6 +76,8 @@ import {
   convertModelMaterials,
   preCompileModel,
   preloadLoader,
+  transitionState,
+  currentModel,
 } from "./model-loader.js";
 
 // Manajer untuk interaksi (mouse, VR controller)
@@ -699,23 +701,45 @@ function handleInteraction(action) {
       changeDescription("next");
       break;
     case "next_component":
+      // 1. Tetap cek flag utama untuk mencegah overlap selama animasi KELUAR
       if (isChangingComponent) return;
-      isChangingComponent = true;
-      navButtons.forEach((btn) => setButtonEnabled(btn, false));
+
+      // 2. NEW: Cek & Hapus jika model sedang animasi MASUK saat ini
+      if (transitionState.isAnimating === "in" && currentModel) {
+        console.warn("Interrupting IN animation, unloading model immediately.");
+        unloadComponentModel(); // Hapus paksa model yang sedang animasi masuk
+        // Reset state animasi transisi secara manual karena diinterupsi
+        transitionState.isAnimating = false;
+        transitionState.onComplete = null;
+        transitionState.onMidpoint = null; // Pastikan midpoint juga bersih
+      }
+
+      // 3. Mulai sekuens transisi BARU
+      isChangingComponent = true; // Set flag untuk animasi KELUAR berikutnya
+      navButtons.forEach((btn) => setButtonEnabled(btn, false)); // Nonaktifkan tombol
 
       const onAnimationMidpointNext = () => {
-        unloadComponentModel();
-        if (currentComponentIndex === highestComponentUnlocked) {
+        // Unload di sini memastikan model dihapus JIKA tidak diinterupsi,
+        // aman jika sudah dihapus di langkah 2.
+        if (currentModel) unloadComponentModel();
+
+        isChangingComponent = false; // Reset flag SETELAH unload selesai
+
+        // Logika state change tetap sama
+        if (
+          currentComponentIndex === highestComponentUnlocked &&
+          currentComponentIndex < components.length - 1
+        ) {
           changeState(AppState.MINI_QUIZ);
-          isChangingComponent = false;
         } else if (currentComponentIndex < components.length - 1) {
           currentComponentIndex++;
           changeState(AppState.VIEWER, { isTransitioning: true });
         } else {
           changeState(AppState.MENU);
-          isChangingComponent = false;
         }
       };
+
+      // 4. Mulai animasi KELUAR (mungkin untuk model null jika baru dihapus)
       startModelAnimation(true, onAnimationMidpointNext);
       break;
     case "mini_quiz_correct":
@@ -750,20 +774,37 @@ function handleInteraction(action) {
       }
       break;
     case "prev_component":
+      // 1. Tetap cek flag utama
       if (isChangingComponent) return;
+
+      // 2. NEW: Cek & Hapus jika model sedang animasi MASUK saat ini
+      if (transitionState.isAnimating === "in" && currentModel) {
+        console.warn("Interrupting IN animation, unloading model immediately.");
+        unloadComponentModel(); // Hapus paksa model yang sedang animasi masuk
+        // Reset state animasi transisi
+        transitionState.isAnimating = false;
+        transitionState.onComplete = null;
+        transitionState.onMidpoint = null;
+      }
+
+      // 3. Mulai sekuens transisi BARU
       isChangingComponent = true;
       navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointPrev = () => {
-        unloadComponentModel();
+        if (currentModel) unloadComponentModel(); // Unload jika belum
+        isChangingComponent = false; // Reset SETELAH unload
+
+        // Logika state change tetap sama
         if (currentComponentIndex > 0) {
           currentComponentIndex--;
           changeState(AppState.VIEWER, { isTransitioning: true });
-        } else {
-          isChangingComponent = false;
-          navButtons.forEach((btn) => setButtonEnabled(btn, true));
         }
+        // else: tidak perlu changeState, UI akan refresh otomatis
+        // karena showViewer tidak menonaktifkan tombol lagi
       };
+
+      // 4. Mulai animasi KELUAR
       startModelAnimation(true, onAnimationMidpointPrev);
       break;
     case "play_audio":
@@ -995,12 +1036,12 @@ function showViewer(index, options = {}) {
   );
   activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
 
-  // 2. JIKA sedang dalam mode transisi, nonaktifkan SEMUA tombol interaktif.
-  if (isTransitioning) {
-    navButtons.forEach((btn) => {
-      setButtonEnabled(btn, false);
-    });
-  }
+  // // 2. JIKA sedang dalam mode transisi, nonaktifkan SEMUA tombol interaktif.
+  // if (isTransitioning) {
+  //   navButtons.forEach((btn) => {
+  //     setButtonEnabled(btn, false);
+  //   });
+  // }
 
   // 3. Definisikan callback yang akan dijalankan setelah model & animasi selesai.
   const onModelReady = () => {
@@ -1014,10 +1055,13 @@ function showViewer(index, options = {}) {
 
   // 4. Mulai proses loading model.
   if (component.modelFile) {
+    // Panggil loadComponentModel, animasi masuk akan memanggil onModelReady.
+    // Offset -1.5 agar model muncul dari bawah meja
     loadComponentModel(component.modelFile, -1.5, onModelReady);
   } else {
-    // Jika tidak ada model (mis. Intro), jalankan callback setelah jeda singkat.
-    setTimeout(onModelReady, CHANGE_DEBOUNCE_TIME);
+    // Jika tidak ada model (mis. Intro), jalankan callback setelah jeda singkat
+    // (anggap sebagai "animasi masuk" instan).
+    setTimeout(onModelReady, 50); // Jeda sangat singkat
   }
 }
 // ===============================================================
