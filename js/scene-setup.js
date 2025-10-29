@@ -106,19 +106,21 @@ controls.update();
 // PENCAHAYAAN & ENVIRONMENT
 // ===============================================================
 
-// Cahaya Ambient
-// const ambientLight = new THREE.AmbientLight(
-//   AMBIENT_LIGHT_COLOR,
-//   AMBIENT_LIGHT_INTENSITY
-// );
-// scene.add(ambientLight);
+// DI scene-setup.js - Tambah lighting yang proper
+// Ambient light (kurangi intensity)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(
-  0xffffff, // Sky color: putih murni
-  0x666666, // Ground color: abu-abu terang
-  0.8 // Intensity: 0.8 (BUKAN 2!)
-);
-scene.add(hemiLight);
+// Main directional light
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 5, 5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+// Fill light
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+fillLight.position.set(-5, 3, -5);
+scene.add(fillLight);
 
 // Environment Map (HDR)
 export function loadEnvironmentMap(callback) {
