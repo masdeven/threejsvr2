@@ -57,6 +57,8 @@ import {
   createFpsLabel,
   updateFpsLabel,
   createQuickGuideScreen,
+  createFinalTestConfirmationPage,
+  viewerUIGroup,
 } from "./ui-creator.js";
 
 // Fungsi untuk memuat model 3D (GLTF, DRACO, KTX2)
@@ -176,6 +178,7 @@ const AppState = {
   HELP: "HELP",
   MINI_QUIZ: "MINI_QUIZ",
   MINI_QUIZ_RESULT: "MINI_QUIZ_RESULT",
+  CONFIRM_FINAL_TEST: "CONFIRM_FINAL_TEST",
   QUIZ: "QUIZ",
   QUIZ_RESULT: "QUIZ_RESULT",
   QUIZ_REPORT: "QUIZ_REPORT",
@@ -683,29 +686,37 @@ function handleInteraction(action) {
       break;
     case "back_to_menu": // Biasanya dari Viewer Page
       // Cek lock, tapi JANGAN return. Kita ingin 'X' selalu bekerja.
-      if (isTransitioningModel) {
+      if (isTransitioningModel && currentState === AppState.VIEWER) {
+        // Hanya force stop jika dari Viewer
         console.warn(
           "Back to menu clicked during transition. Forcing unload and state change."
-        );
-        // Hentikan animasi yg mungkin berjalan & hapus model SEGERA
-        stopModelAnimation(); // <-- Fungsi baru (akan kita buat)
-        unloadComponentModel();
-        isTransitioningModel = false; // <-- Langsung lepas lock
-      } else {
-        // Jika tidak transisi, mulai animasi keluar normal
-        isTransitioningModel = true; // Set lock SEMENTARA untuk animasi keluar ini
-        navButtons.forEach((btn) => setButtonEnabled(btn, false)); // Nonaktifkan UI viewer
+        ); //
+        stopModelAnimation(); //
+        unloadComponentModel(); //
+        isTransitioningModel = false; //
+      } else if (isTransitioningModel) {
+        //
+        // Jika dari state lain (misal Konfirmasi) tapi lock aktif (seharusnya jarang), lepas saja
+        console.warn(
+          "Back to menu clicked with active lock from non-viewer state? Forcing release."
+        ); //
+        isTransitioningModel = false; //
+      } else if (currentState === AppState.VIEWER) {
+        //
+        // Jika dari Viewer & tidak transisi, mulai animasi keluar normal
+        isTransitioningModel = true; //
+        navButtons.forEach((btn) => setButtonEnabled(btn, false)); //
         startModelAnimation(true, () => {
-          // Midpoint animasi keluar
-          isTransitioningModel = false; // Lepas lock setelah model hilang
-          changeState(AppState.MENU);
+          //
+          isTransitioningModel = false; //
+          changeState(AppState.MENU); //
         });
-        return; // Hentikan eksekusi di sini jika memulai animasi keluar normal
+        return; //
       }
-      // Jika kita sampai di sini (karena transisi diinterupsi),
-      // langsung ganti state setelah unload paksa.
-      changeState(AppState.MENU);
-      break; // Akhir case back_to_menu
+      // Jika kita sampai di sini (karena interupsi ATAU dari Konfirmasi Kuis),
+      // langsung ganti state.
+      changeState(AppState.MENU); //
+      break;
 
     case "back_to_landing": // Biasanya dari Menu, Report, Guide, dll.
       // Cek jika ada sisa lock yang aktif secara tidak sengaja
@@ -725,18 +736,25 @@ function handleInteraction(action) {
       changeState(AppState.LANDING);
       break;
     case "show_quiz":
+      changeState(AppState.CONFIRM_FINAL_TEST);
+      break;
+    case "confirm_start_quiz":
+      // Logika asli dari 'show_quiz' dipindahkan ke sini
+      console.log("Final Test confirmed. Starting quiz...");
       // Acak data kuis
-      shuffledQuizData = [...quizData];
+      shuffledQuizData = [...quizData]; //
       for (let i = shuffledQuizData.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        //
+        const j = Math.floor(Math.random() * (i + 1)); //
         [shuffledQuizData[i], shuffledQuizData[j]] = [
-          shuffledQuizData[j],
-          shuffledQuizData[i],
+          //
+          shuffledQuizData[j], //
+          shuffledQuizData[i], //
         ];
       }
-      currentQuestionIndex = 0;
-      quizScore = 0;
-      changeState(AppState.QUIZ);
+      currentQuestionIndex = 0; //
+      quizScore = 0; //
+      changeState(AppState.QUIZ); // Langsung mulai kuis
       break;
     case "show_quiz_report":
       if (currentState === AppState.LANDING) {
@@ -822,11 +840,12 @@ function handleInteraction(action) {
         // Callback midpoint HANYA untuk memicu state change berikutnya
         console.log("OUT Midpoint: Triggering next state.");
 
-        // Logika state change tetap sama
-        if (
+        const shouldGoToMiniQuiz =
           currentComponentIndex === highestComponentUnlocked &&
-          currentComponentIndex < components.length - 1
-        ) {
+          currentComponentIndex < components.length;
+
+        // Logika state change tetap sama
+        if (shouldGoToMiniQuiz) {
           changeState(AppState.MINI_QUIZ);
         } else if (currentComponentIndex < components.length - 1) {
           currentComponentIndex++;
@@ -1094,6 +1113,9 @@ function refreshUI(options = {}) {
         wasMiniQuizCorrect
       );
       break;
+    case AppState.CONFIRM_FINAL_TEST:
+      createFinalTestConfirmationPage(); //
+      break;
     case AppState.QUIZ:
       createQuizScreen(
         shuffledQuizData[currentQuestionIndex],
@@ -1107,6 +1129,32 @@ function refreshUI(options = {}) {
         currentQuestionIndex,
         shuffledQuizData.length
       );
+      const continueBtn = viewerUIGroup.getObjectByName(
+        "quizResultContinueButton"
+      );
+      if (continueBtn) {
+        // 1. Langsung nonaktifkan tombol saat UI muncul
+        setButtonEnabled(continueBtn, false, "..."); // Tampilkan "..." sementara
+
+        // 2. Atur timeout untuk mengaktifkannya kembali setelah jeda
+        const activationDelay = 750; // Jeda 750 milidetik (sesuaikan jika perlu)
+        setTimeout(() => {
+          // Cek lagi apakah kita MASIH di state QUIZ_RESULT (penting!)
+          // dan apakah tombolnya masih ada
+          const btnAgain = viewerUIGroup.getObjectByName(
+            "quizResultContinueButton"
+          );
+          if (currentState === AppState.QUIZ_RESULT && btnAgain) {
+            console.log("Activating Quiz Result continue button after delay.");
+            setButtonEnabled(btnAgain, true); // Aktifkan tombol
+          } else {
+            console.log(
+              "State changed before Quiz Result button activation timeout."
+            );
+          }
+        }, activationDelay);
+      }
+      // --- AKHIR TAMBAHAN ---
       break;
     case AppState.QUIZ_REPORT:
       createQuizReportScreen(quizScore, hasAttemptedQuiz);

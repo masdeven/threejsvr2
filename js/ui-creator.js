@@ -2338,7 +2338,7 @@ export function createQuizResultScreen(
   // =============================
 
   // === 2. JUDUL HASIL (SESUAI STANDAR BARU) ===
-  const titleText = isCorrect ? "Correct!" : "Review"; // Judul dipersingkat
+  const titleText = isCorrect ? "Correct!" : "Incorrect: Review"; // Judul dipersingkat
   const titleColor = isCorrect ? "#28a745" : "#FFC107"; // Warna tetap
   const titleWidth = 0.35; // Lebar disesuaikan
   const titleHeight = 0.03; // Tinggi standar
@@ -2363,23 +2363,33 @@ export function createQuizResultScreen(
   // =============================
 
   // === 4. TOMBOL Continue/Results (SESUAI STANDAR BARU) ===
-  const continueButtonWidth = 0.35; // Sama seperti tombol landing/greeting
-  const continueButtonHeight = 0.04; // Sama seperti tombol landing/greeting
+  const choiceButtonHeightFromQuizScreen = 0.031; // Sesuaikan jika berubah di createQuizScreen
+
+  // Ukuran tombol baru
+  const continueButtonWidth = 0.12; // <-- Lebar disamakan dgn tombol Back/Next viewer
+  const continueButtonHeight = choiceButtonHeightFromQuizScreen; // <-- Tinggi disamakan dgn tombol A/B/C/D
   const bottomPadding = 0.015;
-  const buttonY = -panelHeight / 2 + continueButtonHeight / 2 + bottomPadding; // Y paling bawah (-0.1285)
+  const rightPadding = 0.015; // Padding dari sisi kanan
+
+  // Posisi Y (paling bawah)
+  const buttonY = -panelHeight / 2 + continueButtonHeight / 2 + bottomPadding; // Y paling bawah
+
+  // Posisi X (pojok kanan bawah)
+  const buttonX = panelWidth / 2 - continueButtonWidth / 2 - rightPadding; // X di kanan
 
   const isLastQuestion = questionIndex >= totalQuestions - 1;
-  const buttonText = isLastQuestion ? "View Results" : "Next Question";
+  const buttonText = isLastQuestion ? "Results" : "Next"; // Teks disingkat agar muat
 
   const continueButton = createButton(
     buttonText,
-    "next_question", // Aksi tetap sama
+    "next_question",
     continueButtonWidth,
     continueButtonHeight,
     BTN_COLOR_PRIMARY
   );
-  continueButton.position.set(0, buttonY, 0.01); // Rata tengah
+  continueButton.position.set(buttonX, buttonY, 0.01); // <-- Posisi X & Y baru
   continueButton.renderOrder = 1;
+  continueButton.name = "quizResultContinueButton"; // Nama unik tetap sama
   viewerUIGroup.add(continueButton);
   // =============================
 
@@ -2389,7 +2399,7 @@ export function createQuizResultScreen(
     .map((answer, index) => {
       const prefix = `${String.fromCharCode(65 + index)}. ${answer}`;
       if (index === currentQuestion.correctAnswerIndex) {
-        return `${prefix} (Correct)`; // ← Diubah sedikit
+        return `${prefix} ✅ (Correct)`; // ← Diubah sedikit
       }
       return prefix;
     })
@@ -3209,4 +3219,70 @@ export function createQuickGuideScreen(guidePages, pageIndex) {
   // 6. Atur Posisi Grup UI
   viewerUIGroup.position.copy(uiBasePosition);
   viewerUIGroup.lookAt(uiLookAtPosition);
+}
+/**
+ * Membuat UI untuk konfirmasi memulai Final Test.
+ * --- SKALA KECIL ---
+ */
+export function createFinalTestConfirmationPage() {
+  clearViewerUI(); // Hanya viewerUIGroup
+
+  // 1. Posisi standar
+  const uiBasePosition = VIEWER_UI_POSITION;
+  const uiLookAtPosition = VIEWER_UI_LOOKAT;
+
+  // 2. Panel standar kecil
+  const panelWidth = 0.43;
+  const panelHeight = 0.327;
+  const mainPanel = createUIPanel(panelWidth, panelHeight, 0, BG_COLOR); // Radius 0, BG_COLOR
+  mainPanel.position.set(0, 0, 0);
+  viewerUIGroup.add(mainPanel);
+
+  // 3. Judul / Pesan Konfirmasi
+  const messageText = "Start the Final Test now?";
+  const messageWidth = panelWidth * 0.85; // Lebar hampir penuh
+  const messageY = 0.05; // Posisi Y di bagian atas tengah
+
+  const messageLabel = createBodyText(messageText, messageWidth, {
+    baseFontSize: 18, // Ukuran font sedang
+  });
+  messageLabel.position.set(0, messageY, 0.01);
+  viewerUIGroup.add(messageLabel);
+
+  // 4. Tombol Konfirmasi & Batal (Bersebelahan di bawah)
+  const buttonWidth = 0.18; // Ukuran kecil (seperti post quiz choice)
+  const buttonHeight = 0.04; // Ukuran kecil
+  const spacingX = 0.02; // Jarak antar tombol
+  const bottomPadding = 0.03; // Padding dari bawah
+  const buttonY = -panelHeight / 2 + buttonHeight / 2 + bottomPadding; // Y di bawah (-0.1135)
+
+  // Posisi X Kiri & Kanan
+  const leftButtonX = -(spacingX / 2) - buttonWidth / 2;
+  const rightButtonX = spacingX / 2 + buttonWidth / 2;
+
+  // Tombol Kiri (Cancel -> Kembali ke Menu)
+  const cancelButton = createButton(
+    "Cancel",
+    "back_to_menu", // Kembali ke menu topik
+    buttonWidth,
+    buttonHeight,
+    BTN_COLOR_SECONDARY //
+  );
+  cancelButton.position.set(leftButtonX, buttonY, 0.01);
+  viewerUIGroup.add(cancelButton);
+
+  // Tombol Kanan (Confirm -> Mulai Kuis)
+  const confirmButton = createButton(
+    "Start",
+    "confirm_start_quiz", // Aksi baru
+    buttonWidth,
+    buttonHeight,
+    BTN_COLOR_PRIMARY //
+  );
+  confirmButton.position.set(rightButtonX, buttonY, 0.01);
+  viewerUIGroup.add(confirmButton);
+
+  // 5. Atur Posisi Grup UI
+  viewerUIGroup.position.copy(uiBasePosition); //
+  viewerUIGroup.lookAt(uiLookAtPosition); //
 }
