@@ -809,7 +809,7 @@ function createSubtitleLabel(text, width, height, color = "#E2E8F0") {
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
 
-  ctx.font = `${fontSize}px Arial, Geneva, sans-serif`;
+  ctx.font = `bold ${fontSize}px Arial, Geneva, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = color;
