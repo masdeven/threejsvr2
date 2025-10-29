@@ -106,22 +106,6 @@ controls.update();
 // PENCAHAYAAN & ENVIRONMENT
 // ===============================================================
 
-// DI scene-setup.js - Tambah lighting yang proper
-// Ambient light (kurangi intensity)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambientLight);
-
-// Main directional light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(5, 5, 5);
-directionalLight.castShadow = true;
-scene.add(directionalLight);
-
-// Fill light
-const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-fillLight.position.set(-5, 3, -5);
-scene.add(fillLight);
-
 // Environment Map (HDR)
 export function loadEnvironmentMap(callback) {
   new RGBELoader(loadingManager).setPath(ENV_MAP_PATH).load(
