@@ -78,6 +78,7 @@ import {
   preloadLoader,
   transitionState,
   currentModel,
+  stopModelAnimation,
 } from "./model-loader.js";
 
 // Manajer untuk interaksi (mouse, VR controller)
@@ -136,6 +137,7 @@ let current_guide_index = 0;
 
 // --- State UI & Transisi ---
 let isChangingComponent = false;
+let isTransitioningModel = false;
 let isChangingDescription = false;
 let descriptionChangeTimeout = null;
 let confettiEffect = null;
@@ -679,20 +681,47 @@ function handleInteraction(action) {
     case "close_help":
       changeState(AppState.LANDING);
       break;
-    case "back_to_menu":
-      if (isChangingComponent) return;
-      isChangingComponent = true;
-      startModelAnimation(true, () => {
-        changeState(AppState.MENU);
-        isChangingComponent = false;
-      });
-      break;
-    case "back_to_landing":
+    case "back_to_menu": // Biasanya dari Viewer Page
+      // Cek lock, tapi JANGAN return. Kita ingin 'X' selalu bekerja.
+      if (isTransitioningModel) {
+        console.warn(
+          "Back to menu clicked during transition. Forcing unload and state change."
+        );
+        // Hentikan animasi yg mungkin berjalan & hapus model SEGERA
+        stopModelAnimation(); // <-- Fungsi baru (akan kita buat)
+        unloadComponentModel();
+        isTransitioningModel = false; // <-- Langsung lepas lock
+      } else {
+        // Jika tidak transisi, mulai animasi keluar normal
+        isTransitioningModel = true; // Set lock SEMENTARA untuk animasi keluar ini
+        navButtons.forEach((btn) => setButtonEnabled(btn, false)); // Nonaktifkan UI viewer
+        startModelAnimation(true, () => {
+          // Midpoint animasi keluar
+          isTransitioningModel = false; // Lepas lock setelah model hilang
+          changeState(AppState.MENU);
+        });
+        return; // Hentikan eksekusi di sini jika memulai animasi keluar normal
+      }
+      // Jika kita sampai di sini (karena transisi diinterupsi),
+      // langsung ganti state setelah unload paksa.
+      changeState(AppState.MENU);
+      break; // Akhir case back_to_menu
+
+    case "back_to_landing": // Biasanya dari Menu, Report, Guide, dll.
+      // Cek jika ada sisa lock yang aktif secara tidak sengaja
+      if (isTransitioningModel) {
+        console.warn(
+          "Back to landing clicked with active transition lock? Forcing release."
+        );
+        isTransitioningModel = false; // Lepas lock untuk safety
+      }
+      // Hentikan audio atau animasi spesifik state sebelumnya
       if (currentState === AppState.AVATAR_GREETING) {
         stopAudio();
         clearActiveTypingAnimation();
         stopAvatarDropAnimation();
       }
+      // Langsung ganti state
       changeState(AppState.LANDING);
       break;
     case "show_quiz":
@@ -770,29 +799,28 @@ function handleInteraction(action) {
       changeDescription("next");
       break;
     case "next_component":
-      // 1. Tetap cek flag utama untuk mencegah overlap selama animasi KELUAR
-      if (isChangingComponent) return;
-
-      // 2. NEW: Cek & Hapus jika model sedang animasi MASUK saat ini
-      if (transitionState.isAnimating === "in" && currentModel) {
-        console.warn("Interrupting IN animation, unloading model immediately.");
-        unloadComponentModel(); // Hapus paksa model yang sedang animasi masuk
-        // Reset state animasi transisi secara manual karena diinterupsi
-        transitionState.isAnimating = false;
-        transitionState.onComplete = null;
-        transitionState.onMidpoint = null; // Pastikan midpoint juga bersih
+      // 1. Cek lock transisi UTAMA
+      if (isTransitioningModel) {
+        console.log("Blocked: Model transition already in progress.");
+        return;
       }
 
-      // 3. Mulai sekuens transisi BARU
-      isChangingComponent = true; // Set flag untuk animasi KELUAR berikutnya
-      navButtons.forEach((btn) => setButtonEnabled(btn, false)); // Nonaktifkan tombol
+      // 2. Set lock & hapus model lama SEGERA
+      console.log("Next clicked: Setting lock, forcing unload.");
+      isTransitioningModel = true; // <-- SET LOCK
+      unloadComponentModel(); // Hapus paksa model yang ada
+
+      // 3. Reset state animasi sebelumnya (jika ada yg nyangkut)
+      transitionState.isAnimating = false;
+      transitionState.onComplete = null;
+      transitionState.onMidpoint = null;
+
+      // 4. Nonaktifkan tombol UI sementara
+      navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointNext = () => {
-        // Unload di sini memastikan model dihapus JIKA tidak diinterupsi,
-        // aman jika sudah dihapus di langkah 2.
-        if (currentModel) unloadComponentModel();
-
-        isChangingComponent = false; // Reset flag SETELAH unload selesai
+        // Callback midpoint HANYA untuk memicu state change berikutnya
+        console.log("OUT Midpoint: Triggering next state.");
 
         // Logika state change tetap sama
         if (
@@ -802,13 +830,16 @@ function handleInteraction(action) {
           changeState(AppState.MINI_QUIZ);
         } else if (currentComponentIndex < components.length - 1) {
           currentComponentIndex++;
+          // Kirim flag isTransitioning HANYA untuk referensi di showViewer jika perlu
+          // tapi BUKAN untuk menonaktifkan tombol lagi.
           changeState(AppState.VIEWER, { isTransitioning: true });
         } else {
           changeState(AppState.MENU);
+          isTransitioningModel = false; // <-- RELEASE LOCK jika kembali ke menu
         }
       };
 
-      // 4. Mulai animasi KELUAR (mungkin untuk model null jika baru dihapus)
+      // 5. Mulai animasi KELUAR (sebagai timer delay sebelum midpoint)
       startModelAnimation(true, onAnimationMidpointNext);
       break;
     case "mini_quiz_correct":
@@ -843,37 +874,41 @@ function handleInteraction(action) {
       }
       break;
     case "prev_component":
-      // 1. Tetap cek flag utama
-      if (isChangingComponent) return;
-
-      // 2. NEW: Cek & Hapus jika model sedang animasi MASUK saat ini
-      if (transitionState.isAnimating === "in" && currentModel) {
-        console.warn("Interrupting IN animation, unloading model immediately.");
-        unloadComponentModel(); // Hapus paksa model yang sedang animasi masuk
-        // Reset state animasi transisi
-        transitionState.isAnimating = false;
-        transitionState.onComplete = null;
-        transitionState.onMidpoint = null;
+      // 1. Cek lock transisi UTAMA
+      if (isTransitioningModel) {
+        console.log("Blocked: Model transition already in progress.");
+        return;
       }
 
-      // 3. Mulai sekuens transisi BARU
-      isChangingComponent = true;
+      // 2. Set lock & hapus model lama SEGERA
+      console.log("Prev clicked: Setting lock, forcing unload.");
+      isTransitioningModel = true; // <-- SET LOCK
+      unloadComponentModel(); // Hapus paksa model yang ada
+
+      // 3. Reset state animasi sebelumnya
+      transitionState.isAnimating = false;
+      transitionState.onComplete = null;
+      transitionState.onMidpoint = null;
+
+      // 4. Nonaktifkan tombol UI sementara
       navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointPrev = () => {
-        if (currentModel) unloadComponentModel(); // Unload jika belum
-        isChangingComponent = false; // Reset SETELAH unload
+        console.log("OUT Midpoint: Triggering previous state.");
 
         // Logika state change tetap sama
         if (currentComponentIndex > 0) {
           currentComponentIndex--;
           changeState(AppState.VIEWER, { isTransitioning: true });
+        } else {
+          // Jika sudah di index 0, tidak ada state change, lepas lock
+          isTransitioningModel = false; // <-- RELEASE LOCK
+          // Aktifkan kembali tombol secara manual karena tidak ada refreshUI
+          reloadViewerNavigation();
         }
-        // else: tidak perlu changeState, UI akan refresh otomatis
-        // karena showViewer tidak menonaktifkan tombol lagi
       };
 
-      // 4. Mulai animasi KELUAR
+      // 5. Mulai animasi KELUAR (sebagai timer delay)
       startModelAnimation(true, onAnimationMidpointPrev);
       break;
     case "play_audio":
@@ -920,14 +955,34 @@ function handleInteraction(action) {
       break;
     default:
       if (action.startsWith("select_")) {
-        if (isChangingComponent) return;
-        isChangingComponent = true;
+        // --- TAMBAHKAN PENGECEKAN LOCK DI SINI ---
+        if (isTransitioningModel) {
+          console.log(
+            "Blocked: Model transition in progress, cannot select topic yet."
+          );
+          return;
+        }
+        // --- AKHIR PENAMBAHAN ---
+
+        // Hapus referensi ke isChangingComponent yang lama
+        // if (isChangingComponent) return;
+        // isChangingComponent = true;
+
+        // Set lock BARU untuk transisi KE viewer
+        isTransitioningModel = true;
+        console.log("Select topic: Setting lock.");
+
         const index = parseInt(action.split("_")[1], 10);
         if (!isNaN(index) && index >= 0 && index < components.length) {
           currentComponentIndex = index;
+          // Panggil changeState, lock akan dilepas oleh callback di showViewer
           changeState(AppState.VIEWER, { isTransitioning: true });
         } else {
-          isChangingComponent = false;
+          // Jika index tidak valid, lepas lock lagi
+          console.warn("Invalid topic index, releasing lock.");
+          isTransitioningModel = false;
+          // Hapus referensi ke isChangingComponent yang lama
+          // isChangingComponent = false;
         }
       }
       break;
@@ -939,9 +994,14 @@ function handleInteraction(action) {
  * @param {string} direction - "prev" atau "next".
  */
 function changeDescription(direction) {
-  if (isChangingComponent || isChangingDescription) {
-    return;
+  // 1. --- UPDATE GUARD DI SINI ---
+  if (isTransitioningModel || isChangingDescription) {
+    console.log(
+      "Blocked: Model transition or description change already in progress."
+    );
+    return; // Abaikan klik jika sedang transisi model ATAU deskripsi
   }
+  // --- AKHIR UPDATE GUARD ---
 
   const component = components[currentComponentIndex];
   if (!component) return;
@@ -962,45 +1022,37 @@ function changeDescription(direction) {
     }
   }
 
-  isChangingDescription = true;
+  console.log(`Changing description to index: ${newIndex}`);
+  isChangingDescription = true; // Set flag HANYA untuk mencegah klik deskripsi ganda
   currentDescriptionIndex = newIndex;
 
-  // Nonaktifkan tombol navigasi deskripsi sementara
-  navButtons.forEach((btn) => {
-    const action = btn.userData.action;
-    if (action === "prev_description" || action === "next_description") {
-      setButtonEnabled(btn, false);
-    }
-  });
+  // --- HAPUS PENONAKTIFAN MANUAL ---
+  // navButtons.forEach((btn) => {
+  //   const action = btn.userData.action;
+  //   if (action === "prev_description" || action === "next_description") {
+  //     setButtonEnabled(btn, false);
+  //   }
+  // });
+  // --- AKHIR HAPUS ---
 
   if (descriptionChangeTimeout) {
     clearTimeout(descriptionChangeTimeout);
   }
 
-  // Update target scroll
+  // Update target scroll terlebih dahulu
   updateActiveTextPanelTarget();
 
-  // Beri jeda singkat untuk animasi scroll sebelum render ulang tombol
+  // Atur timeout: Setelah jeda singkat, panggil reload UI dan reset flag
   descriptionChangeTimeout = setTimeout(() => {
-    reloadViewerNavigation();
-    isChangingDescription = false;
-
-    // Aktifkan/Nonaktifkan tombol berdasarkan state baru
-    const comp = components[currentComponentIndex];
-    if (comp) {
-      navButtons.forEach((btn) => {
-        const action = btn.userData.action;
-        if (action === "prev_description") {
-          setButtonEnabled(btn, currentDescriptionIndex > 0);
-        } else if (action === "next_description") {
-          setButtonEnabled(
-            btn,
-            currentDescriptionIndex < comp.description.length - 1
-          );
-        }
-      });
-    }
+    reloadViewerNavigation(); // <--- Biarkan fungsi ini mengatur status tombol
+    isChangingDescription = false; // Reset flag setelah UI di-reload
     descriptionChangeTimeout = null;
+    console.log("Description change complete, UI reloaded.");
+
+    // --- HAPUS PENGAKTIFAN MANUAL ---
+    // const comp = components[currentComponentIndex];
+    // if (comp) { ... } // Logika enable/disable tombol sekarang ada di reloadViewerNavigation
+    // --- AKHIR HAPUS ---
   }, CHANGE_DEBOUNCE_TIME);
 }
 
@@ -1113,24 +1165,29 @@ function showViewer(index, options = {}) {
   // }
 
   // 3. Definisikan callback yang akan dijalankan setelah model & animasi selesai.
-  const onModelReady = () => {
-    if (isTransitioning) {
-      isChangingComponent = false;
-      // Gambar ulang UI. Karena `isChangingComponent` sudah false,
-      // semua tombol akan aktif kembali secara otomatis.
-      reloadViewerNavigation();
-    }
+  const releaseTransitionLockAndEnableUI = () => {
+    console.log(
+      `Model ${component.label} IN animation complete. Releasing lock.`
+    );
+    isTransitioningModel = false; // <-- RELEASE LOCK DI SINI
+    // Aktifkan kembali tombol navigasi viewer
+    reloadViewerNavigation();
   };
 
   // 4. Mulai proses loading model.
   if (component.modelFile) {
-    // Panggil loadComponentModel, animasi masuk akan memanggil onModelReady.
-    // Offset -1.5 agar model muncul dari bawah meja
-    loadComponentModel(component.modelFile, -0.5, onModelReady);
+    loadComponentModel(
+      component.modelFile,
+      -0.5,
+      releaseTransitionLockAndEnableUI
+    ); // Ganti nama callback
   } else {
-    // Jika tidak ada model (mis. Intro), jalankan callback setelah jeda singkat
-    // (anggap sebagai "animasi masuk" instan).
-    setTimeout(onModelReady, 50); // Jeda sangat singkat
+    // Jika tidak ada model
+    setTimeout(() => {
+      console.log("No model to load, releasing lock immediately.");
+      isTransitioningModel = false; // <-- RELEASE LOCK
+      reloadViewerNavigation(); // Aktifkan tombol
+    }, 50);
   }
 }
 // ===============================================================
@@ -1152,6 +1209,34 @@ function reloadViewerNavigation() {
     highestComponentUnlocked,
     hasAttemptedQuiz
   );
+  activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
+
+  // Aktifkan tombol HANYA jika transisi model TIDAK sedang berjalan
+  if (!isTransitioningModel) {
+    console.log("Reloading nav, transition lock OFF, enabling buttons.");
+    navButtons.forEach((btn) => {
+      // Logika enable/disable spesifik (misal prev/next desc)
+      const action = btn.userData.action;
+      if (action === "prev_description") {
+        setButtonEnabled(btn, currentDescriptionIndex > 0);
+      } else if (action === "next_description") {
+        setButtonEnabled(
+          btn,
+          currentDescriptionIndex < component.description.length - 1
+        );
+      } else if (action !== "locked") {
+        // Jangan aktifkan tombol yg memang locked
+        setButtonEnabled(btn, true); // Aktifkan tombol lain
+      }
+    });
+  } else {
+    console.log("Reloading nav, transition lock ON, buttons remain disabled.");
+    // Tombol akan tetap nonaktif karena dibuat ulang dalam keadaan default (aktif)
+    // tapi check !isTransitioningModel mencegah pengaktifan eksplisit.
+    // Jika createViewerPage membuat tombol nonaktif default, tidak perlu else.
+    // Jika createViewerPage membuat tombol aktif default, kita perlu menonaktifkannya lagi:
+    navButtons.forEach((btn) => setButtonEnabled(btn, false));
+  }
 }
 
 /**

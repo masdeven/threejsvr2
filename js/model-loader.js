@@ -109,9 +109,6 @@ export async function loadComponentModel(
     convertModelMaterials(gltf.scene);
     preCompileModel(gltf.scene);
 
-    // Simpan ke cache
-    modelCache[url] = gltf.scene;
-
     // Clone model dari cache untuk ditampilkan
     const newModel = gltf.scene.clone();
     setupModelPosition(newModel, startYOffset);
@@ -121,6 +118,7 @@ export async function loadComponentModel(
   } catch (e) {
     // Jangan log error jika itu adalah AbortError yang disengaja
     if (e?.name !== "AbortError") {
+      if (onAnimationComplete) onAnimationComplete();
       console.error("Error loading model:", e);
     }
   } finally {
@@ -216,6 +214,20 @@ export function updateModelTransition(deltaTime) {
     }
 
     // Reset state animasi
+    transitionState.isAnimating = false;
+    transitionState.onMidpoint = null;
+    transitionState.onComplete = null;
+  }
+}
+
+export function stopModelAnimation() {
+  if (transitionState.isAnimating) {
+    console.log("Force stopping model transition animation.");
+    // Langsung pindahkan model ke target Y terakhir (jika relevan & model ada)
+    // Ini opsional, bisa juga langsung di-unload saja.
+    // if (currentModel) {
+    //     currentModel.position.y = transitionState.targetY;
+    // }
     transitionState.isAnimating = false;
     transitionState.onMidpoint = null;
     transitionState.onComplete = null;
