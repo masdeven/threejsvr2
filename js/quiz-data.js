@@ -24,11 +24,14 @@ export const quizData = [
   },
   // == Monitor ==
   {
-    question:
-      "Which type of monitor is highlighted for its high contrast and more vivid colors?",
-    // Diubah (sebelumnya 2)
-    answers: ["OLED", "LED", "Gaming Monitor", "15-inch Monitor"],
-    correctAnswerIndex: 0,
+    question: "What is the main function of a computer monitor?",
+    answers: [
+      "To display visual information",
+      "To process calculations",
+      "To store files",
+      "To connect to the internet",
+    ],
+    correctAnswerIndex: 0, // Diubah
   },
   {
     question:
@@ -43,139 +46,139 @@ export const quizData = [
   },
   // == Keyboard ==
   {
-    question:
-      "Which type of keyboard is mentioned as providing better tactile response and durability?",
+    question: "What is the primary role of a keyboard in a computer system?",
     answers: [
-      "Membrane Keyboard",
-      "Wireless Keyboard",
-      "Mechanical Keyboard",
-      "Standard Keyboard",
+      "To display images",
+      "To play audio",
+      "To enter text and commands",
+      "To move the cursor",
     ],
-    correctAnswerIndex: 2,
+    correctAnswerIndex: 2, // Diubah
   },
   {
-    question:
-      "A standard modern keyboard generally has how many keys according to the material?",
-    // Diubah (sebelumnya 2)
-    answers: ["104 keys", "101 keys", "88 keys", "108 keys"],
-    correctAnswerIndex: 0,
+    question: "A keyboard is primarily what kind of device?",
+    answers: [
+      "An input device",
+      "An output device",
+      "A storage device",
+      "A processing device",
+    ],
+    correctAnswerIndex: 0, // Diubah
   },
   // == Mouse ==
   {
     question:
-      "Which type of mouse uses an LED sensor and can be used on almost any surface?",
-    answers: ["Laser Mouse", "Gaming Mouse", "Wireless Mouse", "Optical Mouse"],
-    correctAnswerIndex: 3,
+      "What device is used to control the cursor and interact with visual elements on the screen?",
+    answers: ["Keyboard", "Monitor", "Printer", "Mouse"],
+    correctAnswerIndex: 3, // Diubah
   },
   {
     question:
       "What is the primary function of the scroll wheel on a mouse as described in the text?",
-    // Diubah (sebelumnya 2)
     answers: [
       "Page navigation",
       "Controlling cursor speed",
       "Left-clicking",
       "Right-clicking",
     ],
-    correctAnswerIndex: 0,
+    correctAnswerIndex: 0, // Diubah
   },
   // == Motherboard ==
   {
     question:
-      "What is the term for the size variation of a motherboard, such as ATX, Micro-ATX, and Mini-ITX?",
-    answers: ["Socket Type", "Form Factor", "Chipset", "Expansion Slot"],
-    correctAnswerIndex: 1,
+      "What component is described as the 'mother' that connects all other parts of the computer?",
+    answers: ["Processor (CPU)", "Motherboard", "Hard Drive", "Power Supply"],
+    correctAnswerIndex: 1, // Diubah
   },
   {
-    question:
-      "What part of the motherboard determines its compatibility with other components like the processor and RAM?",
+    question: "What is the main function of the motherboard?",
     answers: [
-      "The color of the board",
-      "The number of USB ports",
-      "The processor socket and chipset",
-      "The brand name",
+      "To process graphics",
+      "To store files long-term",
+      "To provide communication paths between all components",
+      "To display visuals",
     ],
     correctAnswerIndex: 2,
   },
   // == Processor (CPU) ==
   {
     question:
-      "According to the material, who are the two main manufacturers of CPUs?",
-    answers: [
-      "NVIDIA and AMD",
-      "Intel and NVIDIA",
-      "Apple and Intel",
-      "Intel and AMD",
-    ],
-    correctAnswerIndex: 3,
+      "Which component is called the 'brain' of the computer, responsible for executing all instructions?",
+    answers: ["RAM", "Monitor", "Motherboard", "Processor (CPU)"],
+    correctAnswerIndex: 3, // Diubah
   },
   {
     question:
-      "A CPU with four cores, suitable for smooth multitasking, is known as a...?",
-    answers: ["Dual-core", "Quad-core", "Octa-core", "Multi-core"],
-    correctAnswerIndex: 1,
+      "According to the text, what does having more cores in a CPU help with?",
+    answers: [
+      "Making the screen brighter",
+      "Better multitasking and professional tasks",
+      "Connecting to Wi-Fi",
+      "Storing more photos",
+    ],
+    correctAnswerIndex: 1, // Diubah
   },
   // == Memory (RAM) ==
   {
     question: "What is the function of ROM (Read-Only Memory) in a computer?",
-    // Diubah (sebelumnya 2)
     answers: [
       "To store basic instructions for starting the computer (BIOS/UEFI).",
       "To run multiple programs at once.",
       "To store user files permanently.",
       "To serve as the computer's temporary workspace.",
     ],
-    correctAnswerIndex: 0,
+    correctAnswerIndex: 0, // Diubah
   },
   {
-    question:
-      "Which of the following are RAM speed standards mentioned in the text?",
-    // Diubah (sebelumnya 2)
+    question: "What is the main function of RAM (Random Access Memory)?",
     answers: [
-      "DDR1 and DDR2",
-      "DDR4 and DDR5",
-      "DDR3 and DDR4",
-      "DDR5 and DDR6",
+      "To store files permanently",
+      "To act as a temporary workspace for actively used data",
+      "To start the computer (BIOS)",
+      "To print documents",
     ],
-    correctAnswerIndex: 1,
+    correctAnswerIndex: 1, // Diubah
   },
   // == Graphics Card (GPU) ==
   {
     question:
-      "Which technology is mentioned for creating realistic lighting effects in modern GPUs?",
-    answers: ["DLSS", "GeForce RTX", "Ray Tracing", "Radeon RX"],
-    correctAnswerIndex: 2,
+      "Which component is essential for processing complex graphics, especially for gaming and video editing?",
+    answers: [
+      "Network Card",
+      "Sound Card",
+      "Graphics Card (GPU)",
+      "Storage Drive",
+    ],
+    correctAnswerIndex: 2, // Diubah
   },
   {
     question:
-      "What are the two main series of dedicated graphics cards mentioned from NVIDIA and AMD?",
+      "What is the difference between integrated and dedicated graphics (GPU)?",
     answers: [
-      "Core and Ryzen",
-      "GeForce (NVIDIA) and Radeon (AMD)",
-      "Intel HD Graphics and AMD Vega",
-      "GTX (AMD) and RTX (NVIDIA)",
+      "Integrated is for wired, dedicated is for wireless",
+      "Integrated is built-in (basic), dedicated is a separate card (powerful)",
+      "Integrated is for laptops, dedicated is for desktops",
+      "Integrated is made by Intel, dedicated is by AMD",
     ],
-    correctAnswerIndex: 1,
+    correctAnswerIndex: 1, // Diubah
   },
   // == Network Card (NIC) ==
   {
     question:
       "What type of network card is used for wired connections that offer stable speed and low latency?",
-    // Diubah (sebelumnya 2)
     answers: ["WiFi Card", "Bluetooth Card", "Modem Card", "Ethernet Card"],
-    correctAnswerIndex: 3,
+    correctAnswerIndex: 3, // Diubah
   },
   {
     question:
       "What does the text say about network cards in most modern motherboards?",
-    // Diubah (sebelumnya 2)
     answers: [
       "They are already integrated.",
       "They are sold separately.",
       "They are always wireless.",
       "They require a special slot.",
     ],
-    correctAnswerIndex: 0,
+    correctAnswerIndex: 0, // Diubah
   },
   // == Storage ==
   {
@@ -190,10 +193,15 @@ export const quizData = [
     correctAnswerIndex: 2,
   },
   {
-    question: "What is the interface mentioned for modern, super-fast SSDs?",
-    // Diubah (sebelumnya 2)
-    answers: ["NVMe", "SATA", "USB", "IDE"],
-    correctAnswerIndex: 0,
+    question:
+      "What is the main purpose of a storage device (like an HDD or SSD)?",
+    answers: [
+      "To execute calculations",
+      "To display images on the screen",
+      "To connect all components",
+      "To store all data and files permanently",
+    ],
+    correctAnswerIndex: 3, // Diubah
   },
   // == Printer ==
   {
@@ -210,27 +218,29 @@ export const quizData = [
   {
     question:
       "Which printer technology is most suitable for printing high-quality photos?",
-    // Diubah (sebelumnya 2)
-    answers: ["Laser", "Dot Matrix", "Monochrome", "Inkjet"],
-    correctAnswerIndex: 3,
+    answers: ["Inkjet", "Laser", "Dot Matrix", "Monochrome"],
+    correctAnswerIndex: 0, // Diubah
   },
   // == Flash Drive ==
   {
     question:
       "What technology allows a flash drive to retain data without needing electrical power?",
-    // Diubah (sebelumnya 2)
     answers: [
       "Magnetic Disk Technology",
       "Optical Technology",
       "RAM Technology",
       "Flash Memory Technology",
     ],
-    correctAnswerIndex: 3,
+    correctAnswerIndex: 3, // Diubah
   },
   {
-    question:
-      "Besides USB 2.0 and USB 3.0, which other interface is mentioned for faster data transfer on flash drives?",
-    answers: ["FireWire", "Thunderbolt", "USB-C", "SATA"],
-    correctAnswerIndex: 2,
+    question: "What is a flash drive primarily used for?",
+    answers: [
+      "Running the operating system",
+      "Processing game graphics",
+      "Transferring files portably between computers",
+      "Connecting to the internet",
+    ],
+    correctAnswerIndex: 2, // Diubah
   },
 ];
