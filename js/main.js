@@ -588,7 +588,7 @@ function changeState(newState, options = {}) {
   refreshUI(options);
 
   // Reset posisi kamera jika tidak sedang drag/transisi
-  if (!isUserInteracting && !isTransitioningWithinViewer) {
+  if (!isVRMode() && !isUserInteracting && !isTransitioningWithinViewer) {
     switch (newState) {
       case AppState.MODE_SELECTION:
       case AppState.AVATAR_GREETING:
@@ -1360,10 +1360,11 @@ function onVRSessionEnded() {
   console.log("Sesi VR berakhir, kembali ke pemilihan mode.");
 }
 function onVRSessionStarted() {
+  controls.enabled = false;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMappingExposure = 1;
-  // renderer.xr.setFramebufferScaleFactor(2);
+  renderer.xr.setFramebufferScaleFactor(1.2);
   changeState(AppState.AVATAR_GREETING);
 }
 

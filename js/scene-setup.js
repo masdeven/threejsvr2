@@ -66,7 +66,7 @@ export const renderer = new THREE.WebGLRenderer({
   powerPreference: "high-performance",
 });
 // renderer.localClippingEnabled = true;
-// renderer.xr.setReferenceSpaceType("local");
+renderer.xr.setReferenceSpaceType("local-floor");
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
 

@@ -7,6 +7,7 @@ import {
   FONT,
   getResolution,
   LOGICAL_RESOLUTION,
+  getActiveTypingAnimation,
 } from "./ui-creator.js";
 import {
   startDragging,
@@ -254,33 +255,43 @@ export function setButtonEnabled(button, enabled, text = null) {
  * @param {THREE.Mesh | null} intersectedObject - Tombol yang sedang di-hover, atau null.
  */
 function handleHover(intersectedObject) {
-  // Jika tombol sebelumnya tidak lagi di-hover, kembalikan ke state default
+  // Cek jika animasi mengetik sedang aktif (dari perbaikan sebelumnya)
+  if (getActiveTypingAnimation()) {
+    if (lastIntersectedButton && lastIntersectedButton.material) {
+      // Paksa tombol sebelumnya kembali ke opacity penuh
+      lastIntersectedButton.material.opacity = 1.0;
+    }
+    lastIntersectedButton = null;
+    return; // Hentikan di sini jika sedang mengetik
+  }
+
+  // --- PERBAIKAN PERFORMA JUDDER (Versi Final) ---
+
+  // 1. Handle "Hover Off"
+  // Jika tombol sebelumnya ada (lastIntersectedButton), dan BUKAN tombol yang sekarang,
+  // kembalikan opacity-nya ke 1.0 (terlihat penuh).
   if (lastIntersectedButton && lastIntersectedButton !== intersectedObject) {
-    if (
-      lastIntersectedButton.userData.isButton &&
-      lastIntersectedButton.userData.colors &&
-      lastIntersectedButton.userData.currentState !== "default"
-    ) {
-      redrawButton(
-        lastIntersectedButton,
-        lastIntersectedButton.userData.colors.default
-      );
-      lastIntersectedButton.userData.currentState = "default";
+    if (lastIntersectedButton.material) {
+      // Tidak perlu cek state, langsung set ke 1.0
+      lastIntersectedButton.material.opacity = 1.0;
     }
   }
 
-  // Jika tombol baru di-hover, ubah ke state hover
+  // 2. Handle "Hover On"
+  // Jika kita mengenai tombol BARU (intersectedObject),
+  // dan tombol itu TIDAK dalam status 'locked'
   if (intersectedObject && intersectedObject !== lastIntersectedButton) {
     if (
-      intersectedObject.userData.isButton &&
-      intersectedObject.userData.colors &&
-      intersectedObject.userData.currentState !== "hover"
+      intersectedObject.material &&
+      intersectedObject.userData.action !== "locked" // PENTING: Jangan ubah opacity tombol 'locked'
     ) {
-      redrawButton(intersectedObject, intersectedObject.userData.colors.hover);
-      intersectedObject.userData.currentState = "hover";
+      // Set opacity ke 0.8 (sedikit redup) untuk efek hover.
+      // Operasi ini SANGAT RINGAN untuk GPU.
+      intersectedObject.material.opacity = 0.8;
     }
   }
 
+  // 3. Simpan tombol ini untuk perbandingan di frame berikutnya
   lastIntersectedButton = intersectedObject;
 }
 
