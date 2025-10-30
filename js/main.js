@@ -499,27 +499,27 @@ function changeState(newState, options = {}) {
   refreshUI(options);
 
   if (!isVRMode() && !isUserInteracting && !isTransitioningWithinViewer) {
-    switch (newState) {
-      case AppState.MODE_SELECTION:
-      case AppState.AVATAR_GREETING:
-      case AppState.LANDING:
-      case AppState.MENU:
-      case AppState.HELP:
-      case AppState.QUIZ:
-      case AppState.QUIZ_RESULT:
-      case AppState.QUIZ_REPORT:
-      case AppState.QUIZ_POST_COMPLETION_REPORT:
-      case AppState.POST_QUIZ_CHOICE:
-      case AppState.COMPLETION:
-      case AppState.CREDITS:
-      case AppState.VIEWER:
-      case AppState.MINI_QUIZ:
-      case AppState.MINI_QUIZ_RESULT:
-        controls.enabled = true;
-        camera.position.set(-0.35, 1.2, -0.3);
-        controls.target.set(-0.35, 1.2, -0.5);
-        break;
-    }
+    // switch (newState) {
+    //   case AppState.MODE_SELECTION:
+    //   case AppState.AVATAR_GREETING:
+    //   case AppState.LANDING:
+    //   case AppState.MENU:
+    //   case AppState.HELP:
+    //   case AppState.QUIZ:
+    //   case AppState.QUIZ_RESULT:
+    //   case AppState.QUIZ_REPORT:
+    //   case AppState.QUIZ_POST_COMPLETION_REPORT:
+    //   case AppState.POST_QUIZ_CHOICE:
+    //   case AppState.COMPLETION:
+    //   case AppState.CREDITS:
+    //   case AppState.VIEWER:
+    //   case AppState.MINI_QUIZ:
+    //   case AppState.MINI_QUIZ_RESULT:
+    controls.enabled = true;
+    //     camera.position.set(-0.35, 1.2, -0.3);
+    //     controls.target.set(-0.35, 1.2, -0.5);
+    //     break;
+    // }
   }
 }
 /**

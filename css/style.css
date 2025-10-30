@@ -643,6 +643,60 @@ body {
     height: 40px;
     font-size: 13px;
   }
+  /* Perkecil padding utama overlay */
+  .screen-overlay {
+    padding: calc(var(--unit) * 1.5); /* 12px */
+  }
+
+  /* Perkecil font H1 dan marginnya */
+  .screen-overlay h1 {
+    /* Ganti 8vw (lebar) menjadi 8vh (tinggi) atau rem kecil */
+    font-size: clamp(1.5rem, 8vh, 2.25rem);
+    margin-bottom: var(--unit); /* 8px */
+  }
+
+  /* Perkecil font paragraf dan marginnya */
+  .screen-overlay p {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: calc(var(--unit) * 2); /* 16px */
+    max-width: 70%; /* Jaga agar tidak terlalu lebar */
+  }
+
+  /* Perkecil margin container input */
+  .input-container {
+    margin-top: calc(var(--unit) * 2); /* 16px */
+    margin-bottom: calc(var(--unit) * 2); /* 16px */
+  }
+
+  .input-container input[type="text"] {
+    font-size: 1rem;
+    padding: var(--unit) 0;
+  }
+
+  /* Perkecil tombol */
+  .overlay-button {
+    padding: calc(var(--unit) * 1.25) calc(var(--unit) * 3); /* 10px 24px */
+    font-size: 0.8rem;
+  }
+
+  /* Perkecil margin atas grup tombol */
+  .button-group {
+    margin-top: calc(var(--unit) * 2); /* 16px */
+  }
+
+  /* Atur progress bar agar tidak terlalu makan tempat */
+  .progress-bar-container {
+    margin-top: calc(var(--unit) * 2);
+  }
+  #loading-text {
+    margin-top: calc(var(--unit) * 2);
+    font-size: 0.8rem;
+  }
+  .spinner {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* Focus states for accessibility */

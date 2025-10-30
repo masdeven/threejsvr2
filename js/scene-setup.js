@@ -10,11 +10,11 @@ const TONE_MAPPING_EXPOSURE = 0.6;
 const CAMERA_FOV = 50;
 const CAMERA_NEAR = 0.1;
 const CAMERA_FAR = 100;
-const CAMERA_POS = new THREE.Vector3(0, 1.6, 0);
+const CAMERA_POS = new THREE.Vector3(-0.35, 1.2, -0.3);
 
 const MAX_PIXEL_RATIO = 2;
 
-const TARGET_POS = new THREE.Vector3(0, 1.6, 0);
+const TARGET_POS = new THREE.Vector3(-0.35, 1.2, -0.5);
 const CONTROLS_ROTATE_SPEED = -0.1;
 const CONTROLS_MIN_DIST = 0.05;
 const CONTROLS_MAX_DIST = 0.5;
