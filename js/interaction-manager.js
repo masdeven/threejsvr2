@@ -19,31 +19,17 @@ import {
 } from "./model-loader.js";
 import { isVRMode } from "./vr-manager.js";
 
-// ===============================================================
-// KONSTANTA & STATE MODUL
-// ===============================================================
-
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 const raycasterDrag = new THREE.Raycaster();
 
-let lastVRClickTime = 0;
-const VR_CLICK_DEBOUNCE = 300;
-let isUsingThumbstickRotation = false;
-
-// Warna
 const DISABLED_COLOR = "#2727278a";
-const BGCOLOR = "#5579bf88"; // Warna default jika tidak ada
+const BGCOLOR = "#5579bf88";
 const HOVER_COLOR = "#4A5568";
 const TEXT_COLOR = "#FFFFFF";
 
-// State
 let interactionCallback = null;
 let lastIntersectedButton = null;
-
-// ===============================================================
-// FUNGSI INTERSEKSI (RAYCASTING)
-// ===============================================================
 
 /**
  * Mendapatkan objek UI (tombol) yang berpotongan dengan pointer mouse.
@@ -65,34 +51,19 @@ function getIntersectedObject(x, y) {
 }
 function getThumbstickAxes(controller) {
   if (!controller || !controller.inputSource) return null;
-
   const gamepad = controller.inputSource.gamepad;
   if (!gamepad || !gamepad.axes || gamepad.axes.length < 4) return null;
-
-  // Axes mapping untuk xr-standard:
-  // axes[0-1]: left thumbstick (x, y)
-  // axes[2-3]: right thumbstick (x, y)
-  // Kita gunakan axes[2] dan axes[3] untuk thumbstick kanan
   return {
     x: gamepad.axes[2] || 0,
     y: gamepad.axes[3] || 0,
   };
 }
 
-// Fungsi baru: Rotasi model dengan thumbstick
 function rotateModelWithThumbstick(deltaX, deltaY, deltaTime) {
   const currentModel = getCurrentModel();
   if (!currentModel) return;
-
-  // Sensitivitas rotasi (sesuaikan nilai ini untuk mengubah kecepatan rotasi)
   const sensitivity = 2.0;
-
-  // Rotasi horizontal (Y-axis) berdasarkan thumbstick X
   currentModel.rotation.y += deltaX * sensitivity * deltaTime;
-
-  // Opsional: Rotasi vertikal (X-axis) berdasarkan thumbstick Y
-  // Uncomment baris di bawah jika ingin rotasi vertikal juga
-  // currentModel.rotation.x += deltaY * sensitivity;
 }
 
 /**
@@ -120,15 +91,10 @@ function getVRIntersectedObject(controller) {
 function getVRIntersectedModel(controller) {
   const currentModel = getCurrentModel();
   if (!currentModel) return null;
-
   raycaster.setFromXRController(controller);
   const intersects = raycaster.intersectObject(currentModel, true);
   return intersects.length > 0 ? intersects[0].object : null;
 }
-
-// ===============================================================
-// MANAJEMEN VISUAL & STATE TOMBOL
-// ===============================================================
 
 /**
  * Menggambar ulang canvas tekstur tombol dengan warna dan teks baru.
@@ -149,7 +115,7 @@ function redrawButton(button, color, text = null) {
   const shape = width === height ? "circle" : "roundedRectangle";
   ctx.fillStyle = color;
 
-  const padding = 0; // Padding 0 seperti di kode asli
+  const padding = 0;
 
   if (shape === "circle") {
     const centerX = canvas.width / 2;
@@ -159,7 +125,6 @@ function redrawButton(button, color, text = null) {
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
     ctx.fill();
   } else {
-    // Rounded rectangle
     const r = buttonResolution / getResolution();
     const x = padding;
     const y = padding;
@@ -181,7 +146,6 @@ function redrawButton(button, color, text = null) {
     ctx.fill();
   }
 
-  // Gambar Teks
   ctx.fillStyle = TEXT_COLOR;
   const vrFontScale = 1;
   const resolution = getResolution();
@@ -194,21 +158,18 @@ function redrawButton(button, color, text = null) {
     isVRMode() ? baseFontSize * vrFontScale : baseFontSize
   );
   ctx.font = `${fontStyle} ${finalFontSize}px Verdana, Geneva, sans-serif`;
-  ctx.textBaseline = "middle"; // Tetapkan baseline
+  ctx.textBaseline = "middle";
 
   const verticalOffset = shape === "circle" ? finalFontSize * 0.05 : 0;
   const buttonText = text || data.text;
 
-  // === PERBAIKAN: Cek flag textAlign ===
   if (data.textAlign === "left") {
-    // Jika ditandai "left" (dari createTopicButton)
     ctx.textAlign = "left";
-    const logicalTextPadding = 8; // 20px padding logis
+    const logicalTextPadding = 8;
     const textPadding =
       logicalTextPadding * (buttonResolution / LOGICAL_RESOLUTION);
     ctx.fillText(buttonText, textPadding, canvas.height / 2 + verticalOffset);
   } else {
-    // Perilaku default (rata tengah, untuk createButton biasa)
     ctx.textAlign = "center";
     ctx.fillText(
       buttonText,
@@ -228,11 +189,8 @@ function redrawButton(button, color, text = null) {
  */
 export function setButtonEnabled(button, enabled, text = null) {
   if (!button || !button.userData.isButton) return;
-
   const data = button.userData;
-
   if (enabled) {
-    // Mengaktifkan tombol
     data.action = data.originalAction || data.action;
     data.colors = {
       default: data.colors?.default || BGCOLOR,
@@ -241,63 +199,43 @@ export function setButtonEnabled(button, enabled, text = null) {
     redrawButton(button, data.colors.default, data.text);
     button.userData.currentState = "default";
   } else {
-    // Menonaktifkan tombol
-    data.originalAction = data.action; // Simpan aksi asli
+    data.originalAction = data.action;
     data.action = "locked";
-    data.colors = null; // Hapus kemampuan hover
+    data.colors = null;
     redrawButton(button, DISABLED_COLOR, text || data.text);
     button.userData.currentState = "disabled";
   }
 }
-
 /**
  * Menangani logika visual saat tombol di-hover (oleh mouse atau VR controller).
  * @param {THREE.Mesh | null} intersectedObject - Tombol yang sedang di-hover, atau null.
  */
 function handleHover(intersectedObject) {
-  // Cek jika animasi mengetik sedang aktif (dari perbaikan sebelumnya)
   if (getActiveTypingAnimation()) {
     if (lastIntersectedButton && lastIntersectedButton.material) {
-      // Paksa tombol sebelumnya kembali ke opacity penuh
       lastIntersectedButton.material.opacity = 1.0;
     }
     lastIntersectedButton = null;
-    return; // Hentikan di sini jika sedang mengetik
+    return;
   }
 
-  // --- PERBAIKAN PERFORMA JUDDER (Versi Final) ---
-
-  // 1. Handle "Hover Off"
-  // Jika tombol sebelumnya ada (lastIntersectedButton), dan BUKAN tombol yang sekarang,
-  // kembalikan opacity-nya ke 1.0 (terlihat penuh).
   if (lastIntersectedButton && lastIntersectedButton !== intersectedObject) {
     if (lastIntersectedButton.material) {
-      // Tidak perlu cek state, langsung set ke 1.0
       lastIntersectedButton.material.opacity = 1.0;
     }
   }
 
-  // 2. Handle "Hover On"
-  // Jika kita mengenai tombol BARU (intersectedObject),
-  // dan tombol itu TIDAK dalam status 'locked'
   if (intersectedObject && intersectedObject !== lastIntersectedButton) {
     if (
       intersectedObject.material &&
-      intersectedObject.userData.action !== "locked" // PENTING: Jangan ubah opacity tombol 'locked'
+      intersectedObject.userData.action !== "locked"
     ) {
-      // Set opacity ke 0.8 (sedikit redup) untuk efek hover.
-      // Operasi ini SANGAT RINGAN untuk GPU.
       intersectedObject.material.opacity = 0.8;
     }
   }
 
-  // 3. Simpan tombol ini untuk perbandingan di frame berikutnya
   lastIntersectedButton = intersectedObject;
 }
-
-// ===============================================================
-// PENANGANAN EVENT (EVENT HANDLERS)
-// ===============================================================
 
 /**
  * Menangani klik pada tombol scroll (hanya VR).
@@ -316,7 +254,6 @@ function handleScrollClick(action, scrollParent) {
       newY -= scrollStep;
     }
 
-    // Batasi scroll
     content.position.y = THREE.MathUtils.clamp(
       newY,
       scrollBounds.bottom,
@@ -341,7 +278,6 @@ function onClick(event) {
 
   for (const intersect of intersects) {
     let interactableObject = intersect.object;
-    // Cari parent yang memiliki 'userData.action'
     while (interactableObject) {
       if (interactableObject.userData.action) {
         if (interactionCallback) {
@@ -362,14 +298,11 @@ function onPointerDown(event) {
   const x = (event.clientX / window.innerWidth) * 2 - 1;
   const y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  // 1. Cek apakah mengklik UI
   const uiHit = getIntersectedObject(x, y);
   if (uiHit) {
-    // Jika klik UI, jangan lakukan drag model
     return;
   }
 
-  // 2. Cek apakah mengklik model
   const currentModel = getCurrentModel();
   if (!currentModel) return;
 
@@ -380,7 +313,6 @@ function onPointerDown(event) {
   const intersects = raycasterDrag.intersectObject(currentModel, true);
 
   if (intersects.length > 0) {
-    // Klik pada model, nonaktifkan orbit controls dan mulai drag
     controls.enabled = false;
     startDragging(event);
   }
@@ -391,7 +323,7 @@ function onPointerDown(event) {
  */
 function onPointerUp() {
   if (!controls.enabled) {
-    controls.enabled = true; // Aktifkan kembali orbit controls
+    controls.enabled = true;
   }
   stopDragging();
 }
@@ -402,8 +334,6 @@ function onPointerUp() {
  */
 function onMouseMove(event) {
   if (isVRMode()) return;
-
-  // Handle hover tombol UI
   const x = (event.clientX / window.innerWidth) * 2 - 1;
   const y = -(event.clientY / window.innerHeight) * 2 + 1;
   const intersectedObject = getIntersectedObject(x, y);
@@ -415,8 +345,6 @@ function onMouseMove(event) {
  * @param {PointerEvent} event - Event pointer.
  */
 function onPointerMove(event) {
-  // Fungsi ini hanya memanggil dragModel,
-  // isDragging akan dicek di dalam dragModel
   dragModel(event);
 }
 
@@ -431,16 +359,14 @@ function onVRSelectStart(controllerIndex) {
       ? vrInteractionState.controller1
       : vrInteractionState.controller2;
 
-  // 1. Cek apakah grab model
   const intersectedModel = getVRIntersectedModel(controller);
   if (intersectedModel) {
     state.isGrabbing = true;
     state.startPosition.copy(controller.position);
     setUserInteracting(true);
-    return; // Prioritaskan grab model di atas klik UI
+    return;
   }
 
-  // 2. Cek apakah klik tombol UI
   const intersectedObject = getVRIntersectedObject(controller);
   if (intersectedObject && intersectedObject.userData.isButton) {
     const action = intersectedObject.userData.action;
@@ -453,7 +379,6 @@ function onVRSelectStart(controllerIndex) {
     }
   }
 }
-
 /**
  * Handler untuk event 'selectend' (trigger up) pada controller VR.
  * @param {number} controllerIndex - 0 atau 1.
@@ -469,10 +394,6 @@ function onVRSelectEnd(controllerIndex) {
   }
 }
 
-// ===============================================================
-// FUNGSI SETUP UTAMA
-// ===============================================================
-
 /**
  * Mengatur semua event listener untuk interaksi mouse dan VR.
  * @param {function} callback - Fungsi callback yang akan dipanggil saat aksi UI dipicu.
@@ -481,24 +402,18 @@ export function setupInteraction(callback) {
   interactionCallback = callback;
   const targetElement = renderer.domElement;
 
-  // --- Event Listeners Desktop ---
   targetElement.addEventListener("click", onClick);
   targetElement.addEventListener("mousemove", onMouseMove);
   targetElement.addEventListener("pointerdown", onPointerDown);
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("pointerup", onPointerUp);
 
-  // --- Event Listeners VR ---
   const controllers = getVRControllers();
   controllers.forEach((controller, index) => {
     controller.addEventListener("selectstart", () => onVRSelectStart(index));
     controller.addEventListener("selectend", () => onVRSelectEnd(index));
   });
 }
-
-// ===============================================================
-// FUNGSI YANG DIPANGGIL DI RENDER LOOP (VR)
-// ===============================================================
 
 /**
  * Menangani logika hover untuk controller VR (dipanggil setiap frame).
@@ -507,7 +422,6 @@ export function handleVRHover() {
   const controllers = getVRControllers();
   let intersectedInFrame = null;
 
-  // Jika sedang grabbing model, jangan tunjukkan hover UI
   if (
     vrInteractionState.controller1.isGrabbing ||
     vrInteractionState.controller2.isGrabbing
@@ -516,12 +430,11 @@ export function handleVRHover() {
     return;
   }
 
-  // Cek interseksi untuk kedua controller
   for (const controller of controllers) {
     const intersectedObject = getVRIntersectedObject(controller);
     if (intersectedObject) {
       intersectedInFrame = intersectedObject;
-      break; // Hanya satu hover yang bisa aktif
+      break;
     }
   }
   handleHover(intersectedInFrame);
@@ -533,13 +446,11 @@ export function handleVRHover() {
 export function handleVRDrag(deltaTime) {
   const currentModel = getCurrentModel();
   if (!currentModel) {
-    // Jika tidak ada model, pastikan flag interaksi mati
-    // (kecuali mouse sedang drag, yang ditangani oleh stopDragging())
     return;
   }
 
   const controllers = getVRControllers();
-  let isStickActiveThisFrame = false; // Flag lokal HANYA untuk frame ini
+  let isStickActiveThisFrame = false;
 
   controllers.forEach((controller, index) => {
     const state =
@@ -547,45 +458,30 @@ export function handleVRDrag(deltaTime) {
         ? vrInteractionState.controller1
         : vrInteractionState.controller2;
 
-    // 1. Prioritas Utama: Grabbing (Trigger ditahan)
     if (state.isGrabbing) {
       const currentPosition = controller.position;
-      // Hitung delta (perbedaan) dari frame sebelumnya
       const deltaX = currentPosition.x - state.startPosition.x;
       const deltaY = currentPosition.y - state.startPosition.y;
-
-      // Rotasi model berdasarkan delta
       rotateModelWithVR(deltaX, deltaY);
-
-      // Simpan posisi saat ini untuk perhitungan delta di frame berikutnya
       state.startPosition.copy(currentPosition);
-
-      // setUserInteracting(true) sudah diatur di onVRSelectStart
-      return; // Selesai untuk controller ini
+      return;
     }
 
-    // 2. Prioritas Kedua: Rotasi Thumbstick
-    // INI ADALAH PERBAIKAN UTAMA: Logika ini tidak lagi di dalam if(intersectedModel)
     const thumbstick = getThumbstickAxes(controller);
     if (thumbstick) {
-      // Deadzone untuk mencegah drift (nilai kecil yang diabaikan)
       const deadzone = 0.15;
 
       if (
         Math.abs(thumbstick.x) > deadzone ||
         Math.abs(thumbstick.y) > deadzone
       ) {
-        // Thumbstick digerakkan, putar model
         rotateModelWithThumbstick(thumbstick.x, thumbstick.y, deltaTime);
-        isStickActiveThisFrame = true; // Tandai bahwa thumbstick aktif
-        return; // Selesai untuk controller ini
+        isStickActiveThisFrame = true;
+        return;
       }
     }
-  }); // Akhir dari forEach controller
+  });
 
-  // 3. Update Status Interaksi Global
-  // Jika tidak ada controller yang 'grabbing',
-  // update status interaksi berdasarkan thumbstick.
   if (
     !vrInteractionState.controller1.isGrabbing &&
     !vrInteractionState.controller2.isGrabbing

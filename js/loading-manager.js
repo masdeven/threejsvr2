@@ -1,12 +1,7 @@
 import * as THREE from "three";
 
-// ===============================================================
-// KONSTANTA
-// ===============================================================
+const LOADING_TIMEOUT = 30000;
 
-const LOADING_TIMEOUT = 30000; // 30 detik
-
-// Fase loading yang terstruktur
 export const LoadingPhases = {
   INITIALIZING: "initializing",
   LOADING_HIGH: "loading_high",
@@ -14,31 +9,15 @@ export const LoadingPhases = {
   COMPLETE: "complete",
 };
 
-// ===============================================================
-// ELEMEN DOM
-// ===============================================================
-
 const splashScreen = document.getElementById("splash-screen");
 const progressBar = document.getElementById("progress-bar");
 const loadingText = document.getElementById("loading-text");
 const spinner = document.querySelector(".spinner");
 
-// ===============================================================
-// STATE MODUL
-// ===============================================================
-
 let loadingTimeout;
 let currentLoadingPhase = LoadingPhases.INITIALIZING;
 
-// ===============================================================
-// INSTANCE LOADING MANAGER
-// ===============================================================
-
 export const loadingManager = new THREE.LoadingManager();
-
-// ===============================================================
-// HANDLER UNTUK LOADING MANAGER
-// ===============================================================
 
 /**
  * Dipanggil saat file baru mulai dimuat.
@@ -49,12 +28,11 @@ loadingManager.onStart = function (url, itemsLoaded, itemsTotal) {
     `[${currentLoadingPhase}] Loading: ${url} (${itemsLoaded}/${itemsTotal})`
   );
 
-  // Reset timeout setiap file baru
   clearTimeout(loadingTimeout);
   loadingTimeout = setTimeout(() => {
     console.error("Loading timeout exceeded!");
     if (loadingText) {
-      loadingText.innerText = "Loading timeout. Silakan refresh halaman.";
+      loadingText.innerText = "Loading timeout. Please refresh the page.";
     }
     if (spinner) {
       spinner.style.display = "none";
@@ -100,7 +78,7 @@ loadingManager.onError = function (url) {
   console.error("✗ Error loading: " + url);
 
   if (loadingText) {
-    loadingText.innerText = `Gagal memuat: ${url}\nCoba muat ulang halaman.`;
+    loadingText.innerText = `Failed to load: ${url}\nPlease refresh the page.`;
   }
 
   if (progressBar) {
@@ -110,10 +88,6 @@ loadingManager.onError = function (url) {
     spinner.style.display = "none";
   }
 };
-
-// ===============================================================
-// FUNGSI PUBLIK (EXPORTED)
-// ===============================================================
 
 /**
  * Mengatur fase loading saat ini dan memperbarui teks UI.
@@ -141,10 +115,6 @@ export function updateManualProgress(loaded, total, message = "") {
     loadingText.textContent = `${baseMessage} ${loaded}/${total}`;
   }
 }
-
-// ===============================================================
-// FUNGSI INTERNAL (PRIVATE)
-// ===============================================================
 
 /**
  * Memperbarui teks di splash screen berdasarkan fase loading saat ini.

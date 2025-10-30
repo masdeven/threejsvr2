@@ -1,14 +1,8 @@
-// =SIAP-IMPORT-SISTEM-DAN-LIBRARY-THREE.JS
 import * as THREE from "three";
 import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
 
-// ===============================================================
-// IMPORT MODUL LOKAL APLIKASI
-// ===============================================================
-
-// Pengaturan Scene, Kamera, Renderer, dan Kontrol
 import {
   scene,
   camera,
@@ -18,13 +12,11 @@ import {
   loadEnvironmentMap,
 } from "./scene-setup.js";
 
-// Data untuk komponen dan kuis
 import { components } from "./component-data.js";
 import { quizData } from "./quiz-data.js";
 import { creditsData } from "./credits-data.js";
 import { guideData } from "./guide-data.js";
 
-// Fungsi-fungsi untuk membuat dan mengelola elemen UI
 import {
   createLandingPage,
   createMenuPage,
@@ -61,7 +53,6 @@ import {
   viewerUIGroup,
 } from "./ui-creator.js";
 
-// Fungsi untuk memuat model 3D (GLTF, DRACO, KTX2)
 import {
   loader,
   loadComponentModel,
@@ -83,7 +74,6 @@ import {
   stopModelAnimation,
 } from "./model-loader.js";
 
-// Manajer untuk interaksi (mouse, VR controller)
 import {
   setupInteraction,
   handleVRHover,
@@ -91,10 +81,8 @@ import {
   setButtonEnabled,
 } from "./interaction-manager.js";
 
-// Manajer untuk sesi WebXR (VR)
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
 
-// Manajer untuk layar loading (splash screen)
 import {
   loadingManager,
   setLoadingPhase,
@@ -102,19 +90,10 @@ import {
   updateManualProgress,
 } from "./loading-manager.js";
 
-// ===============================================================
-// KONSTANTA APLIKASI
-// ===============================================================
-
 const STORAGE_KEY = "webxr_learning_progress";
 const CHANGE_DEBOUNCE_TIME = 50;
-const LOADING_TIMEOUT = 60000; // 60 detik untuk koneksi lambat
+const LOADING_TIMEOUT = 60000;
 
-// ===============================================================
-// STATE APLIKASI (Variabel Global)
-// ===============================================================
-
-// --- State Audio ---
 let audioListener,
   sound,
   backgroundSound,
@@ -124,7 +103,6 @@ let audioListener,
 const audioLoader = new THREE.AudioLoader();
 const audioCache = {};
 
-// --- State Progres & Kuis ---
 let shuffledQuizData = [];
 let playerName = "";
 let currentQuestionIndex = 0;
@@ -137,8 +115,6 @@ let wasAnswerCorrect = false;
 let wasMiniQuizCorrect = false;
 let current_guide_index = 0;
 
-// --- State UI & Transisi ---
-let isChangingComponent = false;
 let isTransitioningModel = false;
 let isChangingDescription = false;
 let descriptionChangeTimeout = null;
@@ -149,7 +125,6 @@ let activeCreditsPanel = null;
 let active_guide_panel = null;
 let isSidebarOpen = false;
 
-// --- State Core Loop & Debug ---
 let stats;
 const clock = new THREE.Clock();
 let fps = 0;
@@ -159,16 +134,13 @@ let fpsLabel = null;
 let animationFrameId = null;
 let isDebugVisible = false;
 
-// --- State Asinkron ---
 const loadingTimeouts = new Map();
 const audioTimeouts = new Map();
 
-// --- State Machine Utama ---
 let currentState = null;
 let currentComponentIndex = -1;
 let currentDescriptionIndex = 0;
 
-// Enum untuk State Aplikasi
 const AppState = {
   MODE_SELECTION: "MODE_SELECTION",
   AVATAR_GREETING: "AVATAR_GREETING",
@@ -189,17 +161,12 @@ const AppState = {
   QUICK_GUIDE: "QUICK_GUIDE",
 };
 
-// Inisialisasi grup debug
 if (debugGroup.parent === camera) {
   camera.remove(debugGroup);
 }
 if (!debugGroup.parent) {
   scene.add(debugGroup);
 }
-
-// ===============================================================
-// --- LIFECYCLE APLIKASI UTAMA (INIT & RENDER LOOP) ---
-// ===============================================================
 
 /**
  * Inisialisasi seluruh aplikasi.
@@ -209,12 +176,10 @@ async function init() {
   checkOrientation();
   window.addEventListener("resize", checkOrientation);
 
-  // Setup Stats (FPS meter)
   stats = new Stats();
   document.body.appendChild(stats.dom);
   stats.dom.style.display = "none";
 
-  // Setup listener pembersihan saat window ditutup
   window.addEventListener("beforeunload", () => {
     console.log("🧹 Cleaning up resources...");
     renderer.setAnimationLoop(null);
@@ -236,11 +201,10 @@ async function init() {
       confettiEffect.destroy();
       confettiEffect = null;
     }
-    clearAllTimeouts(); // Bersihkan semua timeout
+    clearAllTimeouts();
     console.log("✓ Cleanup complete");
   });
 
-  // Setup Audio
   audioListener = new THREE.AudioListener();
   backgroundSound = new THREE.Audio(audioListener);
   camera.add(audioListener);
@@ -250,7 +214,6 @@ async function init() {
   greetingSound = new THREE.Audio(audioListener);
   completionCongratsSound = new THREE.Audio(audioListener);
 
-  // Setup Loaders (KTX2 & DRACO)
   const ktx2Loader = new KTX2Loader()
     .setTranscoderPath("assets/basis/")
     .detectSupport(renderer);
@@ -264,19 +227,15 @@ async function init() {
   await new Promise((resolve) => {
     loadEnvironmentMap(resolve);
   });
-  // Memuat model ruangan
   loadRoom(loader);
 
-  // Setup VR
   setupVR();
   renderer.xr.addEventListener("sessionstart", onVRSessionStarted);
   renderer.xr.addEventListener("sessionend", onVRSessionEnded);
 
-  // Setup Interaksi (Mouse & VR)
   setupInteraction(handleInteraction);
   setupHTMLEvents();
 
-  // Setup Debug Toggle (Tombol 'Q')
   window.addEventListener("keydown", (event) => {
     if (event.key === "q" || event.key === "Q") {
       isDebugVisible = !isDebugVisible;
@@ -285,15 +244,13 @@ async function init() {
     }
   });
 
-  // Memuat progres yang tersimpan
   const hasSavedProgress = loadProgress();
 
-  // Memuat aset penting (Avatar, Model, Audio)
   await preloadAvatar();
   await preloadModels();
   await preloadOtherAssets();
 
-  setLoadingPhase(LoadingPhases.LOADING_MEDIUM); // Atau fase baru misal "FINALIZING"
+  setLoadingPhase(LoadingPhases.LOADING_MEDIUM);
   updateLoadingText("Finalizing assets...");
   console.log("🚀 Starting final render pass for cached models...");
 
@@ -301,22 +258,13 @@ async function init() {
     let finalizedCount = 0;
     const totalModelsToFinalize = Object.keys(modelCache).length;
 
-    // Loop melalui semua model yang sudah di-cache
     for (const url in modelCache) {
       if (modelCache.hasOwnProperty(url)) {
         const originalScene = modelCache[url];
         if (originalScene) {
-          const tempModel = originalScene.clone(); // Clone model
-
-          // Posisikan jauh di luar pandangan kamera
+          const tempModel = originalScene.clone();
           tempModel.position.set(0, -1000, 0);
-
-          // Tambahkan ke scene utama (sementara)
           scene.add(tempModel);
-
-          // --- PAKSA RENDER SATU FRAME ---
-          // Ini akan memaksa GPU upload tekstur/geometri & final shader linking
-          // dalam konteks scene utama (dengan environment map)
           try {
             renderer.render(scene, camera);
             console.log(`   ✓ Finalized: ${url}`);
@@ -326,20 +274,8 @@ async function init() {
               compileError
             );
           }
-          // --------------------------------
-
-          // Hapus model sementara dari scene
           scene.remove(tempModel);
-          // (Opsional: dispose clone jika memori jadi masalah, tapi mungkin tidak perlu)
-          // tempModel.traverse(obj => {
-          //    if (obj.isMesh) {
-          //       obj.geometry.dispose();
-          //       // Material jangan di-dispose karena mungkin dipakai clone lain
-          //    }
-          // });
-
           finalizedCount++;
-          // Update progress bar manual jika diinginkan
           updateManualProgress(
             finalizedCount,
             totalModelsToFinalize,
@@ -349,7 +285,7 @@ async function init() {
           console.warn(
             `   Skipping finalization for ${url}, cache entry invalid.`
           );
-          totalModelsToFinalize--; // Kurangi total jika cache invalid
+          totalModelsToFinalize--;
         }
       }
     }
@@ -362,7 +298,6 @@ async function init() {
     );
   }
 
-  // Sembunyikan Splash Screen
   const splashScreen = document.getElementById("splash-screen");
   if (splashScreen) {
     splashScreen.classList.add("fade-out");
@@ -371,7 +306,6 @@ async function init() {
     setTimeout(() => splashScreen.remove(), 500);
   }
 
-  // Tampilkan pilihan progres jika ada
   if (hasSavedProgress && playerName) {
     document
       .getElementById("progress-choice-overlay")
@@ -380,14 +314,12 @@ async function init() {
     showWelcomeScreen();
   }
 
-  // Setup label FPS untuk debug
   fpsLabel = createFpsLabel();
   debugGroup.visible = false;
   fpsLabel.position.set(-0.4, 0.3, -0.7);
   debugGroup.add(fpsLabel);
   scene.add(debugGroup);
 
-  // Mulai render loop
   animate();
 }
 
@@ -407,7 +339,6 @@ function stopAnimation() {
     animationFrameId = null;
   }
 }
-
 /**
  * Fungsi render utama yang dipanggil setiap frame.
  */
@@ -416,7 +347,6 @@ function render() {
   const deltaTime = clock.getDelta();
   const elapsedTime = clock.getElapsedTime();
 
-  // --- Update FPS ---
   frameCount++;
   const now = performance.now();
   if (now - lastFpsUpdate >= 500) {
@@ -429,7 +359,6 @@ function render() {
     }
   }
 
-  // --- Update Animasi UI ---
   if (isFadingInUI) {
     let allFadedIn = true;
     uiGroup.children.forEach((child) => {
@@ -453,7 +382,6 @@ function render() {
     typingAnim.update(deltaTime);
   }
 
-  // --- Update Debug Panel ---
   if (isDebugVisible) {
     const tablePosition = new THREE.Vector3(-0.5, 0.8, -2.0);
     debugGroup.position.copy(tablePosition);
@@ -461,7 +389,6 @@ function render() {
     updateFpsLabel(fpsLabel, fps);
   }
 
-  // --- Update Kontrol & Interaksi ---
   if (isVRMode()) {
     handleVRHover();
     handleVRDrag(deltaTime);
@@ -472,7 +399,6 @@ function render() {
     controls.update();
   }
 
-  // --- Update Animasi Model & Efek ---
   if (currentState === AppState.VIEWER) {
     updateModelRotation();
   }
@@ -481,13 +407,8 @@ function render() {
   }
   updateAvatar(deltaTime, elapsedTime);
 
-  // --- Render ---
   renderer.render(scene, camera);
 }
-
-// ===============================================================
-// --- MANAJEMEN STATE APLIKASI ---
-// ===============================================================
 
 /**
  * Mengganti state aplikasi dan memuat ulang UI.
@@ -497,15 +418,10 @@ function render() {
 function changeState(newState, options = {}) {
   if (newState === AppState.LANDING) {
     if (currentState === AppState.AVATAR_GREETING) {
-      // Jika kita datang dari greeting, JANGAN animasikan drop.
       options.skipAvatarDrop = true;
     }
-    // Jika 'currentState' adalah hal lain (mis. MENU, REPORT),
-    // 'options.skipAvatarDrop' akan undefined (false),
-    // yang berarti avatar AKAN beranimasi. Ini sudah benar.
   }
 
-  // requestAnimationFrame(() => {
   activeTextPanel = null;
   activeCreditsPanel = null;
   active_guide_panel = null;
@@ -518,7 +434,6 @@ function changeState(newState, options = {}) {
     return;
   }
 
-  // Cleanup state sebelumnya (jika perlu)
   if (
     currentState === AppState.AVATAR_GREETING &&
     newState !== AppState.AVATAR_GREETING
@@ -545,7 +460,6 @@ function changeState(newState, options = {}) {
     isFadingInUI = true;
   }
 
-  // Cek apakah transisi terjadi di dalam konteks viewer
   const viewerContextStates = new Set([
     AppState.VIEWER,
     AppState.MINI_QUIZ,
@@ -561,7 +475,6 @@ function changeState(newState, options = {}) {
 
   currentState = newState;
 
-  // Setup state baru (jika perlu)
   if (newState === AppState.AVATAR_GREETING && !options.isTextUpdateOnly) {
     currentGreetingIndex = 0;
   }
@@ -570,7 +483,6 @@ function changeState(newState, options = {}) {
     playCompletionAudio();
   }
 
-  // Atur visibilitas avatar
   if (
     newState === AppState.LANDING ||
     newState === AppState.QUIZ_REPORT ||
@@ -584,17 +496,14 @@ function changeState(newState, options = {}) {
     toggleAvatarVisibility(false);
   }
 
-  // Refresh UI
   refreshUI(options);
 
-  // Reset posisi kamera jika tidak sedang drag/transisi
   if (!isVRMode() && !isUserInteracting && !isTransitioningWithinViewer) {
     switch (newState) {
       case AppState.MODE_SELECTION:
       case AppState.AVATAR_GREETING:
       case AppState.LANDING:
       case AppState.MENU:
-
       case AppState.HELP:
       case AppState.QUIZ:
       case AppState.QUIZ_RESULT:
@@ -612,9 +521,7 @@ function changeState(newState, options = {}) {
         break;
     }
   }
-  // });
 }
-
 /**
  * Handler utama untuk semua interaksi UI (klik tombol).
  * @param {string} action - Nama aksi dari tombol yang diklik.
@@ -643,14 +550,12 @@ function handleInteraction(action) {
     "prev_component",
   ];
 
-  // Memainkan audio feedback tombol
   if (confirmActions.includes(action) || action.startsWith("select_")) {
     playButtonConfirmAudio();
   } else if (action !== "play_audio" && action !== "locked") {
     playButtonPressAudio();
   }
 
-  // Switch case untuk semua aksi
   switch (action) {
     case "start_browser":
       changeState(AppState.AVATAR_GREETING);
@@ -664,26 +569,19 @@ function handleInteraction(action) {
       changeState(AppState.AVATAR_GREETING, { isTextUpdateOnly: true });
       break;
     case "continue_to_landing":
-      // --- PERUBAHAN DIMULAI ---
-      // Hentikan audio/animasi teks yang sedang berjalan
       stopAudio();
       clearActiveTypingAnimation();
-      stopAvatarDropAnimation(); // Pastikan animasi drop berhenti (jaga-jaga)
-
-      // Panggil animasi fly-up, DAN ganti state HANYA setelah selesai
+      stopAvatarDropAnimation();
       startAvatarFlyUpAnimation(() => {
         changeState(AppState.LANDING);
       });
-      // --- PERUBAHAN SELESAI ---
       break;
     case "start_learning":
       if (currentState === AppState.LANDING) {
-        // Panggil animasi, LALU ganti state
         startAvatarFlyUpAnimation(() => {
           changeState(AppState.MENU);
         });
       } else {
-        // Jika bukan dari landing page, langsung ganti state
         changeState(AppState.MENU);
       }
       break;
@@ -693,60 +591,44 @@ function handleInteraction(action) {
     case "close_help":
       changeState(AppState.LANDING);
       break;
-    case "back_to_menu": // Biasanya dari Viewer Page
-      // Cek lock, tapi JANGAN return. Kita ingin 'X' selalu bekerja.
+    case "back_to_menu":
       if (isTransitioningModel && currentState === AppState.VIEWER) {
-        // Hanya force stop jika dari Viewer
         console.warn(
           "Back to menu clicked during transition. Forcing unload and state change."
-        ); //
-        stopModelAnimation(); //
-        unloadComponentModel(); //
-        isTransitioningModel = false; //
+        );
+        stopModelAnimation();
+        unloadComponentModel();
+        isTransitioningModel = false;
       } else if (isTransitioningModel) {
-        //
-        // Jika dari state lain (misal Konfirmasi) tapi lock aktif (seharusnya jarang), lepas saja
         console.warn(
           "Back to menu clicked with active lock from non-viewer state? Forcing release."
-        ); //
-        isTransitioningModel = false; //
+        );
+        isTransitioningModel = false;
       } else if (currentState === AppState.VIEWER) {
-        //
-        // Jika dari Viewer & tidak transisi, mulai animasi keluar normal
-        isTransitioningModel = true; //
-        navButtons.forEach((btn) => setButtonEnabled(btn, false)); //
+        isTransitioningModel = true;
+        navButtons.forEach((btn) => setButtonEnabled(btn, false));
         startModelAnimation(true, () => {
-          //
-          isTransitioningModel = false; //
-          changeState(AppState.MENU); //
+          isTransitioningModel = false;
+          changeState(AppState.MENU);
         });
-        return; //
+        return;
       }
-      // Jika kita sampai di sini (karena interupsi ATAU dari Konfirmasi Kuis),
-      // langsung ganti state.
-      changeState(AppState.MENU); //
+      changeState(AppState.MENU);
       break;
-
-    case "back_to_landing": // Biasanya dari Menu, Report, Guide, dll.
-      // Cek jika ada sisa lock yang aktif secara tidak sengaja
+    case "back_to_landing":
       if (isTransitioningModel) {
         console.warn(
           "Back to landing clicked with active transition lock? Forcing release."
         );
-        isTransitioningModel = false; // Lepas lock untuk safety
+        isTransitioningModel = false;
       }
-      // Hentikan audio atau animasi spesifik state sebelumnya
       if (currentState === AppState.AVATAR_GREETING) {
         stopAudio();
         clearActiveTypingAnimation();
         stopAvatarDropAnimation();
-
-        // Jika dari Avatar Greeting, panggil animasi fly-up SEBELUM ganti state
         startAvatarFlyUpAnimation(() => {
           changeState(AppState.LANDING);
         });
-
-        // Hentikan eksekusi case di sini agar tidak lanjut ke changeState di bawah
         break;
       }
       changeState(AppState.LANDING);
@@ -755,31 +637,25 @@ function handleInteraction(action) {
       changeState(AppState.CONFIRM_FINAL_TEST);
       break;
     case "confirm_start_quiz":
-      // Logika asli dari 'show_quiz' dipindahkan ke sini
       console.log("Final Test confirmed. Starting quiz...");
-      // Acak data kuis
-      shuffledQuizData = [...quizData]; //
+      shuffledQuizData = [...quizData];
       for (let i = shuffledQuizData.length - 1; i > 0; i--) {
-        //
-        const j = Math.floor(Math.random() * (i + 1)); //
+        const j = Math.floor(Math.random() * (i + 1));
         [shuffledQuizData[i], shuffledQuizData[j]] = [
-          //
-          shuffledQuizData[j], //
-          shuffledQuizData[i], //
+          shuffledQuizData[j],
+          shuffledQuizData[i],
         ];
       }
-      currentQuestionIndex = 0; //
-      quizScore = 0; //
-      changeState(AppState.QUIZ); // Langsung mulai kuis
+      currentQuestionIndex = 0;
+      quizScore = 0;
+      changeState(AppState.QUIZ);
       break;
     case "show_quiz_report":
       if (currentState === AppState.LANDING) {
-        // Panggil animasi, LALU ganti state
         startAvatarFlyUpAnimation(() => {
           changeState(AppState.QUIZ_REPORT);
         });
       } else {
-        // Jika bukan dari landing page, langsung ganti state
         changeState(AppState.QUIZ_REPORT);
       }
       break;
@@ -833,48 +709,35 @@ function handleInteraction(action) {
       changeDescription("next");
       break;
     case "next_component":
-      // 1. Cek lock transisi UTAMA
       if (isTransitioningModel) {
         console.log("Blocked: Model transition already in progress.");
         return;
       }
-
-      // 2. Set lock & hapus model lama SEGERA
       console.log("Next clicked: Setting lock, forcing unload.");
-      isTransitioningModel = true; // <-- SET LOCK
-      unloadComponentModel(); // Hapus paksa model yang ada
-
-      // 3. Reset state animasi sebelumnya (jika ada yg nyangkut)
+      isTransitioningModel = true;
+      unloadComponentModel();
       transitionState.isAnimating = false;
       transitionState.onComplete = null;
       transitionState.onMidpoint = null;
-
-      // 4. Nonaktifkan tombol UI sementara
       navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointNext = () => {
-        // Callback midpoint HANYA untuk memicu state change berikutnya
         console.log("OUT Midpoint: Triggering next state.");
-
         const shouldGoToMiniQuiz =
           currentComponentIndex === highestComponentUnlocked &&
           currentComponentIndex < components.length;
 
-        // Logika state change tetap sama
         if (shouldGoToMiniQuiz) {
           changeState(AppState.MINI_QUIZ);
         } else if (currentComponentIndex < components.length - 1) {
           currentComponentIndex++;
-          // Kirim flag isTransitioning HANYA untuk referensi di showViewer jika perlu
-          // tapi BUKAN untuk menonaktifkan tombol lagi.
           changeState(AppState.VIEWER, { isTransitioning: true });
         } else {
           changeState(AppState.MENU);
-          isTransitioningModel = false; // <-- RELEASE LOCK jika kembali ke menu
+          isTransitioningModel = false;
         }
       };
 
-      // 5. Mulai animasi KELUAR (sebagai timer delay sebelum midpoint)
       startModelAnimation(true, onAnimationMidpointNext);
       break;
     case "mini_quiz_correct":
@@ -909,41 +772,29 @@ function handleInteraction(action) {
       }
       break;
     case "prev_component":
-      // 1. Cek lock transisi UTAMA
       if (isTransitioningModel) {
         console.log("Blocked: Model transition already in progress.");
         return;
       }
-
-      // 2. Set lock & hapus model lama SEGERA
       console.log("Prev clicked: Setting lock, forcing unload.");
-      isTransitioningModel = true; // <-- SET LOCK
-      unloadComponentModel(); // Hapus paksa model yang ada
-
-      // 3. Reset state animasi sebelumnya
+      isTransitioningModel = true;
+      unloadComponentModel();
       transitionState.isAnimating = false;
       transitionState.onComplete = null;
       transitionState.onMidpoint = null;
-
-      // 4. Nonaktifkan tombol UI sementara
       navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointPrev = () => {
         console.log("OUT Midpoint: Triggering previous state.");
-
-        // Logika state change tetap sama
         if (currentComponentIndex > 0) {
           currentComponentIndex--;
           changeState(AppState.VIEWER, { isTransitioning: true });
         } else {
-          // Jika sudah di index 0, tidak ada state change, lepas lock
-          isTransitioningModel = false; // <-- RELEASE LOCK
-          // Aktifkan kembali tombol secara manual karena tidak ada refreshUI
+          isTransitioningModel = false;
           reloadViewerNavigation();
         }
       };
 
-      // 5. Mulai animasi KELUAR (sebagai timer delay)
       startModelAnimation(true, onAnimationMidpointPrev);
       break;
     case "play_audio":
@@ -954,7 +805,6 @@ function handleInteraction(action) {
     case "show_quick_guide":
       current_guide_index = 0;
       if (currentState === AppState.LANDING) {
-        // Panggil animasi, LALU ganti state
         startAvatarFlyUpAnimation(() => {
           changeState(AppState.QUICK_GUIDE);
           setTimeout(() => {
@@ -965,14 +815,12 @@ function handleInteraction(action) {
           }, 0);
         });
       } else {
-        // Jika bukan dari landing page, langsung ganti state
         changeState(AppState.QUICK_GUIDE);
         setTimeout(() => {
           active_guide_panel = scene.getObjectByProperty("isGuidePanel", true);
         }, 0);
       }
       break;
-
     case "prev_guide":
       if (current_guide_index > 0) {
         current_guide_index--;
@@ -980,7 +828,6 @@ function handleInteraction(action) {
         reloadGuideNavigation();
       }
       break;
-
     case "next_guide":
       if (current_guide_index < guideData.length - 1) {
         current_guide_index++;
@@ -990,53 +837,37 @@ function handleInteraction(action) {
       break;
     default:
       if (action.startsWith("select_")) {
-        // --- TAMBAHKAN PENGECEKAN LOCK DI SINI ---
         if (isTransitioningModel) {
           console.log(
             "Blocked: Model transition in progress, cannot select topic yet."
           );
           return;
         }
-        // --- AKHIR PENAMBAHAN ---
-
-        // Hapus referensi ke isChangingComponent yang lama
-        // if (isChangingComponent) return;
-        // isChangingComponent = true;
-
-        // Set lock BARU untuk transisi KE viewer
         isTransitioningModel = true;
         console.log("Select topic: Setting lock.");
-
         const index = parseInt(action.split("_")[1], 10);
         if (!isNaN(index) && index >= 0 && index < components.length) {
           currentComponentIndex = index;
-          // Panggil changeState, lock akan dilepas oleh callback di showViewer
           changeState(AppState.VIEWER, { isTransitioning: true });
         } else {
-          // Jika index tidak valid, lepas lock lagi
           console.warn("Invalid topic index, releasing lock.");
           isTransitioningModel = false;
-          // Hapus referensi ke isChangingComponent yang lama
-          // isChangingComponent = false;
         }
       }
       break;
   }
 }
-
 /**
  * Mengganti deskripsi di viewer (maju atau mundur).
  * @param {string} direction - "prev" atau "next".
  */
 function changeDescription(direction) {
-  // 1. --- UPDATE GUARD DI SINI ---
   if (isTransitioningModel || isChangingDescription) {
     console.log(
       "Blocked: Model transition or description change already in progress."
     );
-    return; // Abaikan klik jika sedang transisi model ATAU deskripsi
+    return;
   }
-  // --- AKHIR UPDATE GUARD ---
 
   const component = components[currentComponentIndex];
   if (!component) return;
@@ -1047,53 +878,33 @@ function changeDescription(direction) {
     if (currentDescriptionIndex > 0) {
       newIndex = currentDescriptionIndex - 1;
     } else {
-      return; // Sudah di halaman pertama
+      return;
     }
   } else if (direction === "next") {
     if (currentDescriptionIndex < component.description.length - 1) {
       newIndex = currentDescriptionIndex + 1;
     } else {
-      return; // Sudah di halaman terakhir
+      return;
     }
   }
 
   console.log(`Changing description to index: ${newIndex}`);
-  isChangingDescription = true; // Set flag HANYA untuk mencegah klik deskripsi ganda
+  isChangingDescription = true;
   currentDescriptionIndex = newIndex;
-
-  // --- HAPUS PENONAKTIFAN MANUAL ---
-  // navButtons.forEach((btn) => {
-  //   const action = btn.userData.action;
-  //   if (action === "prev_description" || action === "next_description") {
-  //     setButtonEnabled(btn, false);
-  //   }
-  // });
-  // --- AKHIR HAPUS ---
 
   if (descriptionChangeTimeout) {
     clearTimeout(descriptionChangeTimeout);
   }
 
-  // Update target scroll terlebih dahulu
   updateActiveTextPanelTarget();
 
-  // Atur timeout: Setelah jeda singkat, panggil reload UI dan reset flag
   descriptionChangeTimeout = setTimeout(() => {
-    reloadViewerNavigation(); // <--- Biarkan fungsi ini mengatur status tombol
-    isChangingDescription = false; // Reset flag setelah UI di-reload
+    reloadViewerNavigation();
+    isChangingDescription = false;
     descriptionChangeTimeout = null;
     console.log("Description change complete, UI reloaded.");
-
-    // --- HAPUS PENGAKTIFAN MANUAL ---
-    // const comp = components[currentComponentIndex];
-    // if (comp) { ... } // Logika enable/disable tombol sekarang ada di reloadViewerNavigation
-    // --- AKHIR HAPUS ---
   }, CHANGE_DEBOUNCE_TIME);
 }
-
-// ===============================================================
-// --- MANAJEMEN UI & SCENE ---
-// ===============================================================
 
 /**
  * Memuat ulang UI berdasarkan state aplikasi saat ini.
@@ -1130,7 +941,7 @@ function refreshUI(options = {}) {
       );
       break;
     case AppState.CONFIRM_FINAL_TEST:
-      createFinalTestConfirmationPage(); //
+      createFinalTestConfirmationPage();
       break;
     case AppState.QUIZ:
       createQuizScreen(
@@ -1149,20 +960,15 @@ function refreshUI(options = {}) {
         "quizResultContinueButton"
       );
       if (continueBtn) {
-        // 1. Langsung nonaktifkan tombol saat UI muncul
-        setButtonEnabled(continueBtn, false, "..."); // Tampilkan "..." sementara
-
-        // 2. Atur timeout untuk mengaktifkannya kembali setelah jeda
-        const activationDelay = 750; // Jeda 750 milidetik (sesuaikan jika perlu)
+        setButtonEnabled(continueBtn, false, "...");
+        const activationDelay = 750;
         setTimeout(() => {
-          // Cek lagi apakah kita MASIH di state QUIZ_RESULT (penting!)
-          // dan apakah tombolnya masih ada
           const btnAgain = viewerUIGroup.getObjectByName(
             "quizResultContinueButton"
           );
           if (currentState === AppState.QUIZ_RESULT && btnAgain) {
             console.log("Activating Quiz Result continue button after delay.");
-            setButtonEnabled(btnAgain, true); // Aktifkan tombol
+            setButtonEnabled(btnAgain, true);
           } else {
             console.log(
               "State changed before Quiz Result button activation timeout."
@@ -1170,7 +976,6 @@ function refreshUI(options = {}) {
           }
         }, activationDelay);
       }
-      // --- AKHIR TAMBAHAN ---
       break;
     case AppState.QUIZ_REPORT:
       createQuizReportScreen(quizScore, hasAttemptedQuiz);
@@ -1192,10 +997,6 @@ function refreshUI(options = {}) {
       break;
   }
 }
-
-// ===============================================================
-// START FUNGSI UTAMA `showViewer`
-// ===============================================================
 /**
  * Logika utama untuk menampilkan halaman viewer komponen.
  * @param {number} index - Index komponen yang akan ditampilkan.
@@ -1211,7 +1012,6 @@ function showViewer(index, options = {}) {
 
   clearUI();
 
-  // 1. Buat UI viewer yang baru.
   createViewerPage(
     component,
     currentComponentIndex,
@@ -1221,42 +1021,28 @@ function showViewer(index, options = {}) {
   );
   activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
 
-  // // 2. JIKA sedang dalam mode transisi, nonaktifkan SEMUA tombol interaktif.
-  // if (isTransitioning) {
-  //   navButtons.forEach((btn) => {
-  //     setButtonEnabled(btn, false);
-  //   });
-  // }
-
-  // 3. Definisikan callback yang akan dijalankan setelah model & animasi selesai.
   const releaseTransitionLockAndEnableUI = () => {
     console.log(
       `Model ${component.label} IN animation complete. Releasing lock.`
     );
-    isTransitioningModel = false; // <-- RELEASE LOCK DI SINI
-    // Aktifkan kembali tombol navigasi viewer
+    isTransitioningModel = false;
     reloadViewerNavigation();
   };
 
-  // 4. Mulai proses loading model.
   if (component.modelFile) {
     loadComponentModel(
       component.modelFile,
       -0.5,
       releaseTransitionLockAndEnableUI
-    ); // Ganti nama callback
+    );
   } else {
-    // Jika tidak ada model
     setTimeout(() => {
       console.log("No model to load, releasing lock immediately.");
-      isTransitioningModel = false; // <-- RELEASE LOCK
-      reloadViewerNavigation(); // Aktifkan tombol
+      isTransitioningModel = false;
+      reloadViewerNavigation();
     }, 50);
   }
 }
-// ===============================================================
-// END FUNGSI UTAMA `showViewer`
-// ===============================================================
 
 /**
  * Menggambar ulang navigasi pada halaman viewer (tombol, page indicator).
@@ -1275,11 +1061,9 @@ function reloadViewerNavigation() {
   );
   activeTextPanel = scene.getObjectByProperty("isScrollableText", true);
 
-  // Aktifkan tombol HANYA jika transisi model TIDAK sedang berjalan
   if (!isTransitioningModel) {
     console.log("Reloading nav, transition lock OFF, enabling buttons.");
     navButtons.forEach((btn) => {
-      // Logika enable/disable spesifik (misal prev/next desc)
       const action = btn.userData.action;
       if (action === "prev_description") {
         setButtonEnabled(btn, currentDescriptionIndex > 0);
@@ -1289,16 +1073,11 @@ function reloadViewerNavigation() {
           currentDescriptionIndex < component.description.length - 1
         );
       } else if (action !== "locked") {
-        // Jangan aktifkan tombol yg memang locked
-        setButtonEnabled(btn, true); // Aktifkan tombol lain
+        setButtonEnabled(btn, true);
       }
     });
   } else {
     console.log("Reloading nav, transition lock ON, buttons remain disabled.");
-    // Tombol akan tetap nonaktif karena dibuat ulang dalam keadaan default (aktif)
-    // tapi check !isTransitioningModel mencegah pengaktifan eksplisit.
-    // Jika createViewerPage membuat tombol nonaktif default, tidak perlu else.
-    // Jika createViewerPage membuat tombol aktif default, kita perlu menonaktifkannya lagi:
     navButtons.forEach((btn) => setButtonEnabled(btn, false));
   }
 }
@@ -1381,23 +1160,6 @@ function stopConfettiEffect() {
 }
 
 /**
- * (Duplikat?) Menggambar ulang viewer.
- * @note `reloadViewerNavigation` tampaknya menjadi fungsi yang lebih spesifik dan digunakan.
- */
-function reloadViewer() {
-  const component = components[currentComponentIndex];
-  if (!component) return;
-
-  clearViewerUI();
-  createViewerPage(
-    component,
-    currentComponentIndex,
-    currentDescriptionIndex,
-    highestComponentUnlocked
-  );
-}
-
-/**
  * Menjalankan animasi interpolasi (lerp) untuk scroll panel.
  * @param {THREE.Mesh} panel - Panel yang memiliki tekstur scrollable.
  * @param {number} deltaTime - Waktu delta dari render loop.
@@ -1407,7 +1169,7 @@ function updateScrollAnimation(panel, deltaTime) {
     panel &&
     (panel.userData.isScrollableText ||
       panel.userData.isCreditsPanel ||
-      panel.userData.isGuidePanel) // TAMBAHAN BARU
+      panel.userData.isGuidePanel)
   ) {
     const texture = panel.material.map;
     const currentOffsetY = texture.offset.y;
@@ -1424,10 +1186,6 @@ function updateScrollAnimation(panel, deltaTime) {
     }
   }
 }
-
-// ===============================================================
-// --- MANAJEMEN PROGRES (LOCALSTORAGE) ---
-// ===============================================================
 
 /**
  * Menyimpan progres pengguna ke LocalStorage.
@@ -1461,7 +1219,6 @@ function loadProgress() {
       quizScore = progress.quizScore || 0;
       hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
 
-      // Unlock komponen berdasarkan progres
       for (let i = 0; i <= highestComponentUnlocked; i++) {
         if (components[i]) {
           components[i].unlocked = true;
@@ -1488,17 +1245,12 @@ function resetProgress() {
   quizScore = 0;
   hasAttemptedQuiz = false;
 
-  // Reset status unlock komponen (kecuali yang pertama)
   components.forEach((comp, index) => {
     comp.unlocked = index === 0;
   });
 
   console.log("Progres telah direset.");
 }
-
-// ===============================================================
-// --- MANAJEMEN ASET (PRELOADING) ---
-// ===============================================================
 
 /**
  * Memuat semua model 3D komponen yang didefinisikan di `component-data.js`.
@@ -1544,7 +1296,6 @@ function preloadModels() {
 
       loadingTimeouts.set(file, timeoutId);
 
-      // Gunakan preloadLoader (tanpa loading manager utama)
       preloadLoader.load(
         file,
         (gltf) => {
@@ -1553,10 +1304,9 @@ function preloadModels() {
             clearTimeout(tid);
             loadingTimeouts.delete(file);
           }
-          // Konversi material dan pre-compile shader
           convertModelMaterials(gltf.scene);
           preCompileModel(gltf.scene);
-          modelCache[file] = gltf.scene; // Simpan di cache
+          modelCache[file] = gltf.scene;
           modelsLoaded++;
           updateManualProgress(
             modelsLoaded + modelsWithErrors,
@@ -1585,7 +1335,6 @@ function preloadModels() {
     });
   });
 }
-
 /**
  * Memuat aset lain seperti tekstur dan file audio.
  * @returns {Promise<void>}
@@ -1595,7 +1344,6 @@ function preloadOtherAssets() {
     setLoadingPhase(LoadingPhases.LOADING_MEDIUM);
     updateLoadingText("Loading textures and audio...");
 
-    // 1. Preload Tekstur
     const tempTextureLoader = new THREE.TextureLoader();
     const texturePromise = new Promise((res) => {
       tempTextureLoader.load(
@@ -1610,12 +1358,11 @@ function preloadOtherAssets() {
             "Texture failed to load: assets/images/logo-kampus.png",
             new Error("Texture load error")
           );
-          res(); // Tetap resolve agar loading tidak berhenti
+          res();
         }
       );
     });
 
-    // 2. Preload Audio
     const greetingAudioFiles = GREETING_DATA("").map((g) => g.audioFile);
     const allAudioFiles = [
       "assets/audio/sfx/button_press.ogg",
@@ -1658,9 +1405,9 @@ function preloadOtherAssets() {
               const tid = audioTimeouts.get(file);
               if (tid) {
                 clearTimeout(tid);
-                audioTimeouts.delete(file);
+                audioTimeouts.delete(tid);
               }
-              audioCache[file] = buffer; // Simpan buffer di cache
+              audioCache[file] = buffer;
               audioLoaded++;
               updateManualProgress(
                 audioLoaded + audioErrors,
@@ -1689,7 +1436,6 @@ function preloadOtherAssets() {
         })
     );
 
-    // 3. Tunggu semua selesai
     Promise.all([texturePromise, ...audioPromises]).then(() => {
       console.log(`✓ All assets loaded. Audio: ${audioLoaded}/${totalAudio}`);
       setLoadingPhase(LoadingPhases.COMPLETE);
@@ -1697,10 +1443,6 @@ function preloadOtherAssets() {
     });
   });
 }
-
-// ===============================================================
-// --- MANAJEMEN AUDIO ---
-// ===============================================================
 
 /**
  * Memainkan suara yang dapat dikontrol (stop, loop).
@@ -1737,7 +1479,7 @@ function playOneShotSound(path, volume = 1) {
     oneShotSound.setVolume(volume);
     oneShotSound.onEnded = () => {
       oneShotSound.disconnect();
-      camera.remove(oneShotSound); // Bersihkan setelah selesai
+      camera.remove(oneShotSound);
     };
     oneShotSound.play();
   }
@@ -1749,7 +1491,6 @@ function playOneShotSound(path, volume = 1) {
  */
 function playComponentAudio(audioFile) {
   if (!audioFile) return;
-  // Jika audio yang sama diputar, hentikan (toggle)
   if (sound.isPlaying && sound.userData.path === audioFile) {
     sound.stop();
     sound.userData.path = null;
@@ -1795,7 +1536,6 @@ function startBackgroundMusic() {
 
 /** Memainkan audio saat materi selesai. */
 function playCompletionAudio() {
-  // Pastikan suara lain yang mungkin berjalan dihentikan
   if (completionSound.isPlaying) {
     completionSound.stop();
   }
@@ -1803,12 +1543,8 @@ function playCompletionAudio() {
     completionCongratsSound.stop();
   }
 
-  // 1. Atur apa yang terjadi setelah suara PERTAMA selesai
   completionSound.onEnded = () => {
-    // Hapus callback untuk mencegahnya berjalan lagi di lain waktu
     completionSound.onEnded = null;
-
-    // Mainkan suara KEDUA menggunakan fungsi pembantu
     playControlledSound(
       completionCongratsSound,
       "assets/audio/narration/completion_congrats.ogg",
@@ -1816,7 +1552,6 @@ function playCompletionAudio() {
     );
   };
 
-  // 2. Mainkan suara PERTAMA (tanpa playControlledSound agar onEnded tidak terhapus)
   const buffer = audioCache["assets/audio/sfx/completion.ogg"];
   if (buffer) {
     completionSound.setBuffer(buffer);
@@ -1847,11 +1582,6 @@ function stopAudio() {
 window.playCurrentGreetingAudioCallback = function () {
   playCurrentGreetingAudio();
 };
-
-// ===============================================================
-// --- MANAJEMEN EVENT HTML & DOM ---
-// ===============================================================
-
 /**
  * Mengatur semua event listener untuk elemen HTML (overlay nama, dll).
  */
@@ -1867,12 +1597,10 @@ function setupHTMLEvents() {
   const sidebar = document.getElementById("about-sidebar");
   const closeSidebarButton = document.getElementById("close-sidebar-button");
 
-  // Tombol "Lanjutkan Progres"
   continueProgressBtn.addEventListener("click", () => {
     document.getElementById("progress-choice-overlay").classList.add("hidden");
     document.getElementById("container").classList.remove("hidden");
     startBackgroundMusic();
-    // Acak kuis saat melanjutkan
     shuffledQuizData = [...quizData];
     for (let i = shuffledQuizData.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1885,28 +1613,24 @@ function setupHTMLEvents() {
     changeState(AppState.MODE_SELECTION);
   });
 
-  // Tombol "Mulai Baru"
   startNewBtn.addEventListener("click", () => {
     resetProgress();
     document.getElementById("progress-choice-overlay").classList.add("hidden");
     showWelcomeScreen();
   });
 
-  // Tombol "Next" di Welcome Screen
   welcomeNextBtn.addEventListener("click", () => {
     document.getElementById("welcome-overlay").classList.add("hidden");
     showNameInputScreen();
   });
 
-  // Tombol "Continue" di Input Nama
   nameContinueBtn.addEventListener("click", () => {
     const nameInput = document.getElementById("player-name-input");
     let nameValue = nameInput.value.trim();
-    nameValue = sanitizeInput(nameValue); // Sanitasi input
+    nameValue = sanitizeInput(nameValue);
 
     const nameOverlay = document.getElementById("name-input-overlay");
 
-    // Validasi nama tidak boleh kosong
     if (nameValue === "") {
       nameInput.classList.add("shake");
       setTimeout(() => {
@@ -1918,7 +1642,6 @@ function setupHTMLEvents() {
     playerName = nameValue || "Tamu";
     saveProgress();
 
-    // Transisi fade-out overlay
     const fadeOutDuration = 500;
     if (nameOverlay) {
       nameOverlay.classList.add("fade-out");
@@ -1937,35 +1660,30 @@ function setupHTMLEvents() {
   });
 
   if (aboutButton && sidebar && closeSidebarButton) {
-    // Tombol Floating '?' untuk membuka sidebar
     aboutButton.addEventListener("click", () => {
       sidebar.classList.remove("hidden");
-      // Tambahkan sedikit delay agar transisi CSS berjalan
       requestAnimationFrame(() => {
         sidebar.classList.add("visible");
       });
       isSidebarOpen = true;
     });
 
-    // Tombol 'X' di dalam sidebar untuk menutup
     closeSidebarButton.addEventListener("click", () => {
       sidebar.classList.remove("visible");
-      // Tambahkan event listener untuk 'transitionend' agar 'hidden' ditambahkan setelah transisi selesai
       sidebar.addEventListener("transitionend", function handler() {
         sidebar.classList.add("hidden");
-        sidebar.removeEventListener("transitionend", handler); // Hapus listener setelah selesai
+        sidebar.removeEventListener("transitionend", handler);
       });
       isSidebarOpen = false;
     });
 
-    // Opsional: Tutup sidebar jika klik di luar area sidebar
     document.addEventListener("click", (event) => {
       if (
         isSidebarOpen &&
         !sidebar.contains(event.target) &&
         !aboutButton.contains(event.target)
       ) {
-        closeSidebarButton.click(); // Panggil klik tombol close
+        closeSidebarButton.click();
       }
     });
   } else {
@@ -2004,19 +1722,13 @@ function checkOrientation() {
   const container = document.getElementById("container");
 
   if (window.innerHeight > window.innerWidth) {
-    // Mode Potret
     overlay.classList.remove("hidden");
     container.classList.add("hidden");
   } else {
-    // Mode Lanskap
     overlay.classList.add("hidden");
     container.classList.remove("hidden");
   }
 }
-
-// ===============================================================
-// --- FUNGSI UTILITAS ---
-// ===============================================================
 
 /**
  * Membersihkan input string dari potensi XSS sederhana.
@@ -2037,8 +1749,6 @@ function sanitizeInput(str) {
  */
 function logError(message, error) {
   console.error(message, error);
-  // Di masa depan, bisa ditambahkan kirim error ke server:
-  // sendErrorToServer(message, error);
 }
 
 /**
@@ -2055,9 +1765,4 @@ function clearAllTimeouts() {
   audioTimeouts.clear();
 }
 
-// ===============================================================
-// --- ENTRY POINT APLIKASI ---
-// ===============================================================
-
-// Memulai seluruh aplikasi
 init();
