@@ -464,7 +464,7 @@ function render() {
   // --- Update Kontrol & Interaksi ---
   if (isVRMode()) {
     handleVRHover();
-    handleVRDrag();
+    handleVRDrag(deltaTime);
     if (currentState !== AppState.MENU) {
       updateUIGroupPosition();
     }
@@ -664,8 +664,17 @@ function handleInteraction(action) {
       changeState(AppState.AVATAR_GREETING, { isTextUpdateOnly: true });
       break;
     case "continue_to_landing":
+      // --- PERUBAHAN DIMULAI ---
+      // Hentikan audio/animasi teks yang sedang berjalan
       stopAudio();
-      changeState(AppState.LANDING);
+      clearActiveTypingAnimation();
+      stopAvatarDropAnimation(); // Pastikan animasi drop berhenti (jaga-jaga)
+
+      // Panggil animasi fly-up, DAN ganti state HANYA setelah selesai
+      startAvatarFlyUpAnimation(() => {
+        changeState(AppState.LANDING);
+      });
+      // --- PERUBAHAN SELESAI ---
       break;
     case "start_learning":
       if (currentState === AppState.LANDING) {
@@ -731,8 +740,15 @@ function handleInteraction(action) {
         stopAudio();
         clearActiveTypingAnimation();
         stopAvatarDropAnimation();
+
+        // Jika dari Avatar Greeting, panggil animasi fly-up SEBELUM ganti state
+        startAvatarFlyUpAnimation(() => {
+          changeState(AppState.LANDING);
+        });
+
+        // Hentikan eksekusi case di sini agar tidak lanjut ke changeState di bawah
+        break;
       }
-      // Langsung ganti state
       changeState(AppState.LANDING);
       break;
     case "show_quiz":
