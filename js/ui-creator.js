@@ -26,8 +26,8 @@ const ACCENT_COLOR = "#3182CE"; // Untuk skor
 
 // --- Posisi & Jarak ---
 const UI_DISTANCE = 2.5; // Jarak UI dari kamera di mode VR
-const VIEWER_UI_POSITION = new THREE.Vector3(0.365, 1.2107, -0.982);
-const VIEWER_UI_LOOKAT = new THREE.Vector3(0.365, 1.2107, 0);
+const VIEWER_UI_POSITION = new THREE.Vector3(0.015, 1.2107, -0.982);
+const VIEWER_UI_LOOKAT = new THREE.Vector3(0.015, 1.2107, 0);
 
 // --- Grup Scene ---
 export const uiGroup = new THREE.Group();

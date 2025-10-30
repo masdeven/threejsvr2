@@ -281,6 +281,16 @@ body {
   display: none; /* Sembunyikan tooltip */
 }
 
+#about-button.floating-button {
+  /* Fluid default yang tetap kecil di layar sempit, besar di layar lebar */
+  width: clamp(44px, 7vw, 56px);
+  height: clamp(44px, 7vw, 56px);
+  font-size: clamp(14px, 2.6vw, 18px);
+  /* Jaga jarak dari notch/safe area */
+  bottom: max(calc(var(--unit) * 2), env(safe-area-inset-bottom));
+  right: max(calc(var(--unit) * 2), env(safe-area-inset-right));
+}
+
 /* ===== TAMBAHAN: Styles untuk Sidebar About ===== */
 #about-sidebar {
   position: fixed;
@@ -542,6 +552,13 @@ body {
   :root {
     --sidebar-width: 90vw; /* Sidebar lebih lebar di mobile */
   }
+  #about-button.floating-button {
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+    bottom: calc(var(--unit) * 2);
+    right: calc(var(--unit) * 2);
+  }
 
   #sidebar-content {
     padding: calc(var(--unit) * 2);
@@ -617,6 +634,14 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  #about-button.floating-button {
+    width: 40px;
+    height: 40px;
+    font-size: 13px;
   }
 }
 

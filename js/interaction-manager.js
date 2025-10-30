@@ -79,7 +79,7 @@ function getThumbstickAxes(controller) {
 }
 
 // Fungsi baru: Rotasi model dengan thumbstick
-function rotateModelWithThumbstick(deltaX, deltaY) {
+function rotateModelWithThumbstick(deltaX, deltaY, deltaTime) {
   const currentModel = getCurrentModel();
   if (!currentModel) return;
 
@@ -87,7 +87,7 @@ function rotateModelWithThumbstick(deltaX, deltaY) {
   const sensitivity = 2.0;
 
   // Rotasi horizontal (Y-axis) berdasarkan thumbstick X
-  currentModel.rotation.y += deltaX * sensitivity;
+  currentModel.rotation.y += deltaX * sensitivity * deltaTime;
 
   // Opsional: Rotasi vertikal (X-axis) berdasarkan thumbstick Y
   // Uncomment baris di bawah jika ingin rotasi vertikal juga
@@ -519,7 +519,7 @@ export function handleVRHover() {
 /**
  * Menangani logika drag model dengan controller VR (dipanggil setiap frame).
  */
-export function handleVRDrag() {
+export function handleVRDrag(deltaTime) {
   const currentModel = getCurrentModel();
   if (!currentModel) {
     // Jika tidak ada model, pastikan flag interaksi mati
@@ -565,7 +565,7 @@ export function handleVRDrag() {
         Math.abs(thumbstick.y) > deadzone
       ) {
         // Thumbstick digerakkan, putar model
-        rotateModelWithThumbstick(thumbstick.x, thumbstick.y);
+        rotateModelWithThumbstick(thumbstick.x, thumbstick.y, deltaTime);
         isStickActiveThisFrame = true; // Tandai bahwa thumbstick aktif
         return; // Selesai untuk controller ini
       }

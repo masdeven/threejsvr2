@@ -7,7 +7,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 // ===============================================================
 
 const TABLE_HEIGHT = 1;
-const ROTATION_SPEED_VR = 2.0;
+const ROTATION_SPEED_VR = 75.0;
 const ROTATION_SPEED_MOUSE = 0.005;
 const ROTATION_SPEED_AUTO = 0.005;
 const ANIMATION_SPEED = 10;
@@ -412,7 +412,7 @@ function setupModelPosition(model, startYOffset = 0) {
   const center = box.getCenter(new THREE.Vector3());
 
   // Pusatkan model di X dan Z
-  model.position.x = -0.2 - center.x;
+  model.position.x = -0.55 - center.x;
   model.position.z = -1 - center.z; // -1.5 adalah posisi Z meja/ruangan
 
   // Atur posisi Y
