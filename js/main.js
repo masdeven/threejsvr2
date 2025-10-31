@@ -93,7 +93,12 @@ import {
 const STORAGE_KEY = "webxr_learning_progress";
 const CHANGE_DEBOUNCE_TIME = 50;
 const LOADING_TIMEOUT = 60000;
-
+// #test
+const SAMPLE_TEST_MODE = true; // set ke false untuk mematikan
+const SAMPLE_START_INDEX = 10; // indeks awal sample (0-based)
+const TESTING_MODE = true; // set ke false untuk mematikan (atau reuse flag sample mode Anda)
+const TESTING_ALERT_KEY = "testing_alert_dismissed_v1";
+// #endtest
 let audioListener,
   sound,
   backgroundSound,
@@ -304,6 +309,9 @@ async function init() {
     const vrButton = document.getElementById("VRButton");
     if (vrButton) vrButton.classList.add("visible");
     setTimeout(() => splashScreen.remove(), 500);
+  }
+  if (TESTING_MODE && !localStorage.getItem(TESTING_ALERT_KEY)) {
+    showTestingModeAlert();
   }
 
   if (hasSavedProgress && playerName) {
@@ -1209,49 +1217,95 @@ function saveProgress() {
  * Memuat progres pengguna dari LocalStorage.
  * @returns {boolean} - True jika progres berhasil dimuat.
  */
+// function loadProgress() {
+//   try {
+//     const savedData = localStorage.getItem(STORAGE_KEY);
+//     if (savedData) {
+//       const progress = JSON.parse(savedData);
+//       playerName = progress.playerName || "";
+//       highestComponentUnlocked = progress.highestComponentUnlocked || 0;
+//       quizScore = progress.quizScore || 0;
+//       hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
+
+//       for (let i = 0; i <= highestComponentUnlocked; i++) {
+//         if (components[i]) {
+//           components[i].unlocked = true;
+//         }
+//       }
+//       console.log("Progres dimuat:", progress);
+//       return true;
+//     }
+//     return false;
+//   } catch (error) {
+//     logError("Gagal memuat progress:", error);
+//     return false;
+//   }
+// }
+
+// test
 function loadProgress() {
   try {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       const progress = JSON.parse(savedData);
-      playerName = progress.playerName || "";
+      playerName = progress.playerName;
       highestComponentUnlocked = progress.highestComponentUnlocked || 0;
       quizScore = progress.quizScore || 0;
       hasAttemptedQuiz = progress.hasAttemptedQuiz || false;
 
       for (let i = 0; i <= highestComponentUnlocked; i++) {
-        if (components[i]) {
-          components[i].unlocked = true;
-        }
+        if (components[i]) components[i].unlocked = true;
       }
-      console.log("Progres dimuat:", progress);
+
+      if (SAMPLE_TEST_MODE) {
+        applySampleTestUnlock();
+      }
       return true;
     }
     return false;
   } catch (error) {
-    logError("Gagal memuat progress:", error);
+    logError("Gagal memuat progress", error);
     return false;
   }
 }
+// #endtest
 
 /**
  * Menghapus progres pengguna dari LocalStorage dan me-reset state.
  */
+// function resetProgress() {
+//   localStorage.removeItem(STORAGE_KEY);
+
+//   playerName = "";
+//   highestComponentUnlocked = 0;
+//   quizScore = 0;
+//   hasAttemptedQuiz = false;
+
+//   components.forEach((comp, index) => {
+//     comp.unlocked = index === 0;
+//   });
+
+//   console.log("Progres telah direset.");
+// }
+
+// #test
 function resetProgress() {
   localStorage.removeItem(STORAGE_KEY);
-
   playerName = "";
   highestComponentUnlocked = 0;
   quizScore = 0;
   hasAttemptedQuiz = false;
-
   components.forEach((comp, index) => {
     comp.unlocked = index === 0;
   });
 
+  if (SAMPLE_TEST_MODE) {
+    applySampleTestUnlock();
+    saveProgress();
+  }
   console.log("Progres telah direset.");
 }
-
+// #endtest
 /**
  * Memuat semua model 3D komponen yang didefinisikan di `component-data.js`.
  * @returns {Promise<void>}
@@ -1610,6 +1664,10 @@ function setupHTMLEvents() {
       ];
     }
     currentQuestionIndex = 0;
+    if (SAMPLE_TEST_MODE) {
+      applySampleTestUnlock();
+      saveProgress();
+    }
     changeState(AppState.MODE_SELECTION);
   });
 
@@ -1640,6 +1698,11 @@ function setupHTMLEvents() {
     }
 
     playerName = nameValue || "Tamu";
+    // #test
+    if (SAMPLE_TEST_MODE) {
+      applySampleTestUnlock();
+    }
+    // #endtest
     saveProgress();
 
     const fadeOutDuration = 500;
@@ -1766,3 +1829,51 @@ function clearAllTimeouts() {
 }
 
 init();
+// #test
+function applySampleTestUnlock() {
+  const target = Math.min(SAMPLE_START_INDEX, components.length - 1);
+  if (highestComponentUnlocked < target) highestComponentUnlocked = target;
+  for (let i = 0; i <= target; i++) {
+    if (components[i]) components[i].unlocked = true;
+  }
+}
+// #endtest
+function showTestingModeAlert() {
+  const bar = document.createElement("div");
+  bar.id = "testing-mode-alert";
+  bar.style.cssText = `
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: #1E293B;
+    color: #E2E8F0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.35;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+  `;
+  bar.innerHTML = `
+    <span style="white-space: pre-wrap">
+      Testing Mode aktif — 11 materi terbuka dan soal final tes menjadi 5 dari 24 soal (khusus uji coba).
+    </span>
+    <button id="testing-alert-ok" style="
+      margin-left: 8px; background:#10B981; color:white; border:none; border-radius:6px; padding:6px 10px; cursor:pointer;
+    ">OK</button>
+  `;
+  document.body.appendChild(bar);
+
+  const ok = document.getElementById("testing-alert-ok");
+  ok.addEventListener("click", () => {
+    localStorage.setItem(TESTING_ALERT_KEY, "1"); // “jangan tampil lagi” sampai cache dibersihkan
+    bar.remove();
+  });
+}
