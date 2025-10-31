@@ -28,7 +28,7 @@ export const components = [
       "A monitor is the computer’s display screen that functions as a visual window between the user and the computer system. This device displays all information, images, videos, and program interfaces running on the computer. Without a monitor, we cannot see what the computer is working on.",
       "There are several types of monitors based on their technology, such as LED monitors which are most commonly used today because they are energy-efficient and provide good image quality, OLED monitors with high contrast and more vivid colors, and gaming monitors with high refresh rates for smoother gaming experiences. Monitors are also available in various sizes ranging from 15 inches to 32 inches or larger.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
@@ -48,7 +48,7 @@ export const components = [
       "A keyboard is the main input device that allows users to enter text, numbers, and commands into the computer. Each key on the keyboard represents a specific character or function that is sent to the computer when pressed. Modern keyboards generally have 104 standard keys including letters, numbers, symbols, and special function keys.",
       "There are various types of keyboards available, from membrane keyboards that use a flexible layer and are more affordable, mechanical keyboards that provide better tactile response and durability, to wireless keyboards that use Bluetooth or a USB receiver. Some special keyboards are also equipped with backlighting or macro keys for gaming and productivity needs.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
@@ -68,7 +68,7 @@ export const components = [
       "A mouse is a pointing device that allows the user to control the cursor on the computer screen and interact with visual elements such as icons, menus, and buttons. The mouse works by detecting movement and converting it into cursor movement on the screen. This device has left and right buttons for clicking, as well as a scroll wheel for page navigation.",
       "Based on detection technology, there are optical mice that use LED sensors and can be used on almost any surface, laser mice that are more accurate and sensitive, and gaming mice with high DPI for precise movement. Mice are also available in wired and wireless versions, with ergonomics designed for long-term comfort.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question: "A mouse is primarily considered an output device.",
@@ -87,7 +87,7 @@ export const components = [
       "The motherboard is the main component that connects all parts of the computer into one complete system. As the name suggests, the motherboard functions as the “mother” that provides communication pathways and electrical power for all other components such as the processor, RAM, graphics card, and storage devices. Without a motherboard, these components cannot communicate with each other.",
       "Motherboards come in various sizes or form factors, from large ATX boards suitable for desktop computers with many expansion slots, Micro-ATX which is more compact but still feature-rich, to Mini-ITX which is very small for space-saving PC builds. Each motherboard has a specific processor socket, RAM slots, input-output ports, and a chipset that determines compatibility with other components.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question: "The motherboard is an optional component in a computer.",
@@ -106,7 +106,7 @@ export const components = [
       "The CPU or processor is the brain of the computer that is responsible for executing all instructions and calculations required by the system and applications. Every time you open a program, type, or perform any activity on the computer, the CPU processes these commands at very high speed. CPU performance greatly determines how fast the computer can complete tasks.",
       "Modern CPUs come in various core configurations, ranging from dual-core for basic needs, quad-core for smooth multitasking, to 8, 16, or even 32 cores for professional tasks such as video editing and rendering. The two main CPU manufacturers are Intel with its Core i3, i5, i7, and i9 series, and AMD with its Ryzen 3, 5, 7, and 9 series. The higher the number, the more powerful the performance offered.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
@@ -126,7 +126,7 @@ export const components = [
       "Memory is a storage area used by the computer to run programs and the operating system. RAM or Random Access Memory serves as the computer’s workspace, storing data that is actively in use so it can be quickly accessed by the processor. The larger the RAM capacity, the more programs can run simultaneously without slowing the computer down.",
       "ROM or Read-Only Memory is a permanent type of memory that stores basic instructions for starting the computer, such as the BIOS or UEFI. RAM is available in various capacities starting from 4GB for basic needs, 8GB for normal use, up to 16GB or 32GB for professional requirements. RAM also comes in different speeds, such as DDR4 and the newer DDR5 with better performance.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
@@ -146,7 +146,7 @@ export const components = [
       "The GPU or graphics card is the component responsible for processing and displaying images, videos, animations, and visual effects on the computer screen. Unlike the CPU, which is designed for general processing, the GPU has thousands of small cores that work in parallel to handle complex graphic calculations efficiently. The GPU is essential for gaming, graphic design, video editing, and applications that require high visualization.",
       "There are two types of GPUs: integrated graphics, which are built into the processor and suitable for basic needs, and dedicated graphics cards, which are separate cards with much higher performance. Dedicated GPUs are produced by NVIDIA with its GeForce RTX and GTX series, and AMD with its Radeon RX series. Modern GPUs also support ray tracing technology for realistic lighting and DLSS to increase frame rates in gaming.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
@@ -166,7 +166,7 @@ export const components = [
       "A network card or Network Interface Card is a component that allows the computer to connect to the internet or a local network. This device acts as a communication bridge between the computer and a router, modem, or other network devices. The network card converts digital data into signals that can be transmitted via cable or radio waves for wireless connections.",
       "Network cards are available in two main types: Ethernet cards for wired connections with stable speed and low latency, and WiFi cards for wireless connections that provide mobility flexibility. Network card speeds range from 100 Mbps for basic needs, 1 Gbps for home use, up to 10 Gbps for servers and enterprise needs. Most modern motherboards already have an integrated network card.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
@@ -186,7 +186,7 @@ export const components = [
       "Storage is the device that permanently stores all data, files, programs, and the operating system on the computer. Unlike RAM, which is temporary, data in storage remains saved even when the computer is turned off. Storage plays a vital role in keeping photos, videos, documents, games, applications, and all your digital files.",
       "There are two main types of storage: HDD or Hard Disk Drive, which uses rotating magnetic disks with large capacity and affordable prices, and SSD or Solid State Drive, which uses flash memory chips with much faster read-write speeds but is more expensive. Storage is available in various capacities from 128GB to several terabytes, with SATA interfaces for traditional HDDs and NVMe for modern SSDs that are super fast.",
     ],
-    unlocked: false,
+    unlocked: true,
     quiz: [
       {
         question:
