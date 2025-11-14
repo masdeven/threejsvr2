@@ -94,9 +94,9 @@ const STORAGE_KEY = "webxr_learning_progress";
 const CHANGE_DEBOUNCE_TIME = 50;
 const LOADING_TIMEOUT = 60000;
 // #test
-const SAMPLE_TEST_MODE = true; // set ke false untuk mematikan
+const SAMPLE_TEST_MODE = false; // set ke false untuk mematikan
 const SAMPLE_START_INDEX = 10; // indeks awal sample (0-based)
-const TESTING_MODE = true; // set ke false untuk mematikan (atau reuse flag sample mode Anda)
+const TESTING_MODE = false; // set ke false untuk mematikan (atau reuse flag sample mode Anda)
 const TESTING_ALERT_KEY = "testing_alert_dismissed_v1";
 // #endtest
 let audioListener,
@@ -137,6 +137,7 @@ let frameCount = 0;
 let lastFpsUpdate = performance.now();
 let fpsLabel = null;
 let animationFrameId = null;
+// #test
 let isDebugVisible = false;
 
 const loadingTimeouts = new Map();
@@ -323,7 +324,7 @@ async function init() {
   }
 
   fpsLabel = createFpsLabel();
-  debugGroup.visible = false;
+  debugGroup.visible = true;
   fpsLabel.position.set(-0.4, 0.3, -0.7);
   debugGroup.add(fpsLabel);
   scene.add(debugGroup);
@@ -566,7 +567,9 @@ function handleInteraction(action) {
 
   switch (action) {
     case "start_browser":
-      changeState(AppState.AVATAR_GREETING);
+      // #change state
+      // changeState(AppState.AVATAR_GREETING);
+      changeState(AppState.LANDING);
       break;
     case "start_vr":
       startVRSession(onVRSessionEnded, onVRSessionStarted);
@@ -581,7 +584,8 @@ function handleInteraction(action) {
       clearActiveTypingAnimation();
       stopAvatarDropAnimation();
       startAvatarFlyUpAnimation(() => {
-        changeState(AppState.LANDING);
+        // changeState(AppState.LANDING);
+        changeState(AppState.MODE_SELECTION);
       });
       break;
     case "start_learning":
@@ -635,7 +639,9 @@ function handleInteraction(action) {
         clearActiveTypingAnimation();
         stopAvatarDropAnimation();
         startAvatarFlyUpAnimation(() => {
-          changeState(AppState.LANDING);
+          // #change state
+          // changeState(AppState.LANDING);
+          changeState(AppState.MODE_SELECTION);
         });
         break;
       }
@@ -1152,7 +1158,9 @@ function onVRSessionStarted() {
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMappingExposure = 1;
   renderer.xr.setFramebufferScaleFactor(1.2);
-  changeState(AppState.AVATAR_GREETING);
+  // #change state
+  // changeState(AppState.AVATAR_GREETING);
+  changeState(AppState.LANDING);
 }
 
 /**
@@ -1718,7 +1726,9 @@ function setupHTMLEvents() {
       if (vrButton) vrButton.remove();
       document.getElementById("container").classList.remove("hidden");
       startBackgroundMusic();
-      changeState(AppState.MODE_SELECTION);
+      // #change state
+      // changeState(AppState.MODE_SELECTION);
+      changeState(AppState.AVATAR_GREETING);
     }, fadeOutDuration);
   });
 
