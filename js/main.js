@@ -358,7 +358,7 @@ function render() {
 
   frameCount++;
   const now = performance.now();
-  if (now - lastFpsUpdate >= 500) {
+  if (now - lastFpsUpdate >= 1000) {
     fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
     frameCount = 0;
     lastFpsUpdate = now;
