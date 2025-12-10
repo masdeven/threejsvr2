@@ -699,7 +699,6 @@ body {
   }
 }
 
-/* Focus states for accessibility */
 .overlay-button:focus,
 .input-container input[type="text"]:focus,
 .floating-button:focus {
@@ -710,4 +709,49 @@ body {
 #close-sidebar-button:focus {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
+}
+
+/* ===== LOGO HEADER ===== */
+.logo-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--unit) * 4);
+  margin-bottom: calc(var(--unit) * 4);
+  width: 100%;
+}
+
+.app-logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.app-logo:hover {
+  transform: scale(1.05);
+}
+
+/* Mobile Portrait */
+@media (max-width: 640px) {
+  .logo-header {
+    gap: calc(var(--unit) * 2);
+    margin-bottom: calc(var(--unit) * 3);
+  }
+
+  .app-logo {
+    height: 60px;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .logo-header {
+    margin-bottom: calc(var(--unit) * 1.5);
+    gap: calc(var(--unit) * 2);
+  }
+
+  .app-logo {
+    height: 40px;
+  }
 }
