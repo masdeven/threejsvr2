@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
-    <title>WebXR Computer Lab</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="icon" type="image/png" href="favicon.ico" />
 
-    <script type="importmap">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>WebXR Computer Lab</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="favicon.ico" />
+
+  <script type="importmap">
       {
         "imports": {
           "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
@@ -19,508 +17,423 @@
         }
       }
     </script>
-  </head>
-  <body>
-    <div id="orientation-overlay" class="hidden">
-      <div class="message">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          width="80px"
-          height="80px"
-        >
-          <path
-            d="M18.5,6.5H15.5a1,1,0,0,1,0-2h4a1,1,0,0,1,1,1v4a1,1,0,0,1-2,0V6.92A9,9,0,0,1,6.58,20.42,1,1,0,0,1,8,19.58,7,7,0,0,0,18.5,6.5Z"
-          />
-          <path
-            d="M5.5,17.5H8.5a1,1,0,0,1,0,2h-4a1,1,0,0,1-1-1v-4a1,1,0,0,1,2,0v2.58A9,9,0,0,1,17.42,3.58a1,1,0,1,1-1.42,1.42A7,7,0,0,0,5.5,17.5Z"
-          />
-        </svg>
-        <p>Please rotate your device to landscape mode.</p>
+</head>
+
+<body>
+  <div id="orientation-overlay" class="hidden">
+    <div class="message">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="80px" height="80px">
+        <path
+          d="M18.5,6.5H15.5a1,1,0,0,1,0-2h4a1,1,0,0,1,1,1v4a1,1,0,0,1-2,0V6.92A9,9,0,0,1,6.58,20.42,1,1,0,0,1,8,19.58,7,7,0,0,0,18.5,6.5Z" />
+        <path
+          d="M5.5,17.5H8.5a1,1,0,0,1,0,2h-4a1,1,0,0,1-1-1v-4a1,1,0,0,1,2,0v2.58A9,9,0,0,1,17.42,3.58a1,1,0,1,1-1.42,1.42A7,7,0,0,0,5.5,17.5Z" />
+      </svg>
+      <p>Please rotate your device to landscape mode.</p>
+    </div>
+  </div>
+  <!-- Scene Three.js -->
+  <div id="container"></div>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="screen-overlay">
+    <div class="logo-header">
+      <img src="assets/images/logo-main.png" alt="Logo Prodi" class="app-logo" />
+    </div>
+    <div class="spinner"></div>
+    <div class="progress-bar-container">
+      <div id="progress-bar"></div>
+    </div>
+    <p id="loading-text">Initializing...</p>
+    
+    <!-- Instructions in Loading Menu -->
+    <div id="loading-controls-hint" class="desktop-only">
+      <div class="quick-tips">Quick Tips</div>
+      <div class="controls-wrapper">
+        <div class="control-item">
+          <div class="wasd-keys">
+            <div class="key-row">
+              <div class="key">W</div>
+            </div>
+            <div class="key-row">
+              <div class="key">A</div>
+              <div class="key">S</div>
+              <div class="key">D</div>
+            </div>
+          </div>
+          <span>Move</span>
+        </div>
+        <div class="control-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mouse-icon">
+            <rect x="5" y="2" width="14" height="20" rx="7" ry="7"></rect>
+            <line x1="12" y1="6" x2="12" y2="10"></line>
+          </svg>
+          <span>Look</span>
+        </div>
       </div>
     </div>
-    <!-- Scene Three.js -->
-    <div id="container"></div>
+  </div>
 
-    <!-- Splash Screen -->
-    <div id="splash-screen" class="screen-overlay">
-      <div class="logo-header">
-        <img
-          src="assets/images/logo-main.png"
-          alt="Logo Prodi"
-          class="app-logo"
-        />
-      </div>
-      <div class="spinner"></div>
-      <div class="progress-bar-container">
-        <div id="progress-bar"></div>
-      </div>
-      <p id="loading-text">Initializing...</p>
-    </div>
-
-    <div id="progress-choice-overlay" class="screen-overlay hidden">
-      <h1>Progress Found</h1>
-      <p>
-        We detected your previous learning progress. Would you like to continue
-        where you left off, or start a new session?
-      </p>
-      <div class="button-group">
-        <button id="start-new-button" class="overlay-button secondary">
-          Start New
-        </button>
-        <button id="continue-progress-button" class="overlay-button">
-          Continue
-        </button>
-      </div>
-    </div>
-
-    <!-- Overlay Selamat Datang -->
-    <div id="welcome-overlay" class="screen-overlay hidden">
-      <div class="logo-header">
-        <img
-          src="assets/images/logo-main.png"
-          alt="Logo Prodi"
-          class="app-logo"
-        />
-      </div>
-      <h1>WebXR Computer Lab.</h1>
-      <p>
-        A cross-platform virtual reality experience built with Three.js and
-        WebXR — bringing computer hardware education to life.
-      </p>
-      <button id="welcome-next-button" class="overlay-button">
-        Start the Experience
+  <div id="progress-choice-overlay" class="screen-overlay hidden">
+    <h1>Progress Found</h1>
+    <p>
+      We detected your previous learning progress. Would you like to continue
+      where you left off, or start a new session?
+    </p>
+    <div class="button-group">
+      <button id="start-new-button" class="overlay-button secondary">
+        Start New
+      </button>
+      <button id="continue-progress-button" class="overlay-button">
+        Continue
       </button>
     </div>
+  </div>
 
-    <!-- Overlay Input Nama -->
-    <div id="name-input-overlay" class="screen-overlay hidden">
-      <div class="input-container">
-        <input
-          type="text"
-          id="player-name-input"
-          maxlength="8"
-          autocomplete="off"
-          required
-        />
-        <label for="player-name-input" class="label">Enter your name*</label>
-      </div>
-      <button id="continue-button" class="overlay-button">OK</button>
+  <!-- Overlay Selamat Datang -->
+  <div id="welcome-overlay" class="screen-overlay hidden">
+    <div class="logo-header">
+      <img src="assets/images/logo-main.png" alt="Logo Prodi" class="app-logo" />
     </div>
+    <h1>WebXR Computer Lab.</h1>
+    <p>
+      A cross-platform virtual reality experience built with Three.js and
+      WebXR — bringing computer hardware education to life.
+    </p>
+    <button id="welcome-next-button" class="overlay-button">
+      Start the Experience
+    </button>
+  </div>
 
-    <button id="about-button" class="floating-button">?</button>
+  <!-- Overlay Input Nama -->
+  <div id="name-input-overlay" class="screen-overlay hidden">
+    <div class="input-container">
+      <input type="text" id="player-name-input" maxlength="8" autocomplete="off" required />
+      <label for="player-name-input" class="label">Enter your name*</label>
+    </div>
+    <button id="continue-button" class="overlay-button">OK</button>
+  </div>
 
-    <!-- Struktur Sidebar About -->
-    <!-- TAMBAHAN: Sidebar HTML -->
-    <aside id="about-sidebar" class="hidden">
-      <button id="close-sidebar-button">&times;</button>
-      <div id="sidebar-content">
-        <!-- Konten Markdown diubah menjadi HTML di sini -->
-        <h1>VR-Based Computer Hardware Learning Application</h1>
-        <p>(WebXR + Three.js)</p>
-        <p>
-          An interactive WebXR-based learning application for exploring computer
-          hardware in 3D. Developed using <strong>Three.js</strong> and
-          <strong>WebXR</strong> with the
-          <strong>Multimedia Development Life Cycle (MDLC)</strong> methodology,
-          this application enables learners to study computer hardware
-          components interactively through an immersive browser-based experience
-          — without requiring expensive VR devices.
-        </p>
+  <button id="about-button" class="floating-button">?</button>
 
-        <hr />
+  <!-- Struktur Sidebar About -->
+  <!-- TAMBAHAN: Sidebar HTML -->
+  <aside id="about-sidebar" class="hidden">
+    <button id="close-sidebar-button">&times;</button>
+    <div id="sidebar-content">
+      <!-- Konten Markdown diubah menjadi HTML di sini -->
+      <h1>VR-Based Computer Hardware Learning Application</h1>
+      <p>(WebXR + Three.js)</p>
+      <p>
+        An interactive WebXR-based learning application for exploring computer
+        hardware in 3D. Developed using <strong>Three.js</strong> and
+        <strong>WebXR</strong> with the
+        <strong>Multimedia Development Life Cycle (MDLC)</strong> methodology,
+        this application enables learners to study computer hardware
+        components interactively through an immersive browser-based experience
+        — without requiring expensive VR devices.
+      </p>
 
-        <h2>Features</h2>
-        <ul>
-          <li>Interactive 3D visualization of computer hardware</li>
-          <li>Web-based VR mode (WebXR)</li>
-          <li>Audio narration using AI-generated voice</li>
-          <li>
-            Lightweight, optimized 3D rendering (Draco + KTX2 compression)
-          </li>
-          <li>Responsive controls for desktop and VR devices</li>
-        </ul>
+      <hr />
 
-        <hr />
+      <h2>Features</h2>
+      <ul>
+        <li>Interactive 3D visualization of computer hardware</li>
+        <li>Web-based VR mode (WebXR)</li>
+        <li>Audio narration using AI-generated voice</li>
+        <li>
+          Lightweight, optimized 3D rendering (Draco + KTX2 compression)
+        </li>
+        <li>Responsive controls for desktop and VR devices</li>
+      </ul>
 
-        <h2>Tech Stack</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Tools / Frameworks</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>3D Engine</strong></td>
-              <td>Three.js</td>
-            </tr>
-            <tr>
-              <td><strong>XR Support</strong></td>
-              <td>WebXR API</td>
-            </tr>
-            <tr>
-              <td><strong>Optimization</strong></td>
-              <td>glTF-Transform, Draco, KTX2</td>
-            </tr>
-            <tr>
-              <td><strong>Modeling</strong></td>
-              <td>Blender</td>
-            </tr>
-            <tr>
-              <td><strong>Audio</strong></td>
-              <td>GPT-SoVITS (AI TTS), YouTube Audio Library</td>
-            </tr>
-            <tr>
-              <td><strong>Hosting</strong></td>
-              <td>Cloudflare Pages / GitHub Pages</td>
-            </tr>
-          </tbody>
-        </table>
+      <hr />
 
-        <hr />
+      <h2>Tech Stack</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Tools / Frameworks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>3D Engine</strong></td>
+            <td>Three.js</td>
+          </tr>
+          <tr>
+            <td><strong>XR Support</strong></td>
+            <td>WebXR API</td>
+          </tr>
+          <tr>
+            <td><strong>Optimization</strong></td>
+            <td>glTF-Transform, Draco, KTX2</td>
+          </tr>
+          <tr>
+            <td><strong>Modeling</strong></td>
+            <td>Blender</td>
+          </tr>
+          <tr>
+            <td><strong>Audio</strong></td>
+            <td>GPT-SoVITS (AI TTS), YouTube Audio Library</td>
+          </tr>
+          <tr>
+            <td><strong>Hosting</strong></td>
+            <td>Cloudflare Pages / GitHub Pages</td>
+          </tr>
+        </tbody>
+      </table>
 
-        <h2>Development Workflow</h2>
-        <ol>
-          <li>3D modeling in Blender (±20% vertex reduction)</li>
-          <li>Export as <code>.glb</code> format</li>
-          <li>
-            Optimize using <strong>glTF-Transform</strong>
-            <ul>
-              <li><code>optimize</code> (simplify structure)</li>
-              <li><code>draco</code> (geometry compression)</li>
-              <li><code>ktx2</code> (texture compression)</li>
-            </ul>
-          </li>
-          <li>Integrate into <strong>Three.js + WebXR</strong></li>
-          <li>Test and deploy on the web</li>
-        </ol>
+      <hr />
 
-        <hr />
+      <h2>Development Workflow</h2>
+      <ol>
+        <li>3D modeling in Blender (±20% vertex reduction)</li>
+        <li>Export as <code>.glb</code> format</li>
+        <li>
+          Optimize using <strong>glTF-Transform</strong>
+          <ul>
+            <li><code>optimize</code> (simplify structure)</li>
+            <li><code>draco</code> (geometry compression)</li>
+            <li><code>ktx2</code> (texture compression)</li>
+          </ul>
+        </li>
+        <li>Integrate into <strong>Three.js + WebXR</strong></li>
+        <li>Test and deploy on the web</li>
+      </ol>
 
-        <h2>Credits & Licensing</h2>
-        <h3>3D Models</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Source</th>
-              <th>3D Artist / Modeler</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Data tabel kredit model dimasukkan di sini -->
-            <tr>
-              <td><strong>Monitor</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/rigged-monitor-iiyama-gb2770hsu-free-download-bca1aef8e0424cc3baf4369beec3b6a8"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>BlendedPopcorn</td>
-            </tr>
-            <tr>
-              <td><strong>Keyboard</strong></td>
-              <td>
-                <a
-                  href="https://www.cgtrader.com/free-3d-models/electronics/computer/mechanical-keybord"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >CGTrader</a
-                >
-              </td>
-              <td>autho</td>
-            </tr>
-            <tr>
-              <td><strong>Mouse</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/mouse-ef4c6dfb6de44d0c9bd200a64c8c1a73"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Mukhesh</td>
-            </tr>
-            <tr>
-              <td><strong>Printer</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/epson-printer-model-752da10ef09a4f4782aa6c38a82f4b26"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>zafry</td>
-            </tr>
-            <tr>
-              <td><strong>Storage</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/ssd-noname-sata-5a182a80361f407e965adaaee077e3cd"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Хлюпич</td>
-            </tr>
-            <tr>
-              <td><strong>Motherboard</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Daniel Cardona</td>
-            </tr>
-            <tr>
-              <td><strong>CPU</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/am4-cpu-free-912c9c42d2dc40fe95574345aae51ea0"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Igor.Jop</td>
-            </tr>
-            <tr>
-              <td><strong>Network Interface Card</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/network-interface-card-191c8ad40de2430980b879615aa0d2e3"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>ARComputerFundamentals</td>
-            </tr>
-            <tr>
-              <td><strong>GPU</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Daniel Cardona</td>
-            </tr>
-            <tr>
-              <td><strong>RAM</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Daniel Cardona</td>
-            </tr>
-            <tr>
-              <td><strong>Flash Drive</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/flash-drive-ecc57ae0430f4786845a6f76ae924268"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Blender3D</td>
-            </tr>
-            <tr>
-              <td><strong>Avatar</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/michi-bot-3de2985ed85e478387d2829b690d9523"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>victorcalles</td>
-            </tr>
-            <tr>
-              <td><strong>Room</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/vr-round-art-gallery-3af1b679f52042fc9c40c901a6fed81b"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Maxim Mavrichev</td>
-            </tr>
-            <tr>
-              <td><strong>Interior</strong></td>
-              <td>
-                <a
-                  href="https://sketchfab.com/3d-models/small-office-91b7d061411a4bed860867106f49e3ca"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Sketchfab</a
-                >
-              </td>
-              <td>Murat Can ÜNAL</td>
-            </tr>
-          </tbody>
-        </table>
-        <blockquote>
-          Note: All 3D models are used under their respective licenses.
-          Attribution is provided according to platform requirements.
-        </blockquote>
+      <hr />
 
-        <h3>Audio & Voice</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Data tabel kredit audio dimasukkan di sini -->
-            <tr>
-              <td>
-                <a
-                  href="https://github.com/RVC-Boss/GPT-SoVITS"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >GPT-SoVITS</a
-                >
-              </td>
-              <td>Voice narration</td>
-            </tr>
-            <tr>
-              <td>
-                <a
-                  href="https://www.youtube.com/watch?v=pBEdwmP8B4o&list=LL&index=17s"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >YouTube - BreakingCopyright</a
-                >
-              </td>
-              <td>Background music</td>
-            </tr>
-            <tr>
-              <td>
-                <a
-                  href="https://pixabay.com/id/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Pixabay</a
-                >
-              </td>
-              <td>Sound effects</td>
-            </tr>
-          </tbody>
-        </table>
+      <h2>Credits & Licensing</h2>
+      <h3>3D Models</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Source</th>
+            <th>3D Artist / Modeler</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data tabel kredit model dimasukkan di sini -->
+          <tr>
+            <td><strong>Monitor</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/rigged-monitor-iiyama-gb2770hsu-free-download-bca1aef8e0424cc3baf4369beec3b6a8"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>BlendedPopcorn</td>
+          </tr>
+          <tr>
+            <td><strong>Keyboard</strong></td>
+            <td>
+              <a href="https://www.cgtrader.com/free-3d-models/electronics/computer/mechanical-keybord" target="_blank"
+                rel="noopener noreferrer">CGTrader</a>
+            </td>
+            <td>autho</td>
+          </tr>
+          <tr>
+            <td><strong>Mouse</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/mouse-ef4c6dfb6de44d0c9bd200a64c8c1a73" target="_blank"
+                rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Mukhesh</td>
+          </tr>
+          <tr>
+            <td><strong>Printer</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/epson-printer-model-752da10ef09a4f4782aa6c38a82f4b26"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>zafry</td>
+          </tr>
+          <tr>
+            <td><strong>Storage</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/ssd-noname-sata-5a182a80361f407e965adaaee077e3cd" target="_blank"
+                rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Хлюпич</td>
+          </tr>
+          <tr>
+            <td><strong>Motherboard</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Daniel Cardona</td>
+          </tr>
+          <tr>
+            <td><strong>CPU</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/am4-cpu-free-912c9c42d2dc40fe95574345aae51ea0" target="_blank"
+                rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Igor.Jop</td>
+          </tr>
+          <tr>
+            <td><strong>Network Interface Card</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/network-interface-card-191c8ad40de2430980b879615aa0d2e3"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>ARComputerFundamentals</td>
+          </tr>
+          <tr>
+            <td><strong>GPU</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Daniel Cardona</td>
+          </tr>
+          <tr>
+            <td><strong>RAM</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/dream-computer-setup-82f78bbaf2d34f01af854a52151dbf49"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Daniel Cardona</td>
+          </tr>
+          <tr>
+            <td><strong>Flash Drive</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/flash-drive-ecc57ae0430f4786845a6f76ae924268" target="_blank"
+                rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Blender3D</td>
+          </tr>
+          <tr>
+            <td><strong>Avatar</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/michi-bot-3de2985ed85e478387d2829b690d9523" target="_blank"
+                rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>victorcalles</td>
+          </tr>
+          <tr>
+            <td><strong>Room</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/vr-round-art-gallery-3af1b679f52042fc9c40c901a6fed81b"
+                target="_blank" rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Maxim Mavrichev</td>
+          </tr>
+          <tr>
+            <td><strong>Interior</strong></td>
+            <td>
+              <a href="https://sketchfab.com/3d-models/small-office-91b7d061411a4bed860867106f49e3ca" target="_blank"
+                rel="noopener noreferrer">Sketchfab</a>
+            </td>
+            <td>Murat Can ÜNAL</td>
+          </tr>
+        </tbody>
+      </table>
+      <blockquote>
+        Note: All 3D models are used under their respective licenses.
+        Attribution is provided according to platform requirements.
+      </blockquote>
 
-        <h3>Tools & Frameworks</h3>
-        <ul>
-          <li>
-            <a
-              href="https://threejs.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Three.js</a
-            >
-            – 3D rendering engine
-          </li>
-          <li>
-            <a
-              href="https://immersiveweb.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >WebXR</a
-            >
-            – Browser-based VR/AR support
-          </li>
-          <li>
-            <a
-              href="https://gltf-transform.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >glTF-Transform</a
-            >
-            – Model optimization CLI
-          </li>
-          <li>
-            <a
-              href="https://www.blender.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Blender</a
-            >
-            – 3D modeling and asset preparation
-          </li>
-        </ul>
+      <h3>Audio & Voice</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data tabel kredit audio dimasukkan di sini -->
+          <tr>
+            <td>
+              <a href="https://github.com/RVC-Boss/GPT-SoVITS" target="_blank" rel="noopener noreferrer">GPT-SoVITS</a>
+            </td>
+            <td>Voice narration</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="https://www.youtube.com/watch?v=pBEdwmP8B4o&list=LL&index=17s" target="_blank"
+                rel="noopener noreferrer">YouTube - BreakingCopyright</a>
+            </td>
+            <td>Background music</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="https://pixabay.com/id/" target="_blank" rel="noopener noreferrer">Pixabay</a>
+            </td>
+            <td>Sound effects</td>
+          </tr>
+        </tbody>
+      </table>
 
-        <hr />
+      <h3>Tools & Frameworks</h3>
+      <ul>
+        <li>
+          <a href="https://threejs.org/" target="_blank" rel="noopener noreferrer">Three.js</a>
+          – 3D rendering engine
+        </li>
+        <li>
+          <a href="https://immersiveweb.dev/" target="_blank" rel="noopener noreferrer">WebXR</a>
+          – Browser-based VR/AR support
+        </li>
+        <li>
+          <a href="https://gltf-transform.dev/" target="_blank" rel="noopener noreferrer">glTF-Transform</a>
+          – Model optimization CLI
+        </li>
+        <li>
+          <a href="https://www.blender.org/" target="_blank" rel="noopener noreferrer">Blender</a>
+          – 3D modeling and asset preparation
+        </li>
+      </ul>
 
-        <h2>License</h2>
-        <p>
-          This project is licensed under the <strong>MIT License</strong>. You
-          are free to use, modify, and distribute this project for educational
-          or non-commercial purposes, provided that all attributions and credits
-          remain intact.
-        </p>
+      <hr />
 
-        <hr />
+      <h2>License</h2>
+      <p>
+        This project is licensed under the <strong>MIT License</strong>. You
+        are free to use, modify, and distribute this project for educational
+        or non-commercial purposes, provided that all attributions and credits
+        remain intact.
+      </p>
 
-        <h2>Acknowledgments</h2>
-        <p>Special thanks to:</p>
-        <ul>
-          <li>
-            All creators on <strong>Sketchfab</strong> and
-            <strong>CGTrader</strong> who have provided high-quality 3D models.
-          </li>
-          <li><strong>GPT-SoVITS</strong> for AI voice narration.</li>
-          <li>
-            The open-source community of <strong>Three.js</strong> and
-            <strong>WebXR</strong> developers.
-          </li>
-        </ul>
+      <hr />
 
-        <hr />
+      <h2>Acknowledgments</h2>
+      <p>Special thanks to:</p>
+      <ul>
+        <li>
+          All creators on <strong>Sketchfab</strong> and
+          <strong>CGTrader</strong> who have provided high-quality 3D models.
+        </li>
+        <li><strong>GPT-SoVITS</strong> for AI voice narration.</li>
+        <li>
+          The open-source community of <strong>Three.js</strong> and
+          <strong>WebXR</strong> developers.
+        </li>
+      </ul>
 
-        <h2>Authors</h2>
-        <p>
-          <strong
-            >Falachul Akhadihima Ibrahaical, Paulus Lucky Tirma Irawan, Bita
-            Parga Zen</strong
-          >
-        </p>
-        <p>
-          Thesis Project — IMPLEMENTATION OF THREE.JS AND WEBXR IN DEVELOPING A
-          VIRTUAL REALITY (VR) APPLICATION FOR INTRODUCING COMPUTER HARDWARE<br />
-          <em>Informatics Engineering</em><br />
-          <em>Faculty of Technology and Design, Ma Chung University</em>
-        </p>
+      <hr />
 
-        <hr />
+      <h2>Authors</h2>
+      <p>
+        <strong>Falachul Akhadihima Ibrahaical, Paulus Lucky Tirma Irawan, Bita
+          Parga Zen</strong>
+      </p>
+      <p>
+        Thesis Project — IMPLEMENTATION OF THREE.JS AND WEBXR IN DEVELOPING A
+        VIRTUAL REALITY (VR) APPLICATION FOR INTRODUCING COMPUTER HARDWARE<br />
+        <em>Informatics Engineering</em><br />
+        <em>Faculty of Technology and Design, Ma Chung University</em>
+      </p>
 
-        <p>Undergraduate Research Project</p>
-      </div>
-    </aside>
+      <hr />
 
-    <script type="module" src="js/main.js"></script>
-  </body>
+      <p>Undergraduate Research Project</p>
+    </div>
+  </aside>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+
 </html>
