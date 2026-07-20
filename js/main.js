@@ -727,16 +727,13 @@ function handleInteraction(action) {
         console.log("Blocked: Model transition already in progress.");
         return;
       }
-      console.log("Next clicked: Setting lock, forcing unload.");
+      console.log("Next clicked: Setting lock, animating out.");
       isTransitioningModel = true;
-      unloadComponentModel();
-      transitionState.isAnimating = false;
-      transitionState.onComplete = null;
-      transitionState.onMidpoint = null;
       navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointNext = () => {
         console.log("OUT Midpoint: Triggering next state.");
+        unloadComponentModel();
         const shouldGoToMiniQuiz =
           currentComponentIndex === highestComponentUnlocked &&
           currentComponentIndex < components.length;
@@ -790,16 +787,13 @@ function handleInteraction(action) {
         console.log("Blocked: Model transition already in progress.");
         return;
       }
-      console.log("Prev clicked: Setting lock, forcing unload.");
+      console.log("Prev clicked: Setting lock, animating out.");
       isTransitioningModel = true;
-      unloadComponentModel();
-      transitionState.isAnimating = false;
-      transitionState.onComplete = null;
-      transitionState.onMidpoint = null;
       navButtons.forEach((btn) => setButtonEnabled(btn, false));
 
       const onAnimationMidpointPrev = () => {
         console.log("OUT Midpoint: Triggering previous state.");
+        unloadComponentModel();
         if (currentComponentIndex > 0) {
           currentComponentIndex--;
           changeState(AppState.VIEWER, { isTransitioning: true });

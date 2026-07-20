@@ -81,11 +81,18 @@ export async function loadComponentModel(
   currentAbort = new AbortController();
 
   try {
-    const gltf = await loader.loadAsync(url, undefined, currentAbort.signal);
-    convertModelMaterials(gltf.scene);
-    preCompileModel(gltf.scene);
+    let newModel;
+    if (modelCache[url]) {
+      newModel = modelCache[url].clone();
+    } else {
+      console.warn("Model not in cache, loading manually:", url);
+      const gltf = await loader.loadAsync(url, undefined, currentAbort.signal);
+      convertModelMaterials(gltf.scene);
+      preCompileModel(gltf.scene);
+      newModel = gltf.scene.clone();
+      modelCache[url] = gltf.scene; // Add to cache for future use
+    }
 
-    const newModel = gltf.scene.clone();
     setupModelPosition(newModel, startYOffset);
     startModelAnimation(false, null, onAnimationComplete);
   } catch (e) {
