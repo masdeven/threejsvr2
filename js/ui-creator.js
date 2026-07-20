@@ -76,7 +76,7 @@ export const GREETING_DATA = (playerName) => [
     audioFile: "assets/audio/narration/greeting/greeting_4.ogg",
   },
   {
-    text: "Oh, and don't forget! You can spin the 3D models around by hand to check out all the details. 😄",
+    text: "Oh, and don't forget! You can spin the 3D models around by hand to check out all the details.",
     audioFile: "assets/audio/narration/greeting/greeting_5.ogg",
   },
   {

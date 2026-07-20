@@ -1,10 +1,10 @@
-# 🧠 Aplikasi Pembelajaran Perangkat Keras Berbasis VR (WebXR + Three.js)
+# VR-Based Computer Hardware Learning Application (WebXR + Three.js)
 
 Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat keras komputer dalam 3D. Dikembangkan menggunakan **Three.js** dan **WebXR** dengan metodologi **Multimedia Development Life Cycle (MDLC)**, aplikasi ini memungkinkan pelajar untuk mempelajari komponen perangkat keras komputer secara interaktif melalui pengalaman berbasis browser yang imersif—tanpa memerlukan perangkat VR yang mahal.
 
 ---
 
-## 🚀 Fitur
+## Features
 
 - Visualisasi 3D interaktif dari perangkat keras komputer
 - Mode VR berbasis web (WebXR)
@@ -14,7 +14,7 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ---
 
-## 🧩 Tumpukan Teknologi
+## Tech Stack
 
 | Kategori        | Alat / Kerangka Kerja                    |
 | :-------------- | :--------------------------------------- |
@@ -27,7 +27,7 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ---
 
-## 🧱 Alur Pengembangan
+## Development Workflow
 
 1.  Pemodelan 3D di Blender (pengurangan verteks ±20%)
 2.  Ekspor sebagai format `.glb`
@@ -40,9 +40,9 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ---
 
-## 🎨 Kredit & Lisensi
+## Credits & Licensing
 
-### 🧱 Model 3D
+### 3D Models
 
 | Model              | Sumber                                                                                                                      | 3D Artist / Modeler    | Lisensi                    |
 | :----------------- | :-------------------------------------------------------------------------------------------------------------------------- | :--------------------- | :------------------------- |
@@ -64,7 +64,7 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ---
 
-### 🔊 Audio & Suara
+### Audio & Voice
 
 | Sumber                                                                                                                | Deskripsi    |
 | :-------------------------------------------------------------------------------------------------------------------- | :----------- |
@@ -75,7 +75,7 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ---
 
-### 🧰 Alat & Kerangka Kerja
+### Tools & Frameworks
 
 - [Three.js](https://threejs.org/) – Mesin rendering 3D
 - [WebXR](https://immersiveweb.dev/) – Dukungan VR/AR berbasis browser
@@ -84,13 +84,13 @@ Aplikasi pembelajaran interaktif berbasis WebXR untuk menjelajahi perangkat kera
 
 ---
 
-## ⚖️ Lisensi
+## License
 
 Proyek ini dilisensikan di bawah **Lisensi MIT**. Anda bebas menggunakan, memodifikasi, dan mendistribusikan proyek ini untuk tujuan pendidikan atau non-komersial, dengan syarat semua atribusi dan kredit tetap utuh.
 
 ---
 
-## 🙌 Ucapan Terima Kasih
+## Acknowledgments
 
 Terima kasih khusus kepada:
 
@@ -100,7 +100,7 @@ Terima kasih khusus kepada:
 
 ---
 
-## 🧑‍💻 Penulis
+## Authors
 
 **Falachul Akhadihima Ibrahaical**
 
