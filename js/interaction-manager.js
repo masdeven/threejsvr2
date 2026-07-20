@@ -28,6 +28,27 @@ const BGCOLOR = "#5579bf88";
 const HOVER_COLOR = "#4A5568";
 const TEXT_COLOR = "#FFFFFF";
 
+const keyboardState = {
+  w: false,
+  a: false,
+  s: false,
+  d: false
+};
+
+window.addEventListener("keydown", (e) => {
+  const key = e.key.toLowerCase();
+  if (keyboardState.hasOwnProperty(key)) {
+    keyboardState[key] = true;
+  }
+});
+
+window.addEventListener("keyup", (e) => {
+  const key = e.key.toLowerCase();
+  if (keyboardState.hasOwnProperty(key)) {
+    keyboardState[key] = false;
+  }
+});
+
 let interactionCallback = null;
 let lastIntersectedButton = null;
 
@@ -487,5 +508,39 @@ export function handleVRDrag(deltaTime) {
     !vrInteractionState.controller2.isGrabbing
   ) {
     setUserInteracting(isStickActiveThisFrame);
+  }
+}
+
+/**
+ * Menangani pergerakan kamera dengan tombol WASD di mode desktop.
+ * @param {number} deltaTime - Waktu delta
+ */
+export function handleDesktopMovement(deltaTime) {
+  if (isVRMode()) return;
+  
+  const moveSpeed = 2.0;
+  const distance = moveSpeed * deltaTime;
+  
+  const moveVector = new THREE.Vector3();
+  const forward = new THREE.Vector3();
+  const right = new THREE.Vector3();
+  
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+  
+  right.crossVectors(forward, camera.up).normalize();
+  
+  if (keyboardState.w) moveVector.add(forward);
+  if (keyboardState.s) moveVector.sub(forward);
+  if (keyboardState.a) moveVector.sub(right);
+  if (keyboardState.d) moveVector.add(right);
+  
+  if (moveVector.lengthSq() > 0) {
+    moveVector.normalize().multiplyScalar(distance);
+    
+    camera.position.add(moveVector);
+    controls.target.add(moveVector);
+    controls.update();
   }
 }

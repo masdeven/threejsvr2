@@ -79,6 +79,7 @@ import {
   handleVRHover,
   handleVRDrag,
   setButtonEnabled,
+  handleDesktopMovement,
 } from "./interaction-manager.js";
 
 import { setupVR, startVRSession, isVRMode } from "./vr-manager.js";
@@ -405,6 +406,7 @@ function render() {
       updateUIGroupPosition();
     }
   } else {
+    handleDesktopMovement(deltaTime);
     controls.update();
   }
 
